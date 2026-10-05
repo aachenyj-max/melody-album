@@ -1,0 +1,83 @@
+{
+  "reference": ".sdd00-work\\calibration\\round-3\\..\\..\\..\\designs\\ui\\01-首页-音乐相册.png",
+  "candidate": ".sdd00-work\\calibration\\round-3\\candidate.png",
+  "reference_size": [
+    863,
+    1822
+  ],
+  "candidate_size_original": [
+    863,
+    1822
+  ],
+  "candidate_size_compared": [
+    863,
+    1822
+  ],
+  "resized": false,
+  "geometry_match": true,
+  "height_delta": 0,
+  "unmatched_tails": {},
+  "regions": [
+    {
+      "name": "full",
+      "size": [
+        863,
+        1822
+      ],
+      "rms_diff": 65.108,
+      "mean_abs_diff": 31.769,
+      "candidate": ".sdd00-work\\calibration\\report-3\\verify-full-candidate.png",
+      "diff": ".sdd00-work\\calibration\\report-3\\verify-full-diff.png",
+      "heatmap": ".sdd00-work\\calibration\\report-3\\verify-full-heatmap.png"
+    },
+    {
+      "name": "region-000",
+      "size": [
+        343,
+        100
+      ],
+      "rms_diff": 65.222,
+      "mean_abs_diff": 26.481,
+      "candidate": ".sdd00-work\\calibration\\report-3\\verify-region-000-candidate.png",
+      "diff": ".sdd00-work\\calibration\\report-3\\verify-region-000-diff.png",
+      "heatmap": ".sdd00-work\\calibration\\report-3\\verify-region-000-heatmap.png"
+    },
+    {
+      "name": "region-001",
+      "size": [
+        571,
+        307
+      ],
+      "rms_diff": 57.161,
+      "mean_abs_diff": 37.649,
+      "candidate": ".sdd00-work\\calibration\\report-3\\verify-region-001-candidate.png",
+      "diff": ".sdd00-work\\calibration\\report-3\\verify-region-001-diff.png",
+      "heatmap": ".sdd00-work\\calibration\\report-3\\verify-region-001-heatmap.png"
+    },
+    {
+      "name": "region-002",
+      "size": [
+        426,
+        119
+      ],
+      "rms_diff": 86.452,
+      "mean_abs_diff": 46.751,
+      "candidate": ".sdd00-work\\calibration\\report-3\\verify-region-002-candidate.png",
+      "diff": ".sdd00-work\\calibration\\report-3\\verify-region-002-diff.png",
+      "heatmap": ".sdd00-work\\calibration\\report-3\\verify-region-002-heatmap.png"
+    },
+    {
+      "name": "region-003",
+      "size": [
+        730,
+        128
+      ],
+      "rms_diff": 38.282,
+      "mean_abs_diff": 15.047,
+      "candidate": ".sdd00-work\\calibration\\report-3\\verify-region-003-candidate.png",
+      "diff": ".sdd00-work\\calibration\\report-3\\verify-region-003-diff.png",
+      "heatmap": ".sdd00-work\\calibration\\report-3\\verify-region-003-heatmap.png"
+    }
+  ],
+  "note": "误差不等于还原度；字体、摄影和位置分别判断。尺寸一致也不代表视觉通过。"
+}

@@ -19,9 +19,16 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+__pycache__/
+*.pyc
 *.pem
 
 # debug
@@ -44,3 +51,4 @@ next-env.d.ts
 # Spec Kit agent workspace
 /.agents/
 /.npm-cache/
+/.sdd00-work/

@@ -1,0 +1,341 @@
+{
+  "results": [
+    {
+      "width": 375,
+      "route": "/",
+      "status": 200,
+      "screen": "01",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/create",
+      "status": 200,
+      "screen": "02",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/create?state=understanding",
+      "status": 200,
+      "screen": "03",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/result",
+      "status": 200,
+      "screen": "04",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/play",
+      "status": 200,
+      "screen": "05",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/play?state=adjust",
+      "status": 200,
+      "screen": "06",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/play?state=save",
+      "status": 200,
+      "screen": "07",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/memories",
+      "status": 200,
+      "screen": "08",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 375,
+      "route": "/memories/demo-graduation",
+      "status": 200,
+      "screen": "09",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "status": 200,
+      "screen": "01",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/create",
+      "status": 200,
+      "screen": "02",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/create?state=understanding",
+      "status": 200,
+      "screen": "03",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/result",
+      "status": 200,
+      "screen": "04",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/play",
+      "status": 200,
+      "screen": "05",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/play?state=adjust",
+      "status": 200,
+      "screen": "06",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/play?state=save",
+      "status": 200,
+      "screen": "07",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/memories",
+      "status": 200,
+      "screen": "08",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 390,
+      "route": "/memories/demo-graduation",
+      "status": 200,
+      "screen": "09",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/",
+      "status": 200,
+      "screen": "01",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/create",
+      "status": 200,
+      "screen": "02",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/create?state=understanding",
+      "status": 200,
+      "screen": "03",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/result",
+      "status": 200,
+      "screen": "04",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/play",
+      "status": 200,
+      "screen": "05",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/play?state=adjust",
+      "status": 200,
+      "screen": "06",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/play?state=save",
+      "status": 200,
+      "screen": "07",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/memories",
+      "status": 200,
+      "screen": "08",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "width": 430,
+      "route": "/memories/demo-graduation",
+      "status": 200,
+      "screen": "09",
+      "overflow": false,
+      "missingImages": []
+    },
+    {
+      "from": "/",
+      "selector": ".home-create",
+      "expected": "02",
+      "passed": true
+    },
+    {
+      "from": "/",
+      "selector": ".nav-create",
+      "expected": "02",
+      "passed": true
+    },
+    {
+      "from": "/create",
+      "selector": ".add-photo",
+      "expected": "03",
+      "passed": true
+    },
+    {
+      "from": "/create",
+      "selector": ".composer-add",
+      "expected": "03",
+      "passed": true
+    },
+    {
+      "from": "/create?state=understanding",
+      "selector": ".composer-confirm",
+      "expected": "04",
+      "passed": true
+    },
+    {
+      "from": "/result",
+      "selector": ".result-enter",
+      "expected": "05",
+      "passed": true
+    },
+    {
+      "from": "/play",
+      "selector": ".play-actions a:first-child",
+      "expected": "06",
+      "passed": true
+    },
+    {
+      "from": "/play",
+      "selector": ".play-actions a:last-child",
+      "expected": "07",
+      "passed": true
+    },
+    {
+      "from": "/play",
+      "selector": ".back-button",
+      "expected": "04",
+      "passed": true
+    },
+    {
+      "from": "/play?state=adjust",
+      "selector": ".composer-send",
+      "expected": "05",
+      "passed": true
+    },
+    {
+      "from": "/play?state=adjust",
+      "selector": ".music-play",
+      "expected": "05",
+      "passed": true
+    },
+    {
+      "from": "/play?state=save",
+      "selector": ".save-submit",
+      "expected": "08",
+      "passed": true
+    },
+    {
+      "from": "/play?state=save",
+      "selector": ".save-later",
+      "expected": "05",
+      "passed": true
+    },
+    {
+      "from": "/memories",
+      "selector": ".memory-row:first-child",
+      "expected": "09",
+      "passed": true
+    },
+    {
+      "from": "/memories",
+      "selector": ".memory-row:first-child .tile-play",
+      "expected": "09",
+      "passed": true
+    },
+    {
+      "from": "/memories/demo-graduation",
+      "selector": ".detail-generate",
+      "expected": "04",
+      "passed": true
+    },
+    {
+      "from": "/memories/demo-graduation",
+      "selector": ".back-button",
+      "expected": "08",
+      "passed": true
+    },
+    {
+      "route": "/",
+      "refreshes": 5,
+      "stable": true
+    },
+    {
+      "route": "/memories",
+      "refreshes": 5,
+      "stable": true
+    },
+    {
+      "route": "/memories/demo-graduation",
+      "refreshes": 5,
+      "stable": true
+    },
+    {
+      "unknownIdMessage": "9:41\n音乐记忆\n没有找到这张音乐相册\n\n请返回列表查看已有记忆。\n\n返回音乐记忆"
+    }
+  ],
+  "errors": []
+}

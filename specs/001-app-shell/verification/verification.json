@@ -1,0 +1,300 @@
+{
+  "status": "截图身份与渲染前提通过；视觉仍需复核",
+  "manifest": "E:\\腾讯黑客松\\.sdd00-work\\calibration\\round-3\\run.json",
+  "capture": {
+    "measurement_sha256": "c0d1f7278bb4cb2c930a9f6e05dc2396604841c5f48dc4f6c3666d98f8c33c00",
+    "url": "http://localhost:3000/",
+    "title": "音乐相册 · 腾讯音乐高校 AI Hackathon",
+    "viewport": {
+      "width": 863,
+      "height": 1822
+    },
+    "dpr": 1,
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "document_height": 1822,
+    "fonts_ready": true,
+    "images_ready": true,
+    "document_overflow_x": false,
+    "captured_at": "2026-10-05T06:29:01.327Z",
+    "elements": [
+      {
+        "name": "profile",
+        "selector": ".home-profile",
+        "count": 1,
+        "status": "measured",
+        "box": [
+          0,
+          149.390625,
+          863,
+          101.828125
+        ],
+        "text": "你的名字摄影 · 音乐 · 旅行",
+        "computed": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "27.1845px",
+          "lineHeight": "40.7767px",
+          "fontWeight": "400",
+          "color": "rgb(17, 17, 17)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "viewport_intersects": true
+      },
+      {
+        "name": "music-card",
+        "selector": ".home-music-card",
+        "count": 1,
+        "status": "measured",
+        "box": [
+          146.703125,
+          620.9375,
+          570.953125,
+          307
+        ],
+        "text": "日落海岸独立流行 · 3:28把时光写成一首歌，在路上与自己相遇。",
+        "computed": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "27.1845px",
+          "lineHeight": "40.7767px",
+          "fontWeight": "400",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "viewport_intersects": true
+      },
+      {
+        "name": "create",
+        "selector": ".home-create",
+        "count": 1,
+        "status": "measured",
+        "box": [
+          220.0625,
+          974.9375,
+          425.96875,
+          118.96875
+        ],
+        "text": "生成音乐",
+        "computed": {
+          "display": "flex",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "34.52px",
+          "lineHeight": "51.78px",
+          "fontWeight": "650",
+          "color": "rgb(17, 17, 17)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "viewport_intersects": true
+      },
+      {
+        "name": "navigation",
+        "selector": ".album-nav",
+        "count": 1,
+        "status": "measured",
+        "box": [
+          68,
+          1620.046875,
+          730,
+          127.984375
+        ],
+        "text": "",
+        "computed": {
+          "display": "flex",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "27.1845px",
+          "lineHeight": "40.7767px",
+          "fontWeight": "400",
+          "color": "rgb(17, 17, 17)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "viewport_intersects": true
+      }
+    ],
+    "assets": {},
+    "full_page": true,
+    "screenshot_scale": "css"
+  },
+  "section_positions": [],
+  "comparison": ".sdd00-work\\calibration\\report-3\\verify-metrics.json",
+  "geometry": {
+    "measurement_sha256": "c0d1f7278bb4cb2c930a9f6e05dc2396604841c5f48dc4f6c3666d98f8c33c00",
+    "complete": true,
+    "unavailable_regions": [],
+    "regions": [
+      {
+        "name": "profile",
+        "selector": ".home-profile",
+        "status": "visual_only",
+        "box_type": "ink",
+        "actual_css_box": [
+          0,
+          149.390625,
+          863,
+          101.828125
+        ],
+        "computed": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "27.1845px",
+          "lineHeight": "40.7767px",
+          "fontWeight": "400",
+          "color": "rgb(17, 17, 17)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "reason": "字形框或采样区不与 DOM 元素外框比较"
+      },
+      {
+        "name": "music-card",
+        "selector": ".home-music-card",
+        "status": "measured",
+        "box_type": "element",
+        "actual_css_box": [
+          146.703125,
+          620.9375,
+          570.953125,
+          307
+        ],
+        "computed": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "27.1845px",
+          "lineHeight": "40.7767px",
+          "fontWeight": "400",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "reference_css_box": [
+          146.0,
+          621.0,
+          571.0,
+          307.0
+        ],
+        "delta_css": [
+          0.703,
+          -0.062,
+          -0.047,
+          0.0
+        ],
+        "max_abs_delta_css": 0.703
+      },
+      {
+        "name": "create",
+        "selector": ".home-create",
+        "status": "measured",
+        "box_type": "element",
+        "actual_css_box": [
+          220.0625,
+          974.9375,
+          425.96875,
+          118.96875
+        ],
+        "computed": {
+          "display": "flex",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "34.52px",
+          "lineHeight": "51.78px",
+          "fontWeight": "650",
+          "color": "rgb(17, 17, 17)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "reference_css_box": [
+          220.0,
+          975.0,
+          426.0,
+          119.0
+        ],
+        "delta_css": [
+          0.062,
+          -0.062,
+          -0.031,
+          -0.031
+        ],
+        "max_abs_delta_css": 0.062
+      },
+      {
+        "name": "navigation",
+        "selector": ".album-nav",
+        "status": "measured",
+        "box_type": "element",
+        "actual_css_box": [
+          68,
+          1620.046875,
+          730,
+          127.984375
+        ],
+        "computed": {
+          "display": "flex",
+          "visibility": "visible",
+          "opacity": "1",
+          "fontFamily": "\"Microsoft YaHei\", \"PingFang SC\", Arial, sans-serif",
+          "fontSize": "27.1845px",
+          "lineHeight": "40.7767px",
+          "fontWeight": "400",
+          "color": "rgb(17, 17, 17)",
+          "backgroundColor": "rgba(0, 0, 0, 0)"
+        },
+        "reference_css_box": [
+          68.0,
+          1620.0,
+          730.0,
+          128.0
+        ],
+        "delta_css": [
+          0.0,
+          0.047,
+          0.0,
+          -0.016
+        ],
+        "max_abs_delta_css": 0.047
+      }
+    ],
+    "note": "偏差是 CSS 像素，不是还原率；布局可测量不证明未遮挡、字体正确或交互可用。",
+    "changes": [
+      {
+        "name": "profile",
+        "before": null,
+        "after": null,
+        "delta": null,
+        "change": "unavailable"
+      },
+      {
+        "name": "music-card",
+        "before": 8.203,
+        "after": 0.703,
+        "delta": -7.5,
+        "change": "reduced"
+      },
+      {
+        "name": "create",
+        "before": 6.047,
+        "after": 0.062,
+        "delta": -5.985,
+        "change": "reduced"
+      },
+      {
+        "name": "navigation",
+        "before": 18.453,
+        "after": 0.047,
+        "delta": -18.406,
+        "change": "reduced"
+      }
+    ]
+  }
+}
