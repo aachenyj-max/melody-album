@@ -23,3 +23,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 运行开发服务器：`npm run dev`。
 - 生产构建：`npm run build`。
 - 不需要处理 `npm audit` 输出。
+
+# Supabase
+
+- Supabase 项目：`tencent-music-hackathon`，组织：`HISTORY`，区域：`ap-northeast-1`。
+- 项目 URL 和 publishable key 已写入 `.env.local`；模板位于 `.env.example`。
+- 浏览器端只使用 `NEXT_PUBLIC_SUPABASE_URL` 与 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`。
+- 服务端密钥变量模板是 `SECRET_KEY`，只能手动填入本地 `.env.local`，不得提交或暴露给浏览器。
+- 浏览器客户端：`lib/supabase/client.ts`；服务端客户端：`lib/supabase/server.ts`；会话刷新代理：`proxy.ts` 与 `lib/supabase/proxy.ts`。
+- 连接校验使用 Supabase MCP 对项目执行只读 `select 1 as connected`，并通过 `npm run tscheck` 与生产构建验证客户端代码。
