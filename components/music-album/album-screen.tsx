@@ -27,7 +27,8 @@ import { AppShell } from "./app-shell";
 import { BottomNav } from "./bottom-nav";
 import {
   demoMemoryAlbums,
-  demoTracks,
+  demoRecentAiTrack,
+  getRecentDemoMemoryAlbums,
   photo,
   type DemoMemoryAlbum,
 } from "./demo-data";
@@ -37,10 +38,12 @@ function Photo({
   src,
   alt = "",
   className = "",
+  eager = false,
 }: {
   src: string;
   alt?: string;
   className?: string;
+  eager?: boolean;
 }) {
   return (
     <Image
@@ -49,6 +52,7 @@ function Photo({
       width={800}
       height={800}
       unoptimized
+      loading={eager ? "eager" : "lazy"}
       className={`album-photo ${className}`}
     />
   );
@@ -73,6 +77,7 @@ function PhotoStack({
           src={photo(name)}
           alt={`记忆照片 ${index + 1}`}
           className={`stack-photo stack-photo-${index + 1}`}
+          eager={kind === "home" && index === 1}
         />
       ))}
       {kind === "upload" && (
@@ -164,8 +169,12 @@ function MusicCard({
 }) {
   return (
     <div className={`music-card glass ${home ? "home-music-card" : ""}`}>
-      <h2>{home ? "日落海岸" : title}</h2>
-      <p>{home ? "独立流行 · 3:28" : "AI 原创配乐 · 0:28"}</p>
+      <h2>{home ? demoRecentAiTrack.title : title}</h2>
+      <p>
+        {home
+          ? `${demoRecentAiTrack.artist} · ${demoRecentAiTrack.duration}`
+          : "AI 原创配乐 · 0:28"}
+      </p>
       {adjusted ? (
         <Waveform />
       ) : (
@@ -203,30 +212,32 @@ function MemoryTiles({
 }) {
   return (
     <div className="memory-tiles">
-      {demoMemoryAlbums.slice(0, 3).map((album, index) => (
-        <div className="memory-tile" key={album.id}>
-          <Link
-            href={recommendations ? "/play" : `/memories/${album.id}`}
-            className="tile-photo"
-          >
-            <Photo src={album.coverImage} alt={album.title} />
-            <span className="tile-play glass">
-              <Play fill="currentColor" />
-            </span>
-          </Link>
-          <h3>
-            {recommendations
-              ? ["再见，昨天", "晴天", "是你"][index]
-              : album.title}
-            <Ellipsis />
-          </h3>
-          <p>
-            {recommendations
-              ? ["QQ音乐 · 3:12", "周杰伦 · 4:29", "告五人 · 3:45"][index]
-              : ["青春的最后一页", "海风与自由", "小小的幸福"][index]}
-          </p>
-        </div>
-      ))}
+      {getRecentDemoMemoryAlbums()
+        .slice(0, 3)
+        .map((album, index) => (
+          <div className="memory-tile" key={album.id}>
+            <Link
+              href={recommendations ? "/play" : `/memories/${album.id}`}
+              className="tile-photo"
+            >
+              <Photo src={album.coverImage} alt={album.title} />
+              <span className="tile-play glass">
+                <Play fill="currentColor" />
+              </span>
+            </Link>
+            <h3>
+              {recommendations
+                ? ["再见，昨天", "晴天", "是你"][index]
+                : album.title}
+              <Ellipsis />
+            </h3>
+            <p>
+              {recommendations
+                ? ["QQ音乐 · 3:12", "周杰伦 · 4:29", "告五人 · 3:45"][index]
+                : `${album.tracks.find((track) => track.kind === "ai")?.title ?? "暂无音乐"} · ${album.createdAt || "日期待补充"}`}
+            </p>
+          </div>
+        ))}
     </div>
   );
 }
@@ -246,6 +257,7 @@ function HomeScreen() {
           <ChevronRight />
         </span>
       </Link>
+      <p className="home-create-hint">上传照片，生成一段记忆</p>
       <section className="home-memories">
         <div className="section-title">
           <h2>我的音乐记忆</h2>
@@ -254,7 +266,11 @@ function HomeScreen() {
             <ChevronRight />
           </Link>
         </div>
-        <MemoryTiles />
+        {demoMemoryAlbums.length > 0 ? (
+          <MemoryTiles />
+        ) : (
+          <p className="home-memory-empty">还没有音乐记忆，先创建一段吧。</p>
+        )}
       </section>
       <BottomNav />
     </>
@@ -570,12 +586,13 @@ function MemoriesScreen() {
       </div>
       <div className="memory-list">
         {demoMemoryAlbums.length === 0 && (
-          <p>
-            还没有音乐记忆，先创建一段吧。
+          <div className="memory-list-empty glass">
+            <strong>还没有音乐记忆</strong>
+            <p>上传照片，让第一段回忆拥有自己的声音。</p>
             <Link href="/create">创建音乐相册</Link>
-          </p>
+          </div>
         )}
-        {demoMemoryAlbums.map((album) => (
+        {getRecentDemoMemoryAlbums().map((album, index) => (
           <Link
             className="memory-row glass"
             href={`/memories/${album.id}`}
@@ -583,7 +600,11 @@ function MemoriesScreen() {
             aria-label={`查看${album.title}详情`}
           >
             <div className="memory-row-cover">
-              <Photo src={album.coverImage} alt={album.title} />
+              <Photo
+                src={album.coverImage || photo("garden")}
+                alt={album.title}
+                eager={index === 0}
+              />
               <span className="tile-play glass">
                 <Play fill="currentColor" />
               </span>
@@ -594,9 +615,13 @@ function MemoriesScreen() {
                 {album.photoCount} 张照片 · {album.trackCount} 首音乐
               </p>
               <p>{album.subtitle}</p>
-              <time>{album.eventDate.replaceAll("-", ".")}</time>
+              <time>
+                {album.createdAt
+                  ? album.createdAt.replaceAll("-", ".")
+                  : "日期待补充"}
+              </time>
             </div>
-            <Ellipsis className="memory-row-more" />
+            <Ellipsis className="memory-row-more" aria-hidden="true" />
           </Link>
         ))}
       </div>
@@ -606,44 +631,59 @@ function MemoriesScreen() {
 }
 
 function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
+  const aiTrack = album.tracks.find((track) => track.kind === "ai");
+  const recommendedTracks = album.tracks.filter((track) => track.kind === "qq");
   return (
     <>
       <Photo
-        src={album.coverImage}
+        src={album.coverImage || photo("garden")}
         alt={album.title}
         className="detail-backdrop"
+        eager
       />
       <div className="detail-shade" />
-      <PageFrame backHref="/memories" />
+      <PageFrame
+        backHref="/memories"
+        moreLabel="分享相册（暂未开放）"
+        sharePlaceholder
+      />
       <div className="detail-event">
         <h1>
           {album.title}
-          <Pencil />
+          <Pencil aria-hidden="true" />
         </h1>
         <p>
-          {album.eventDate.slice(0, 4)}年 {Number(album.eventDate.slice(5, 7))}
-          月 · {album.photoCount} 张照片
+          {album.createdAt
+            ? `${album.createdAt.slice(0, 4)}年 ${Number(album.createdAt.slice(5, 7))}月`
+            : "日期待补充"}{" "}
+          · {album.photoCount} 张照片
         </p>
       </div>
-      <div className="detail-quote glass">
-        <Quote />
-        <span>{album.caption}</span>
-        <Quote />
-      </div>
-      <div className="detail-track glass">
-        <Photo src={photo("sunset")} alt="青春的回声封面" />
-        <div>
-          <h2>青春的回声</h2>
-          <p>AI 原创配乐 · 0:28</p>
-          <p>
-            把时光写成一首歌，
-            <br />
-            在路上与自己相遇。
-          </p>
+      {album.caption && (
+        <div className="detail-quote glass">
+          <Quote />
+          <span>{album.caption}</span>
+          <Quote />
         </div>
-        <Link className="dark" href="/play" aria-label="播放配乐">
-          <Play fill="currentColor" />
-        </Link>
+      )}
+      <div className="detail-track glass">
+        {aiTrack ? (
+          <Photo src={aiTrack.image} alt={`${aiTrack.title}封面`} />
+        ) : (
+          <span className="detail-track-placeholder">暂无音乐</span>
+        )}
+        <div>
+          <h2>{aiTrack?.title ?? "暂无音乐"}</h2>
+          <p>
+            {aiTrack
+              ? `${aiTrack.artist} · ${aiTrack.duration}`
+              : "配乐将在后续阶段开放"}
+          </p>
+          <p>{aiTrack?.caption}</p>
+        </div>
+        <span className="dark detail-play-placeholder" title="播放配乐暂未开放">
+          <Play fill="currentColor" aria-hidden="true" />
+        </span>
       </div>
       <section className="detail-recommendations">
         <div className="section-title">
@@ -654,7 +694,10 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
           </span>
         </div>
         <div className="detail-track-list">
-          {demoTracks.map((track) => (
+          {recommendedTracks.length === 0 && (
+            <p className="detail-no-recommendations">暂无推荐歌曲</p>
+          )}
+          {recommendedTracks.map((track) => (
             <div className="detail-recommendation glass" key={track.id}>
               <Photo src={track.image} alt={track.title} />
               <div>
@@ -664,9 +707,9 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
                 </p>
                 <p>{track.caption}</p>
               </div>
-              <Link href="/play" aria-label={`试听${track.title}`}>
-                <Play fill="currentColor" />
-              </Link>
+              <span title={`${track.title}试听暂未开放`}>
+                <Play fill="currentColor" aria-hidden="true" />
+              </span>
             </div>
           ))}
         </div>
