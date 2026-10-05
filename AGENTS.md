@@ -27,13 +27,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # 当前实现基线（2026-10-05）
 
-- SDD-00 已提交，基线提交为 `5dd8c70`；下一阶段为 SDD-01。完成范围和验收证据见 [SDD-00 quickstart](specs/001-app-shell/quickstart.md)，完整视觉精修和真实业务能力仍按 `progress.md` 的负责阶段推进。
+- SDD-00、SDD-01 已完成；SDD-01 实现及高清素材提交为 `bc89fab`、`cc50d09`，下一阶段为 SDD-02。首页、记忆列表和详情的完成范围与验收证据见 [SDD-01 quickstart](specs/002-memory-home/quickstart.md)；阶段状态统一以 [progress.md](progress.md) 为准。
 - 页面组件集中在 `components/music-album/`：`album-screen.tsx` 渲染九个状态，`app-shell.tsx` 提供手机外壳，`demo-data.ts` 保存稳定演示数据。首页入口保留 `app/page.tsx`，其他入口位于 `app/(album)/`；不得另建同路径的 `(album)/page.tsx`。
 - 九状态路径依次为 `/`、`/create`、`/create?state=understanding`、`/result`、`/play`、`/play?state=adjust`、`/play?state=save`、`/memories`、`/memories/demo-graduation`。原型映射和 17 个主要热点保存在 `design-map.ts`，修改跳转时同步 [导航契约](specs/001-app-shell/contracts/ui-navigation.md)。
 - 底部导航仅在原稿 01、08 展示。页面应按对应 PNG 选择标题、返回和导航，不能为了复用组件统一改写原稿结构。
-- 当前生成进度、对话、歌曲与相册为静态演示；保存仅跳转，播放、收藏和分类筛选未接入。不得将页面可访问或演示跳转通过等同于业务完成。
+- 首页和记忆列表、详情使用稳定的本地演示数据；生成进度、对话与歌曲仍为静态演示，保存仅跳转，播放、收藏和分类筛选未接入。不得将页面可访问或演示跳转通过等同于业务完成。
 - 05 的 PNG 按钮文案“查看 AI 理解”与 HTML 同位置的“保存相册”热点存在差异：当前保留 PNG 文案，按 HTML 进入 07；SDD-04/05 需闭合 AI 理解抽屉与保存入口的规则。
-- 摄影素材从设计 PNG 的照片区域提取，脚本为 `scripts/extract-design-assets.py`；界面由 DOM/CSS 实现。照片裁切、清晰度、玻璃卡片轮廓、字体和图标仍有待精修，不能声明九页完整视觉验收通过。
+- `public/images/memories/` 的演示摄影素材已参照设计 PNG 重生成高清 WebP；旧提取脚本 `scripts/extract-design-assets.py` 仍在仓库，重跑会覆盖同名高清素材。界面由 DOM/CSS 实现；01、08、09 已按 SDD-01 验收，其他页面及玻璃卡片轮廓、字体和图标仍需按负责阶段核对，不能声明九页完整视觉验收通过。
 - 临时浏览器配置、截图和验收脚本放在被忽略的 `.sdd00-work/`，不要放入 `.next/`；构建会清理 `.next/`，浏览器文件锁也可能阻断构建。持久验收摘要放在对应 `specs/*/verification/`。
 
 # 注意事项
