@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>音乐相册 · UI 设计稿还原</title>
+  <!-- 首页视觉稿已更新为统一长屏比例版本（v2） -->
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11120f;
+      --panel: rgba(31, 34, 27, .82);
+      --line: rgba(255,255,255,.11);
+      --text: #f5f7ef;
+      --muted: #a6ad9b;
+      --lime: #d9ff9e;
+      --lime-ink: #243016;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(188, 235, 111, .12), transparent 27rem),
+        radial-gradient(circle at 85% 85%, rgba(244, 194, 117, .11), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    .app { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 42px; padding: 42px clamp(20px, 5vw, 88px); align-items: center; }
+    .stage { display: grid; place-items: center; min-height: 790px; }
+    .phone {
+      position: relative;
+      width: min(100%, 430px);
+      padding: 9px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 48px;
+      background: linear-gradient(140deg, #3d4038, #0b0c0a 42%, #35382e);
+      box-shadow: 0 30px 90px rgba(0,0,0,.56), 0 0 0 3px rgba(0,0,0,.42);
+    }
+    .screen { position: relative; overflow: hidden; border-radius: 40px; background: #fff; line-height: 0; }
+    .screen img { display: block; width: 100%; height: auto; user-select: none; }
+    .hotspots { position: absolute; inset: 0; pointer-events: none; }
+    .hotspot { position: absolute; display: block; border: 0; border-radius: 999px; background: transparent; pointer-events: auto; cursor: pointer; }
+    .hotspot:focus-visible { outline: 3px solid #d9ff9e; outline-offset: 3px; background: rgba(217,255,158,.14); }
+
+    .meta { width: min(100%, 350px); }
+    .eyebrow { color: var(--lime); letter-spacing: .13em; font-size: 12px; font-weight: 700; }
+    h1 { margin: 12px 0 9px; font-size: clamp(28px, 4vw, 48px); line-height: 1.05; letter-spacing: -.045em; }
+    .intro { margin: 0 0 22px; color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .card { padding: 20px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); backdrop-filter: blur(20px); }
+    .card + .card { margin-top: 12px; }
+    .screen-count { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .screen-count strong { font-size: 18px; }
+    .screen-count span { color: var(--muted); font-size: 13px; }
+    .screen-title { margin-top: 10px; font-weight: 700; }
+    .screen-subtitle { margin-top: 7px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .controls { display: flex; gap: 8px; margin-top: 16px; }
+    button { border: 0; color: inherit; font: inherit; cursor: pointer; }
+    .control { flex: 1; padding: 12px 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.06); color: var(--text); transition: .2s ease; }
+    .control:hover { background: rgba(255,255,255,.13); transform: translateY(-1px); }
+    .control.primary { background: var(--lime); color: var(--lime-ink); border-color: transparent; font-weight: 700; }
+    .thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 15px; }
+    .thumb { position: relative; aspect-ratio: .46; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; padding: 0; background: #272b23; opacity: .55; transition: .2s ease; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .thumb.active { opacity: 1; outline: 2px solid var(--lime); outline-offset: 2px; }
+    .hint { margin-top: 15px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .flow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .flow span { padding: 6px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 11px; }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; padding: 24px 16px 34px; gap: 24px; }
+      .stage { min-height: 0; order: 1; }
+      .meta { width: min(100%, 430px); order: 2; }
+      .phone { width: min(100%, 430px); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="stage" aria-label="设计稿预览">
+      <div class="phone"><div class="screen"><img id="screenImage" alt="音乐相册 UI 设计稿" /><div class="hotspots" id="hotspots" aria-label="当前页面可点击区域"></div></div></div>
+    </section>
+
+    <aside class="meta">
+      <div class="eyebrow">QQ MUSIC · MEMORY ALBUM</div>
+      <h1>音乐相册<br />UI 还原</h1>
+      <p class="intro">基于产品方案与 9 张视觉设计稿制作的可切换预览。中央画面保持原始设计稿比例，适合在桌面或移动端检查页面顺序。</p>
+
+      <div class="card">
+        <div class="screen-count"><strong id="screenNumber">01</strong><span id="screenRelation">Page 1</span></div>
+        <div class="screen-title" id="screenTitle">首页 · 音乐相册</div>
+        <div class="screen-subtitle" id="screenSubtitle">个人音乐空间与创建入口</div>
+        <div class="controls">
+          <button class="control" id="prev" type="button">上一张</button>
+          <button class="control primary" id="next" type="button">下一张</button>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+        <div class="hint">点击手机画面中的主要按钮可继续流程。键盘 ← / → 切换设计稿 · Home / End 跳转首尾。</div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">FLOW</div>
+        <div class="flow"><span>上传照片</span><span>理解回忆</span><span>生成音乐</span><span>沉浸播放</span><span>保存相册</span></div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const screens = [
+      ['01-首页-音乐相册.png?v=2', '首页 · 音乐相册', '个人音乐空间与创建入口', 'Page 1'],
+      ['02-创建音乐相册-上传照片.png', '创建音乐相册 · 上传照片', 'Agent 对话式入口初始状态', 'Page 2 · 初始状态'],
+      ['03-创建音乐相册-Agent记忆理解.png', '创建音乐相册 · Agent 记忆理解', '记忆理解、事件标题与一键确认', 'Page 2 · 理解状态'],
+      ['04-生成结果-为你生成与QQ音乐推荐.png', '生成结果 · 为你生成与 QQ 音乐推荐', 'AI 原创配乐和真实歌曲并列呈现', 'Page 3'],
+      ['05-沉浸式播放页.png', '沉浸式播放页', '照片与 AI 无歌词配乐的首次播放', 'Page 4 · 首次播放'],
+      ['06-调整音乐-Agent对话页.png', '调整音乐 · Agent 对话页', '使用自然语言调整音乐风格', 'Page 4 · 调整状态'],
+      ['07-保存音乐相册页.png', '保存音乐相册页', '编辑标题、时间和一句话记忆', 'Page 4 · 保存过渡'],
+      ['08-我的音乐记忆页.png', '我的音乐记忆页', '按事件浏览个人相册列表', 'Page 5'],
+      ['09-音乐相册详情页.png', '音乐相册详情页', '相册详情、配乐和推荐歌曲', 'Page 5 · 详情子页面']
+    ];
+
+    const image = document.getElementById('screenImage');
+    const number = document.getElementById('screenNumber');
+    const relation = document.getElementById('screenRelation');
+    const title = document.getElementById('screenTitle');
+    const subtitle = document.getElementById('screenSubtitle');
+    const thumbs = document.getElementById('thumbs');
+    const hotspots = document.getElementById('hotspots');
+    let current = 0;
+
+    const actions = [
+      [{label:'创建音乐相册', x:26, y:50, w:49, h:9, go:1}, {label:'开始创建', x:40, y:86, w:25, h:8, go:1}],
+      [{label:'添加照片', x:69, y:31, w:18, h:14, go:2}, {label:'继续上传', x:7, y:86, w:16, h:7, go:2}],
+      [{label:'一键确认，开始生成', x:57, y:90, w:38, h:8, go:3}],
+      [{label:'进入播放', x:8, y:88, w:84, h:8, go:4}],
+      [{label:'调整音乐', x:8, y:89, w:40, h:8, go:5}, {label:'保存相册', x:50, y:89, w:43, h:8, go:6}, {label:'返回生成结果', x:3, y:5, w:13, h:7, go:3}],
+      [{label:'发送调整指令', x:75, y:89, w:18, h:7, go:4}, {label:'重新播放', x:35, y:61, w:30, h:15, go:4}],
+      [{label:'保存到我的音乐记忆', x:7, y:84, w:86, h:9, go:7}, {label:'稍后再说', x:38, y:94, w:24, h:5, go:4}],
+      [{label:'查看毕业相册详情', x:4, y:18, w:92, h:15, go:8}, {label:'播放毕业相册', x:4, y:18, w:28, h:15, go:8}],
+      [{label:'生成音乐', x:8, y:87, w:84, h:8, go:3}, {label:'返回音乐记忆', x:3, y:4, w:13, h:8, go:7}]
+    ];
+
+    screens.forEach((item, index) => {
+      const button = document.createElement('button');
+      button.className = 'thumb';
+      button.type = 'button';
+      button.title = item[1];
+      const thumb = document.createElement('img');
+      thumb.src = `designs/ui/${item[0]}`;
+      thumb.alt = item[1];
+      button.appendChild(thumb);
+      button.addEventListener('click', () => setScreen(index));
+      thumbs.appendChild(button);
+    });
+
+    function setScreen(index) {
+      current = (index + screens.length) % screens.length;
+      const item = screens[current];
+      image.src = `designs/ui/${item[0]}`;
+      number.textContent = String(current + 1).padStart(2, '0');
+      title.textContent = item[1];
+      subtitle.textContent = item[2];
+      relation.textContent = item[3];
+      [...thumbs.children].forEach((node, i) => node.classList.toggle('active', i === current));
+      renderHotspots();
+    }
+
+    function renderHotspots() {
+      hotspots.replaceChildren();
+      (actions[current] || []).forEach((action) => {
+        const button = document.createElement('button');
+        button.className = 'hotspot';
+        button.type = 'button';
+        button.setAttribute('aria-label', action.label);
+        button.title = action.label;
+        button.style.left = `${action.x}%`;
+        button.style.top = `${action.y}%`;
+        button.style.width = `${action.w}%`;
+        button.style.height = `${action.h}%`;
+        button.addEventListener('click', () => setScreen(action.go));
+        hotspots.appendChild(button);
+      });
+    }
+
+    document.getElementById('prev').addEventListener('click', () => setScreen(current - 1));
+    document.getElementById('next').addEventListener('click', () => setScreen(current + 1));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') setScreen(current - 1);
+      if (event.key === 'ArrowRight') setScreen(current + 1);
+      if (event.key === 'Home') setScreen(0);
+      if (event.key === 'End') setScreen(screens.length - 1);
+    });
+    setScreen(0);
+  </script>
+</body>
+</html>
