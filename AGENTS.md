@@ -15,6 +15,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - shadcn/ui 配置位于 `components.json`，组件放在 `components/ui`，工具函数位于 `lib/utils.ts`。
 - 提交前由 simple-git-hooks 自动执行 `npm run format`、`npm run lint`（安全修复）和 `npm run tscheck`。
 - Spec Kit 已使用 Codex 集成和 PowerShell 脚本初始化，相关技能在 `.agents/skills`。
+- 项目开发约束与质量门槛见 [项目宪章](.specify/memory/constitution.md)。
 - 本次查询仅使用本地 skill，未使用 Context7，因此没有需要记录的 library id。
 
 # 注意事项

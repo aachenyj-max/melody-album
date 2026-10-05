@@ -1,50 +1,43 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: 模板占位 → 1.0.0
+- Modified principles: 无（首次建立项目原则）
+- Added sections: 技术与范围约束、开发与质量流程、治理
+- Removed sections: 无
+- Follow-up TODOs: RATIFICATION_DATE 待补充项目正式采用日期
+-->
 
-## Core Principles
+# 音乐相册 MVP 项目宪章
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## 核心原则
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### 一、核心路径优先
+每次开发必须优先保证“上传照片 → Agent 理解记忆 → 生成或推荐音乐 → 沉浸式播放 → 保存音乐相册”链路可用。新增工作不得阻断这条链路；当时间或资源有限时，先完成演示所需的主流程，再处理边缘状态和后续能力。这样可以直接验证本项目最重要的产品假设。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### 二、MVP 边界明确
+本项目只实现音乐相册 MVP 演示所需的页面、交互和静态或模拟数据。首版必须覆盖照片上传、记忆理解与确认、AI 配乐和 QQ 音乐推荐并列展示、播放、保存，以及分享入口占位。歌词生成、复杂编辑、自动事件归档、真实分享和完整后端能力属于后续范围，除非需求明确变更，否则不得为了可扩展性提前实现。
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### 三、简单实现优先
+实现必须选择当前代码库中最直接的方案，避免无实际需求的抽象层、通用框架、配置系统和防御性分支。组件和函数以页面核心交互为边界；重复代码只有在影响当前交付速度或正确性时才合并。任何增加结构复杂度的方案都必须能说明它对 MVP 主流程的直接收益。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### 四、产品体验服务于演示目标
+界面必须围绕个人音乐空间和“照片让记忆有声音”的情绪表达组织。首屏突出创建入口，生成结果同时呈现 AI 配乐与 QQ 音乐推荐，播放页突出照片和音乐，保存动作清晰可达。视觉、文案和交互可以使用本地静态资源或模拟状态，但不得偏离产品方案定义的用户任务和页面范围。
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### 五、可验证交付
+每次提交前必须完成 TypeScript 静态检查，并根据改动范围运行格式化和 Biome 检查。验证以主流程能够被启动、编译并完成为准；无需为本 MVP 编写自动化测试。检查失败时必须修复阻塞交付的问题，非核心警告可以记录后再处理。
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## 技术与范围约束
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+项目使用 Next.js App Router、TypeScript、Tailwind CSS v4、Biome 及现有 shadcn/ui 约定。页面入口为 `app/page.tsx`，全局样式位于 `app/globals.css`，通用工具位于 `lib/utils.ts`，组件放在 `components` 目录。文档统一使用中文；演示优先使用现有设计稿和本地资源，不引入未被 MVP 需要的新依赖或外部服务。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## 开发与质量流程
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+开发按产品主流程拆分任务，并在每个可运行阶段检查页面是否仍能完成核心链路。提交前运行 `npm run format`、`npm run lint` 和 `npm run tscheck`；需要确认生产构建时运行 `npm run build`。代码审查只关注需求符合度、核心路径完整性、类型正确性和明显的运行时错误，不以未来扩展能力作为验收条件。
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+## 治理
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+本宪章约束项目开发中的范围、实现取舍和质量门槛；若与临时实现习惯冲突，以本宪章和当前产品规格为准。修改宪章必须在提交中说明修改原因、影响的原则和版本变化，并同步更新本文件顶部的 Sync Impact Report。版本遵循语义化规则：移除或改变既有原则时递增主版本；增加原则或实质扩展约束时递增次版本；措辞澄清和非语义修订时递增补丁版本。
+
+每次功能提交或合并前，维护者必须检查改动是否仍在 MVP 边界内、核心路径是否可运行、中文文档是否完整，以及静态检查是否通过。若必须偏离原则，应在相关提交说明中记录理由和影响，并在后续工作中补回缺失的质量门槛。
+
+**版本**：1.0.0 | **采用日期**：TODO(RATIFICATION_DATE)：补充项目正式采用本宪章的日期 | **最后修订**：2026-10-05
