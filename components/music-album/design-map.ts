@@ -57,6 +57,13 @@ export const prototypeHotspots = [
   { screen: 9, label: "返回列表", box: [3, 4, 13, 8], target: 8 },
 ] as const;
 
+// SDD-02 runtime preconditions for the three creation hotspots.
+export const creationHotspotPreconditions = {
+  addPhoto: "至少选择 1 张有效照片后才可进入理解态",
+  continueUpload: "至少选择 1 张有效照片后才可进入理解态",
+  confirm: "当前 Memory Profile 必须有非空标题且事件或氛围至少一项有效",
+} as const;
+
 export type ReadonlyConnectionCheck = {
   connected: boolean;
   checkedAt: string;

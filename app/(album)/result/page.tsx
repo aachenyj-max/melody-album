@@ -1,4 +1,4 @@
-import { AlbumScreen } from "@/components/music-album/album-screen";
+import { ResultFlow } from "@/components/music-album/result-flow";
 export default function ResultPage() {
-  return <AlbumScreen screen={4} />;
+  return <ResultFlow />;
 }

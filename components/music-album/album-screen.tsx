@@ -33,6 +33,7 @@ import {
   type DemoMemoryAlbum,
 } from "./demo-data";
 import { PageFrame } from "./page-frame";
+import { CreateFlow } from "./create-flow";
 
 function Photo({
   src,
@@ -58,17 +59,11 @@ function Photo({
   );
 }
 
-function PhotoStack({
-  kind,
-}: {
-  kind: "home" | "upload" | "understanding" | "save";
-}) {
+function PhotoStack({ kind }: { kind: "home" | "save" }) {
   const names =
     kind === "home"
       ? ["garden", "sunset", "vinyl"]
-      : kind === "understanding"
-        ? ["garden", "graduation-wide", "graduation", "travel", "vinyl"]
-        : ["travel", "graduation", "cat", "garden", "sunset", "vinyl"];
+      : ["travel", "graduation", "cat", "garden", "sunset", "vinyl"];
   return (
     <div className={`photo-stack stack-${kind}`}>
       {names.map((name, index) => (
@@ -80,16 +75,6 @@ function PhotoStack({
           eager={kind === "home" && index === 1}
         />
       ))}
-      {kind === "upload" && (
-        <Link
-          className="add-photo glass"
-          href="/create?state=understanding"
-          aria-label="添加照片"
-        >
-          <Plus />
-          <span>1–9张</span>
-        </Link>
-      )}
     </div>
   );
 }
@@ -277,97 +262,27 @@ function HomeScreen() {
   );
 }
 
-function CreateScreen({ understanding }: { understanding: boolean }) {
-  return (
-    <>
-      <PageFrame title="创建音乐相册" backHref="/" />
-      <PhotoStack kind={understanding ? "understanding" : "upload"} />
-      {understanding ? (
-        <>
-          <div className="understanding-status glass">
-            <Sparkles />
-            正在理解你的照片…
-          </div>
-          <AgentMessage className="understanding-message">
-            <p>
-              我看到这是一段关于大学毕业的回忆。照片里有和朋友们在校园里的欢乐时光，有毕业典礼的难忘瞬间，也有夕阳下的合影，充满了青春、友谊和对未来的期待。
-            </p>
-            <p>
-              表面上看是热闹的毕业季，但更深处，是那些曾经习以为常的日子——一起上课、一起吃饭、一起熬夜聊天——在分别后，才变得格外珍贵。
-            </p>
-          </AgentMessage>
-          <div className="event-title glass">
-            <span>
-              <GraduationCap />
-            </span>
-            <strong>2026 · 毕业那天</strong>
-            <button
-              type="button"
-              aria-label="编辑事件标题（暂未开放）"
-              disabled
-            >
-              <Pencil />
-            </button>
-          </div>
-          <AgentMessage className="confirm-message">
-            这样的理解对吗？你也可以告诉我…
-          </AgentMessage>
-          <div className="understanding-suggestions">
-            <button type="button" disabled>
-              更快乐一点
-            </button>
-            <button type="button" disabled>
-              这是毕业，不是旅行
-            </button>
-            <button type="button" disabled>
-              少一点伤感
-            </button>
-            <button type="button" disabled>
-              加一些朋友的热闹感
-            </button>
-          </div>
-          <Composer placeholder="继续补充或直接确认…" href="/result" confirm />
-        </>
-      ) : (
-        <>
-          <div className="upload-caption">
-            <h2>上传 1–9 张照片</h2>
-            <p>让 AI 帮你把回忆变成一首歌</p>
-          </div>
-          <AgentMessage className="upload-message-one">
-            发给我一组照片，我会先理解
-            <br />
-            这段回忆，再帮你生成音乐。
-          </AgentMessage>
-          <AgentMessage user className="upload-user">
-            这是我的毕业季照片，想做成
-            <br />
-            一段有点青春也有点不舍的记忆。
-          </AgentMessage>
-          <AgentMessage className="upload-message-two">
-            太好了！这些照片充满了青春的故事。
-            <br />
-            你还可以告诉我一些细节，比如想要的音乐风格、氛围，或者这段回忆的关键词，我会为你量身创作。
-          </AgentMessage>
-          <Composer
-            placeholder="和我聊聊这组照片…"
-            href="/create?state=understanding"
-          />
-        </>
-      )}
-    </>
-  );
-}
-
-function ResultScreen() {
+function ResultScreen({
+  title,
+  photoSrc,
+  confirmed = false,
+}: {
+  title?: string;
+  photoSrc?: string;
+  confirmed?: boolean;
+}) {
   return (
     <>
       <PageFrame title="为你生成" backHref="/create?state=understanding" />
       <div className="generation-status glass">
         <i />
         <div>
-          <strong>正在为你的回忆生成音乐…</strong>
-          <p>约 20 秒</p>
+          <strong>
+            {confirmed
+              ? `${title} · 已确认记忆`
+              : "演示占位 · 尚未确认本次记忆"}
+          </strong>
+          <p>音乐生成与推荐将在下一阶段接入</p>
           <div className="generation-progress">
             <span />
             <small>60%</small>
@@ -383,11 +298,17 @@ function ResultScreen() {
         </button>
       </div>
       <Photo
-        src={photo("graduation-wide")}
+        src={photoSrc ?? photo("graduation-wide")}
         alt="夕阳里的青春记忆"
         className="result-cover"
       />
-      <MusicCard />
+      <div className="music-card glass result-music-placeholder">
+        <h2>{title ?? "演示音乐卡"}</h2>
+        <p>{confirmed ? "记忆理解已确认" : "尚未确认本次记忆"}</p>
+        <p className="music-description">
+          AI 配乐和 QQ 音乐推荐将在下一阶段生成。
+        </p>
+      </div>
       <div className="result-suggestions">
         <Link href="/play?state=adjust">
           <Sparkles />
@@ -728,10 +649,17 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
 export function AlbumScreen({
   screen,
   album = demoMemoryAlbums[0],
+  resultTitle,
+  resultPhotoSrc,
+  resultConfirmed,
 }: {
   screen: number;
   album?: DemoMemoryAlbum;
+  resultTitle?: string;
+  resultPhotoSrc?: string;
+  resultConfirmed?: boolean;
 }) {
+  if (screen === 2 || screen === 3) return <CreateFlow />;
   return (
     <AppShell immersive={screen === 5}>
       <main
@@ -753,10 +681,12 @@ export function AlbumScreen({
       >
         {screen === 1 ? (
           <HomeScreen />
-        ) : screen === 2 || screen === 3 ? (
-          <CreateScreen understanding={screen === 3} />
         ) : screen === 4 ? (
-          <ResultScreen />
+          <ResultScreen
+            title={resultTitle}
+            photoSrc={resultPhotoSrc}
+            confirmed={resultConfirmed}
+          />
         ) : screen === 5 ? (
           <PlayScreen />
         ) : screen === 6 ? (
