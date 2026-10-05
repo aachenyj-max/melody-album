@@ -32,3 +32,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 服务端密钥变量模板是 `SECRET_KEY`，只能手动填入本地 `.env.local`，不得提交或暴露给浏览器。
 - 浏览器客户端：`lib/supabase/client.ts`；服务端客户端：`lib/supabase/server.ts`；会话刷新代理：`proxy.ts` 与 `lib/supabase/proxy.ts`。
 - 连接校验使用 Supabase MCP 对项目执行只读 `select 1 as connected`，并通过 `npm run tscheck` 与生产构建验证客户端代码。
+
+# 进度追踪
+
+- 项目阶段进度统一维护在 [progress.md](progress.md)。
+- 每个 SDD 单元完成后，必须在同一个提交中更新 `progress.md`：勾选完成项，填写阶段完成条件、验证结果、已知限制和下一阶段。
+- 阶段未满足完成条件时不得标记为完成；阻塞原因写入 `progress.md` 的“备注与阻塞”部分。
+- 以 SDD-05 完成作为用户主流程闭环，以 SDD-07 完成作为可部署交付判断。
