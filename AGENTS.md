@@ -25,6 +25,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 每个涉及用户端界面的 SDD 阶段都要核对对应编号的画面，包括布局、层级、配色、字体、图片位置、按钮文案和主要跳转；动态数据与状态可以替换设计稿中的示例内容，但不能改变界面结构。
 - 内部 Agent 工作台不属于这 9 张用户端设计稿，不加入用户端导航。
 
+# 当前实现基线（2026-10-05）
+
+- SDD-00 已提交，基线提交为 `5dd8c70`；下一阶段为 SDD-01。完成范围和验收证据见 [SDD-00 quickstart](specs/001-app-shell/quickstart.md)，完整视觉精修和真实业务能力仍按 `progress.md` 的负责阶段推进。
+- 页面组件集中在 `components/music-album/`：`album-screen.tsx` 渲染九个状态，`app-shell.tsx` 提供手机外壳，`demo-data.ts` 保存稳定演示数据。首页入口保留 `app/page.tsx`，其他入口位于 `app/(album)/`；不得另建同路径的 `(album)/page.tsx`。
+- 九状态路径依次为 `/`、`/create`、`/create?state=understanding`、`/result`、`/play`、`/play?state=adjust`、`/play?state=save`、`/memories`、`/memories/demo-graduation`。原型映射和 17 个主要热点保存在 `design-map.ts`，修改跳转时同步 [导航契约](specs/001-app-shell/contracts/ui-navigation.md)。
+- 底部导航仅在原稿 01、08 展示。页面应按对应 PNG 选择标题、返回和导航，不能为了复用组件统一改写原稿结构。
+- 当前生成进度、对话、歌曲与相册为静态演示；保存仅跳转，播放、收藏和分类筛选未接入。不得将页面可访问或演示跳转通过等同于业务完成。
+- 05 的 PNG 按钮文案“查看 AI 理解”与 HTML 同位置的“保存相册”热点存在差异：当前保留 PNG 文案，按 HTML 进入 07；SDD-04/05 需闭合 AI 理解抽屉与保存入口的规则。
+- 摄影素材从设计 PNG 的照片区域提取，脚本为 `scripts/extract-design-assets.py`；界面由 DOM/CSS 实现。照片裁切、清晰度、玻璃卡片轮廓、字体和图标仍有待精修，不能声明九页完整视觉验收通过。
+- 临时浏览器配置、截图和验收脚本放在被忽略的 `.sdd00-work/`，不要放入 `.next/`；构建会清理 `.next/`，浏览器文件锁也可能阻断构建。持久验收摘要放在对应 `specs/*/verification/`。
+
 # 注意事项
 
 - 运行开发服务器：`npm run dev`。
