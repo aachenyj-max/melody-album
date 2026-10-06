@@ -717,7 +717,19 @@ function SaveScreen() {
   );
 }
 
-function MemoriesScreen() {
+function MemoriesScreen({
+  albums,
+  loading = false,
+  error,
+  onRetry,
+  justSaved,
+}: {
+  albums: DemoMemoryAlbum[];
+  loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  justSaved?: string | null;
+}) {
   return (
     <>
       <PageFrame title="我的音乐记忆" large />
@@ -734,45 +746,64 @@ function MemoriesScreen() {
         ))}
       </div>
       <div className="memory-list">
-        {demoMemoryAlbums.length === 0 && (
+        {loading && (
+          <div className="memory-list-empty glass" role="status">
+            正在读取音乐记忆…
+          </div>
+        )}
+        {error && (
+          <div className="memory-list-empty glass" role="alert">
+            <strong>读取失败</strong>
+            <p>{error}</p>
+            <button type="button" onClick={onRetry}>
+              重试
+            </button>
+          </div>
+        )}
+        {!loading && !error && albums.length === 0 && (
           <div className="memory-list-empty glass">
             <strong>还没有音乐记忆</strong>
             <p>上传照片，让第一段回忆拥有自己的声音。</p>
             <Link href="/create">创建音乐相册</Link>
           </div>
         )}
-        {getRecentDemoMemoryAlbums().map((album, index) => (
-          <Link
-            className="memory-row glass"
-            href={`/memories/${album.id}`}
-            key={album.id}
-            aria-label={`查看${album.title}详情`}
-          >
-            <div className="memory-row-cover">
-              <Photo
-                src={album.coverImage || photo("garden")}
-                alt={album.title}
-                eager={index === 0}
-              />
-              <span className="tile-play glass">
-                <Play fill="currentColor" />
-              </span>
-            </div>
-            <div className="memory-row-info">
-              <h2>{album.title}</h2>
-              <p>
-                {album.photoCount} 张照片 · {album.trackCount} 首音乐
-              </p>
-              <p>{album.subtitle}</p>
-              <time>
-                {album.createdAt
-                  ? album.createdAt.replaceAll("-", ".")
-                  : "日期待补充"}
-              </time>
-            </div>
-            <Ellipsis className="memory-row-more" aria-hidden="true" />
-          </Link>
-        ))}
+        {!loading &&
+          !error &&
+          albums.map((album, index) => (
+            <Link
+              className="memory-row glass"
+              href={`/memories/${album.id}`}
+              key={album.id}
+              aria-label={`查看${album.title}详情`}
+            >
+              <div className="memory-row-cover">
+                <Photo
+                  src={album.coverImage || photo("garden")}
+                  alt={album.title}
+                  eager={index === 0}
+                />
+                <span className="tile-play glass">
+                  <Play fill="currentColor" />
+                </span>
+              </div>
+              <div className="memory-row-info">
+                <h2>
+                  {album.title}
+                  {justSaved === album.id ? " · 已保存" : ""}
+                </h2>
+                <p>
+                  {album.photoCount} 张照片 · {album.trackCount} 首音乐
+                </p>
+                <p>{album.subtitle}</p>
+                <time>
+                  {album.createdAt
+                    ? album.createdAt.replaceAll("-", ".")
+                    : "日期待补充"}
+                </time>
+              </div>
+              <Ellipsis className="memory-row-more" aria-hidden="true" />
+            </Link>
+          ))}
       </div>
       <BottomNav />
     </>
@@ -781,6 +812,10 @@ function MemoriesScreen() {
 
 function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
   const aiTrack = album.tracks.find((track) => track.kind === "ai");
+  const selectedTrack =
+    album.tracks.find((track) => track.id === album.selectedTrackId) ??
+    aiTrack ??
+    album.tracks[0];
   const recommendedTracks = album.tracks.filter((track) => track.kind === "qq");
   return (
     <>
@@ -816,23 +851,42 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
         </div>
       )}
       <div className="detail-track glass">
-        {aiTrack ? (
-          <Photo src={aiTrack.image} alt={`${aiTrack.title}封面`} />
+        {selectedTrack ? (
+          <Photo src={selectedTrack.image} alt={`${selectedTrack.title}封面`} />
         ) : (
           <span className="detail-track-placeholder">暂无音乐</span>
         )}
         <div>
-          <h2>{aiTrack?.title ?? "暂无音乐"}</h2>
+          <h2>{selectedTrack?.title ?? "暂无音乐"}</h2>
           <p>
-            {aiTrack
-              ? `${aiTrack.artist} · ${aiTrack.duration}`
+            {selectedTrack
+              ? `${selectedTrack.sourceLabel ?? selectedTrack.artist} · ${selectedTrack.duration}`
               : "配乐将在后续阶段开放"}
           </p>
-          <p>{aiTrack?.caption}</p>
+          <p>{selectedTrack?.caption}</p>
         </div>
-        <span className="dark detail-play-placeholder" title="播放配乐暂未开放">
-          <Play fill="currentColor" aria-hidden="true" />
-        </span>
+        {selectedTrack?.audioUrl ? (
+          <audio
+            controls
+            preload="none"
+            src={selectedTrack.audioUrl}
+            aria-label={`播放${selectedTrack.title}`}
+          >
+            <track
+              kind="captions"
+              srcLang="zh"
+              label="音乐提示"
+              src="/audio/music-album/music-captions.vtt"
+            />
+          </audio>
+        ) : (
+          <span
+            className="dark detail-play-placeholder"
+            title="当前音源不可播放"
+          >
+            <Play fill="currentColor" aria-hidden="true" />
+          </span>
+        )}
       </div>
       <section className="detail-recommendations">
         <div className="section-title">
@@ -877,6 +931,11 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
 export function AlbumScreen({
   screen,
   album = demoMemoryAlbums[0],
+  albums = [],
+  memoriesLoading,
+  memoriesError,
+  onMemoriesRetry,
+  justSaved,
   resultTitle,
   resultPhotoSrc,
   resultConfirmed,
@@ -892,6 +951,11 @@ export function AlbumScreen({
 }: {
   screen: number;
   album?: DemoMemoryAlbum;
+  albums?: DemoMemoryAlbum[];
+  memoriesLoading?: boolean;
+  memoriesError?: string | null;
+  onMemoriesRetry?: () => void;
+  justSaved?: string | null;
   resultTitle?: string;
   resultPhotoSrc?: string;
   resultConfirmed?: boolean;
@@ -951,7 +1015,13 @@ export function AlbumScreen({
         ) : screen === 7 ? (
           <SaveScreen />
         ) : screen === 8 ? (
-          <MemoriesScreen />
+          <MemoriesScreen
+            albums={albums}
+            loading={memoriesLoading}
+            error={memoriesError}
+            onRetry={onMemoriesRetry}
+            justSaved={justSaved}
+          />
         ) : (
           <DetailScreen album={album} />
         )}

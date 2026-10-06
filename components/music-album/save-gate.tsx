@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlbumScreen } from "./album-screen";
+import { SaveFlow } from "./save-flow";
 import { AppShell } from "./app-shell";
 import { PageFrame } from "./page-frame";
 import { useMusicSession } from "./music-session";
@@ -22,7 +22,7 @@ export function SaveGate() {
     selected?.audioUrl &&
     music.audioState !== "failed"
   )
-    return <AlbumScreen screen={7} />;
+    return <SaveFlow />;
   return (
     <AppShell>
       <main

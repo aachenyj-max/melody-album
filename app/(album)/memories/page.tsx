@@ -1,4 +1,9 @@
-import { AlbumScreen } from "@/components/music-album/album-screen";
+import { Suspense } from "react";
+import { MemoriesFlow } from "@/components/music-album/memories-flow";
 export default function MemoriesPage() {
-  return <AlbumScreen screen={8} />;
+  return (
+    <Suspense fallback={null}>
+      <MemoriesFlow />
+    </Suspense>
+  );
 }

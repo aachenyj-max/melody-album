@@ -7,6 +7,8 @@ export type DemoTrack = {
   duration: string;
   caption: string;
   image: string;
+  audioUrl?: string | null;
+  sourceLabel?: string;
 };
 export type DemoMemoryAlbum = {
   id: string;
@@ -21,6 +23,7 @@ export type DemoMemoryAlbum = {
   photoCount: number;
   trackCount: number;
   category: string;
+  selectedTrackId?: string;
 };
 export const photo = (name: string) => `/images/memories/${name}.webp`;
 export const demoRecentAiTrack: DemoTrack = {
