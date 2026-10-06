@@ -5,11 +5,10 @@ import { AlbumScreen } from "./album-screen";
 import { useCreationSession } from "./creation-session";
 import { useMusicSession } from "./music-session";
 
-export function ResultFlow() {
+export function PlayFlow() {
   const { confirmed } = useCreationSession();
-  const { run, start, ...music } = useMusicSession();
+  const music = useMusicSession();
   const [preview, setPreview] = useState<string>();
-  const [browseTab, setBrowseTab] = useState<"ai" | "qq">("ai");
   useEffect(() => {
     if (!confirmed?.photos[0]) return;
     const url = URL.createObjectURL(confirmed.photos[0]);
@@ -17,16 +16,15 @@ export function ResultFlow() {
     return () => URL.revokeObjectURL(url);
   }, [confirmed]);
   useEffect(() => {
-    if (confirmed) start(confirmed);
-  }, [confirmed, start]);
+    if (confirmed) music.start(confirmed);
+  }, [confirmed, music.start]);
   return (
     <AlbumScreen
-      screen={4}
+      screen={5}
+      resultTitle={confirmed?.profile.title}
       resultPhotoSrc={preview}
       resultConfirmed={Boolean(confirmed)}
-      resultMusic={{ run, start, ...music }}
-      resultBrowseTab={browseTab}
-      onResultBrowseTab={setBrowseTab}
+      resultMusic={music}
     />
   );
 }

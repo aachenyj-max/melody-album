@@ -1923,3 +1923,130 @@ textarea:focus-visible {
     transition: none;
   }
 }
+
+.result-source-label {
+  display: inline-flex;
+  width: fit-content;
+  padding: 1cqw 2.2cqw;
+  border: 0.2cqw solid #ffffffaa;
+  border-radius: 8cqw;
+  background: #e9ffc2cc;
+  color: #3e4b2b;
+  font-size: 2.4cqw;
+}
+.result-retry,
+.dynamic-recommendations .section-title button {
+  border: 0;
+  border-radius: 8cqw;
+  background: #e9ffc2;
+  color: #263018;
+  padding: 1.6cqw 3cqw;
+  font-size: 2.7cqw;
+  cursor: pointer;
+}
+.dynamic-recommendations {
+  top: 67%;
+  left: 9%;
+  width: 82%;
+}
+.dynamic-recommendations .section-title {
+  margin-bottom: 2.5cqw;
+}
+.dynamic-recommendations .section-title h2 {
+  font-size: 3.7cqw;
+}
+.dynamic-recommendations .section-title small {
+  color: #9a9a9a;
+  font-size: 2.2cqw;
+  font-weight: 450;
+}
+.result-recommendation-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2cqw;
+}
+.recommendation-empty {
+  grid-column: 1 / -1;
+  padding: 3cqw 0;
+  color: #777;
+  font-size: 2.8cqw;
+}
+.result-recommendation {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6cqw;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: #202020;
+  cursor: pointer;
+}
+.result-recommendation.selected {
+  color: #496a1d;
+}
+.result-recommendation.selected .recommendation-cover {
+  outline: 0.6cqw solid #b9e984;
+}
+.result-recommendation:disabled {
+  cursor: not-allowed;
+}
+.recommendation-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.95;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 3cqw;
+  background: #e9e9e9;
+  color: #999;
+  font-size: 5cqw;
+}
+.recommendation-cover .album-photo {
+  width: 100%;
+  height: 100%;
+}
+.recommendation-cover .tile-play {
+  position: absolute;
+  right: 1.8cqw;
+  bottom: 1.8cqw;
+  width: 6.6cqw;
+  height: 6.6cqw;
+  color: white;
+}
+.result-recommendation strong {
+  font-size: 2.9cqw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.result-recommendation small,
+.result-recommendation em {
+  color: #8d8d8d;
+  font-size: 2.2cqw;
+  font-style: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.result-recommendation em {
+  color: #728854;
+}
+.generation-progress.indeterminate span {
+  width: 35%;
+  animation: music-progress-wait 2.3s ease-in-out infinite alternate;
+}
+@keyframes music-progress-wait {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(180%);
+  }
+}
+.screen-4 .result-enter {
+  z-index: 8;
+}

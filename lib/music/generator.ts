@@ -1,0 +1,233 @@
+import {
+  musicError,
+  validateMusicProfile,
+  type AiTrack,
+  type MusicErrorCode,
+  type MusicProfile,
+} from "./contract";
+import { fetch as proxyFetch, ProxyAgent } from "undici";
+
+export type GenerationResult =
+  | { ok: true; source: "api" | "demo"; track: AiTrack }
+  | { ok: false; error: ReturnType<typeof musicError> };
+
+const MODEL = "fal-ai/ace-step/prompt-to-audio";
+const QUEUE_URL = `https://queue.fal.run/${MODEL}`;
+const RESULT_DEADLINE_MS = 300_000;
+let proxyAgent: ProxyAgent | null = null;
+
+type FalAudio = { url?: unknown; content_type?: unknown };
+type FalQueueResponse = {
+  request_id?: unknown;
+  status_url?: unknown;
+  response_url?: unknown;
+  status?: unknown;
+  audio?: FalAudio;
+  data?: { audio?: FalAudio };
+};
+
+function queueUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "queue.fal.run"
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function falFetch(url: string, key: string, init: RequestInit = {}) {
+  const options = {
+    ...init,
+    headers: {
+      Authorization: `Key ${key}`,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+    },
+    cache: "no-store",
+    signal: AbortSignal.timeout(20_000),
+  } satisfies RequestInit;
+  const proxyUrl = process.env.FAL_PROXY_URL?.trim();
+  if (proxyUrl) {
+    proxyAgent ??= new ProxyAgent(proxyUrl);
+    try {
+      return await proxyFetch(url, {
+        method: options.method,
+        body: typeof options.body === "string" ? options.body : undefined,
+        headers: options.headers,
+        signal: options.signal ?? undefined,
+        dispatcher: proxyAgent,
+      });
+    } catch (error) {
+      proxyAgent.destroy();
+      proxyAgent = null;
+      throw error;
+    }
+  }
+  return fetch(url, options);
+}
+
+function responseError(status: number): MusicErrorCode {
+  if (status === 408 || status === 504) return "GENERATION_TIMEOUT";
+  if (status === 401 || status === 403 || status === 429)
+    return "GENERATION_UNAVAILABLE";
+  return "PROVIDER_ERROR";
+}
+
+async function queueGet(url: string, key: string, deadline: number) {
+  while (Date.now() < deadline) {
+    try {
+      const response = await falFetch(url, key);
+      if (response.ok) return response;
+      if (response.status < 500 && response.status !== 429) {
+        throw new Error(`fal queue request ${response.status}`);
+      }
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith("fal queue request")
+      )
+        throw error;
+      console.warn("fal music queue connection retry", {
+        name: error instanceof Error ? error.name : "unknown",
+      });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+  }
+  throw new DOMException("fal queue timed out", "TimeoutError");
+}
+
+async function completedResponse(
+  initial: FalQueueResponse,
+  key: string,
+): Promise<FalQueueResponse> {
+  if (!initial.request_id) return initial;
+  const statusUrl = queueUrl(initial.status_url);
+  const resultUrl = queueUrl(initial.response_url);
+  if (!statusUrl || !resultUrl) throw new Error("Invalid fal queue URLs");
+  console.info("fal music queued", { requestId: String(initial.request_id) });
+
+  const deadline = Date.now() + RESULT_DEADLINE_MS;
+  let lastStatus: unknown;
+  while (Date.now() < deadline) {
+    const response = await queueGet(statusUrl, key, deadline);
+    const state = (await response.json()) as FalQueueResponse;
+    if (state.status !== lastStatus) {
+      console.info("fal music status", { status: state.status ?? "unknown" });
+      lastStatus = state.status;
+    }
+    if (state.status === "FAILED") throw new Error("fal queue failed");
+    if (state.status === "COMPLETED") {
+      const result = await queueGet(resultUrl, key, deadline);
+      return (await result.json()) as FalQueueResponse;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+  }
+  throw new DOMException("fal queue timed out", "TimeoutError");
+}
+
+function playableAudio(raw: FalQueueResponse): FalAudio | null {
+  const audio = raw.audio ?? raw.data?.audio;
+  if (!audio || typeof audio.url !== "string") return null;
+  try {
+    const url = new URL(audio.url);
+    if (url.protocol !== "https:") return null;
+  } catch {
+    return null;
+  }
+  return audio;
+}
+
+export async function generateMusic(
+  profile: MusicProfile,
+): Promise<GenerationResult> {
+  const validated = validateMusicProfile(profile);
+  if (!validated) return { ok: false, error: musicError("INVALID_PROFILE") };
+
+  const key = process.env.FAL_KEY?.trim();
+  if (!key) {
+    const scenario =
+      process.env.NODE_ENV === "development"
+        ? process.env.FAL_DEMO_SCENARIO
+        : undefined;
+    await new Promise((resolve) =>
+      setTimeout(resolve, scenario === "slow" ? 45_000 : 650),
+    );
+    if (scenario === "error")
+      return { ok: false, error: musicError("PROVIDER_ERROR") };
+    return {
+      ok: true,
+      source: "demo",
+      track: {
+        title: "青春的回声（演示配乐）",
+        durationSec: 20,
+        audioUrl: "/audio/music-album/demo-ai.wav",
+        audioMimeType: "audio/wav",
+        source: "demo",
+        expiresAt: null,
+      },
+    };
+  }
+
+  try {
+    const submitted = await falFetch(QUEUE_URL, key, {
+      method: "POST",
+      body: JSON.stringify({
+        prompt: validated.instrumentalPrompt,
+        instrumental: true,
+        duration: validated.targetDurationSec,
+      }),
+    });
+    if (!submitted.ok) {
+      console.error("fal music submit failed", { status: submitted.status });
+      return { ok: false, error: musicError(responseError(submitted.status)) };
+    }
+
+    const result = await completedResponse(
+      (await submitted.json()) as FalQueueResponse,
+      key,
+    );
+    const audio = playableAudio(result);
+    if (!audio) {
+      return { ok: false, error: musicError("INVALID_GENERATED_AUDIO") };
+    }
+    return {
+      ok: true,
+      source: "api",
+      track: {
+        title: "ACE-Step · 无歌词配乐",
+        durationSec: validated.targetDurationSec,
+        audioUrl: audio.url as string,
+        audioMimeType:
+          typeof audio.content_type === "string"
+            ? audio.content_type
+            : "audio/wav",
+        source: "api",
+        expiresAt: null,
+      },
+    };
+  } catch (error) {
+    // Do not log prompts, credentials, provider bodies, or generated URLs.
+    console.error("fal music transport failed", {
+      name: error instanceof Error ? error.name : "unknown",
+      code:
+        error instanceof Error && "code" in error
+          ? String(error.code)
+          : error instanceof Error &&
+              error.cause &&
+              typeof error.cause === "object" &&
+              "code" in error.cause
+            ? String(error.cause.code)
+            : "unknown",
+    });
+    return {
+      ok: false,
+      error: musicError(
+        error instanceof DOMException && error.name === "TimeoutError"
+          ? "GENERATION_TIMEOUT"
+          : "GENERATION_UNAVAILABLE",
+      ),
+    };
+  }
+}

@@ -34,6 +34,7 @@ import {
 } from "./demo-data";
 import { PageFrame } from "./page-frame";
 import { CreateFlow } from "./create-flow";
+import type { ResultViewModel } from "./music-session";
 
 function Photo({
   src,
@@ -263,14 +264,38 @@ function HomeScreen() {
 }
 
 function ResultScreen({
-  title,
   photoSrc,
   confirmed = false,
+  music,
+  browseTab = "ai",
+  onBrowseTab,
 }: {
-  title?: string;
   photoSrc?: string;
   confirmed?: boolean;
+  music?: ResultViewModel;
+  browseTab?: "ai" | "qq";
+  onBrowseTab?: (tab: "ai" | "qq") => void;
 }) {
+  const run = music?.run;
+  const ai = run?.ai;
+  const recommendations = run?.recommendations;
+  const selectedQq =
+    run?.selection.kind === "qq" ? run.selection.trackId : null;
+  const selectedQqPlayable = recommendations?.tracks.some(
+    (track) => track.id === selectedQq && track.playable,
+  );
+  const previewQq =
+    recommendations?.tracks.find((item) => item.id === selectedQq) ??
+    recommendations?.tracks.find((item) => item.playable) ??
+    recommendations?.tracks[0];
+  const canEnterPlay = Boolean(
+    confirmed &&
+      (selectedQqPlayable ||
+        ai?.status === "ready" ||
+        (ai?.status === "pending" &&
+          run?.ambientTrack &&
+          music?.audioState !== "failed")),
+  );
   return (
     <>
       <PageFrame title="为你生成" backHref="/create?state=understanding" />
@@ -279,21 +304,64 @@ function ResultScreen({
         <div>
           <strong>
             {confirmed
-              ? `${title} · 已确认记忆`
-              : "演示占位 · 尚未确认本次记忆"}
+              ? ai?.status === "ready"
+                ? "你的配乐已完成"
+                : ai?.status === "failed"
+                  ? "配乐暂未完成，请重试"
+                  : "正在为你的回忆生成音乐…"
+              : "还没有已确认的记忆"}
           </strong>
-          <p>音乐生成与推荐将在下一阶段接入</p>
-          <div className="generation-progress">
-            <span />
-            <small>60%</small>
+          <p>
+            {!confirmed
+              ? "请先返回创建并确认照片记忆"
+              : ai?.source === "demo"
+                ? "演示配乐 · 后续可接入真实生成服务"
+                : "AI 配乐与演示推荐独立更新"}
+          </p>
+          <div
+            className={`generation-progress ${ai?.status === "pending" && ai.progressPercent === null ? "indeterminate" : ""}`}
+          >
+            <span
+              style={{
+                width:
+                  ai?.progressPercent !== null &&
+                  ai?.progressPercent !== undefined
+                    ? `${ai.progressPercent}%`
+                    : ai?.status === "ready"
+                      ? "100%"
+                      : undefined,
+              }}
+            />
+            <small>
+              {ai?.progressPercent
+                ? `${ai.progressPercent}%`
+                : ai?.status === "pending"
+                  ? "生成中"
+                  : ai?.status === "failed"
+                    ? "需要重试"
+                    : "等待"}
+            </small>
           </div>
         </div>
       </div>
       <div className="result-tabs glass">
-        <button type="button" className="selected" disabled>
+        <button
+          type="button"
+          className={browseTab === "ai" ? "selected" : ""}
+          onClick={() => {
+            onBrowseTab?.("ai");
+            if (selectedQq) music?.selectAi();
+          }}
+          disabled={!confirmed}
+        >
           为你生成
         </button>
-        <button type="button" disabled>
+        <button
+          type="button"
+          className={browseTab === "qq" ? "selected" : ""}
+          onClick={() => onBrowseTab?.("qq")}
+          disabled={!confirmed}
+        >
           QQ音乐推荐
         </button>
       </div>
@@ -302,13 +370,52 @@ function ResultScreen({
         alt="夕阳里的青春记忆"
         className="result-cover"
       />
-      <div className="music-card glass result-music-placeholder">
-        <h2>{title ?? "演示音乐卡"}</h2>
-        <p>{confirmed ? "记忆理解已确认" : "尚未确认本次记忆"}</p>
-        <p className="music-description">
-          AI 配乐和 QQ 音乐推荐将在下一阶段生成。
-        </p>
-      </div>
+      {!confirmed ? (
+        <div className="music-card glass result-music-placeholder">
+          <h2>尚未确认本次记忆</h2>
+          <p>返回创建页完成记忆理解后再生成音乐。</p>
+        </div>
+      ) : browseTab === "qq" ? (
+        <div className="music-card glass result-music-placeholder">
+          <span className="result-source-label">演示推荐</span>
+          <h2>{previewQq?.title ?? "暂无演示推荐"}</h2>
+          <p>{selectedQq ? "已选择播放" : "点击下方可播推荐进行选择"}</p>
+          <p className="music-description">
+            {previewQq?.reason ?? "可重试加载推荐。"}
+          </p>
+        </div>
+      ) : (
+        <div className="music-card glass result-music-placeholder">
+          <span className="result-source-label">
+            {ai?.source === "demo" ? "演示配乐" : "AI 配乐"}
+          </span>
+          <h2>
+            {ai?.status === "failed"
+              ? "原创配乐暂未完成"
+              : (ai?.track?.title ?? "正在生成你的配乐")}
+          </h2>
+          <p>
+            {ai?.status === "failed"
+              ? ai.error?.message
+              : ai?.track
+                ? `${ai.track.durationSec} 秒 · 可播放`
+                : "先听一段氛围音乐，完成后会自动切换"}
+          </p>
+          <p className="music-description">
+            {ai?.status === "failed" ? (
+              <button
+                type="button"
+                className="result-retry"
+                onClick={music?.retryAi}
+              >
+                重试原创配乐
+              </button>
+            ) : (
+              "无歌词、无人声，来自你的记忆。"
+            )}
+          </p>
+        </div>
+      )}
       <div className="result-suggestions">
         <Link href="/play?state=adjust">
           <Sparkles />
@@ -323,44 +430,116 @@ function ResultScreen({
           少一点人声
         </Link>
       </div>
-      <section className="result-recommendations">
-        <div className="section-title">
-          <h2>你也可能喜欢</h2>
-          <span>
-            查看全部
-            <ChevronRight />
-          </span>
-        </div>
-        <MemoryTiles recommendations />
-      </section>
-      <Link href="/play" className="result-enter pill-button lime">
+      {confirmed && recommendations && (
+        <section className="result-recommendations dynamic-recommendations">
+          <div className="section-title">
+            <h2>
+              你也可能喜欢 <small>演示推荐</small>
+            </h2>
+            <button type="button" onClick={music?.retryRecommendations}>
+              重新加载
+            </button>
+          </div>
+          <div className="result-recommendation-list">
+            {recommendations.tracks.length === 0 && (
+              <p className="recommendation-empty">
+                {recommendations.status === "pending"
+                  ? "正在检查演示推荐…"
+                  : recommendations.status === "failed"
+                    ? "推荐暂不可用，请重新加载。"
+                    : "暂无可播放的演示推荐。"}
+              </p>
+            )}
+            {recommendations.tracks.map((track) => (
+              <button
+                type="button"
+                key={track.id}
+                className={`result-recommendation ${selectedQq === track.id ? "selected" : ""}`}
+                disabled={!track.playable}
+                onClick={() => {
+                  music?.selectRecommendation(track.id);
+                  onBrowseTab?.("qq");
+                }}
+                aria-label={`${track.title}（演示推荐）${track.playable ? "，选择播放" : "，暂无可播放音频"}`}
+              >
+                <span className="recommendation-cover">
+                  {track.coverUrl ? <Photo src={track.coverUrl} alt="" /> : "♪"}
+                  <span className="tile-play glass">
+                    {track.playable ? <Play fill="currentColor" /> : "—"}
+                  </span>
+                </span>
+                <strong>{track.title}</strong>
+                <small>
+                  {track.artist} · {track.durationSec} 秒
+                </small>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+      <Link
+        href={!confirmed ? "/create" : canEnterPlay ? "/play" : "/result"}
+        className={`result-enter pill-button lime ${!canEnterPlay && confirmed ? "disabled" : ""}`}
+        aria-disabled={confirmed && !canEnterPlay}
+        onClick={(event) => {
+          if (confirmed && !canEnterPlay) event.preventDefault();
+        }}
+      >
         <Play fill="currentColor" />
-        进入播放
+        {confirmed ? "进入播放" : "返回创建"}
       </Link>
     </>
   );
 }
 
-function PlayScreen() {
+function PlayScreen({
+  music,
+  memoryTitle,
+  photoSrc,
+}: {
+  music?: ResultViewModel;
+  memoryTitle?: string;
+  photoSrc?: string;
+}) {
+  const active = music?.activeTrack;
+  const title =
+    active && "title" in active
+      ? active.title
+      : (music?.run?.ai.track?.title ?? "正在准备你的音乐");
+  const source =
+    music?.audioKind === "qq"
+      ? "QQ 音乐演示推荐"
+      : music?.audioKind === "ambient"
+        ? "等待中的氛围音乐"
+        : music?.run?.ai.source === "demo"
+          ? "AI 演示配乐"
+          : "AI 原创配乐";
   return (
     <>
       <Photo
-        src={photo("graduation-backdrop")}
+        src={photoSrc ?? photo("graduation-backdrop")}
         className="play-backdrop"
         alt="毕业那天的夕阳"
       />
       <div className="play-shade" />
       <PageFrame backHref="/result" />
       <div className="play-event">
-        <h1>2026 · 毕业那天</h1>
+        <h1>{memoryTitle ?? "正在准备你的音乐记忆"}</h1>
         <p>那些以后很难再重复的普通日子。</p>
       </div>
       <section className="player glass">
         <div className="player-heading">
           <Photo src={photo("graduation")} alt="青春的回声封面" />
           <div>
-            <h2>青春的回声</h2>
-            <p>AI 原创配乐</p>
+            <h2>{title}</h2>
+            <p>
+              {source}
+              {music?.audioState === "blocked"
+                ? " · 点击播放"
+                : music?.audioState === "failed"
+                  ? " · 音频不可用"
+                  : ""}
+            </p>
           </div>
           <button type="button" disabled aria-label="收藏（暂未开放）">
             <Heart />
@@ -382,10 +561,14 @@ function PlayScreen() {
           <button
             type="button"
             className="pause-button glass"
-            disabled
-            aria-label="播放／暂停（后续接入音源）"
+            onClick={() => void music?.play()}
+            aria-label="播放音乐"
           >
-            <Pause fill="currentColor" />
+            {music?.audioState === "playing" ? (
+              <Pause fill="currentColor" />
+            ) : (
+              <Play fill="currentColor" />
+            )}
           </button>
           <button type="button" disabled aria-label="下一首（暂未开放）">
             <SkipForward fill="currentColor" />
@@ -652,12 +835,18 @@ export function AlbumScreen({
   resultTitle,
   resultPhotoSrc,
   resultConfirmed,
+  resultMusic,
+  resultBrowseTab,
+  onResultBrowseTab,
 }: {
   screen: number;
   album?: DemoMemoryAlbum;
   resultTitle?: string;
   resultPhotoSrc?: string;
   resultConfirmed?: boolean;
+  resultMusic?: ResultViewModel;
+  resultBrowseTab?: "ai" | "qq";
+  onResultBrowseTab?: (tab: "ai" | "qq") => void;
 }) {
   if (screen === 2 || screen === 3) return <CreateFlow />;
   return (
@@ -683,12 +872,18 @@ export function AlbumScreen({
           <HomeScreen />
         ) : screen === 4 ? (
           <ResultScreen
-            title={resultTitle}
             photoSrc={resultPhotoSrc}
             confirmed={resultConfirmed}
+            music={resultMusic}
+            browseTab={resultBrowseTab}
+            onBrowseTab={onResultBrowseTab}
           />
         ) : screen === 5 ? (
-          <PlayScreen />
+          <PlayScreen
+            music={resultMusic}
+            memoryTitle={resultTitle}
+            photoSrc={resultPhotoSrc}
+          />
         ) : screen === 6 ? (
           <AdjustScreen />
         ) : screen === 7 ? (
