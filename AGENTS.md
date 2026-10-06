@@ -26,16 +26,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # 当前实现基线（2026-10-06）
 
-- SDD-00 至 SDD-03 已完成；SDD-02 实现提交为 `0b7af75`，SDD-03 实现及 ACE-Step 模型切换提交为 `fcf5424`，用户主线下一阶段为 SDD-04。SDD-01 的完成范围见 [SDD-01 quickstart](specs/002-memory-home/quickstart.md)，SDD-02、SDD-03 的验收证据分别见 [SDD-02 verification](specs/003-agent-memory-understanding/verification/) 与 [SDD-03 verification](specs/004-music-orchestration/verification/)；阶段状态统一以 [progress.md](progress.md) 为准。
+- SDD-00 至 SDD-04 已完成；SDD-02 实现提交为 `0b7af75`，SDD-03 实现及 ACE-Step 模型切换提交为 `fcf5424`，SDD-04 实现提交为 `2f6933f`，用户主线下一阶段为 SDD-05。SDD-01 的完成范围见 [SDD-01 quickstart](specs/002-memory-home/quickstart.md)，SDD-02 至 SDD-04 的验收证据分别见 [SDD-02 verification](specs/003-agent-memory-understanding/verification/)、[SDD-03 verification](specs/004-music-orchestration/verification/) 与 [SDD-04 verification](specs/005-immersive-playback/verification/README.md)；阶段状态统一以 [progress.md](progress.md) 为准。
 - 页面组件集中在 `components/music-album/`：`album-screen.tsx` 渲染九个状态，`app-shell.tsx` 提供手机外壳，`demo-data.ts` 保存稳定演示数据。首页入口保留 `app/page.tsx`，其他入口位于 `app/(album)/`；不得另建同路径的 `(album)/page.tsx`。
 - 九状态路径依次为 `/`、`/create`、`/create?state=understanding`、`/result`、`/play`、`/play?state=adjust`、`/play?state=save`、`/memories`、`/memories/demo-graduation`。原型映射和 17 个主要热点保存在 `design-map.ts`，修改跳转时同步 [导航契约](specs/001-app-shell/contracts/ui-navigation.md)。
 - 底部导航仅在原稿 01、08 展示。页面应按对应 PNG 选择标题、返回和导航，不能为了复用组件统一改写原稿结构。
-- 首页和记忆列表、详情仍使用稳定的本地演示数据。04 号结果页已承接确认记忆，AI 生成状态和音频接入真实服务，QQ 推荐为明确标识的 mock；05 号页已接续当前照片和单一音源。完整播放控制、自然语言调整、保存持久化、收藏和分类筛选尚未完成，不得将现有页面跳转等同于这些业务完成。
+- 首页和记忆列表、详情仍使用稳定的本地演示数据。04 号结果页已承接确认记忆，AI 生成状态和音频接入真实服务，QQ 推荐为明确标识的 mock；05/06 已接续本次照片与单一音源，实现播放控制、照片同步、AI 解释及自然语言调整。07 目前只有可播放资格门槛和静态过渡界面；保存持久化、收藏和分类筛选尚未完成，不得将页面跳转等同于这些业务完成。
 - SDD-02 的照片上传、记忆理解、自然语言修正和确认交接已完成；Pi Agent 的真实入口、凭证和供应商协议属于后续阶段接入事项，当前服务端使用明确标识的同契约 `source=demo` 适配器，不得把演示结果宣称为真实 Agent 结果。
 - SDD-03 的音乐生成入口为 `POST /api/music/generate`，由 `lib/music/generator.ts` 在服务端调用 fal.ai `fal-ai/ace-step/prompt-to-audio`。只从服务端读取 `FAL_KEY`，本地直连受阻时可设置服务端 `FAL_PROXY_URL`；两者不得提交或暴露给浏览器。未配置 key 时才返回明确标识的 `source=demo`，真实调用失败必须显示错误，不静默回退。QQ 推荐使用 `lib/music/mock-recommendations.ts` 的本地 mock，不宣称已接通 QQ 曲库。
-- `MusicSessionProvider` 位于 `app/(album)/layout.tsx`，在 04→05 导航期间维护唯一音频控制者；默认 AI 生成中播放本地氛围音乐，用户主动选择可播 QQ mock 后 AI 完成不得抢播。05 的完整播放器和调整交互属于 SDD-04；不得把等待音频或无资源歌曲标为 AI 成品。
-- 05 的 PNG 按钮文案“查看 AI 理解”与 HTML 同位置的“保存相册”热点存在差异：当前保留 PNG 文案，按 HTML 进入 07；SDD-04/05 需闭合 AI 理解抽屉与保存入口的规则。
-- `public/images/memories/` 的演示摄影素材已参照设计 PNG 重生成高清 WebP；旧提取脚本 `scripts/extract-design-assets.py` 仍在仓库，重跑会覆盖同名高清素材。界面由 DOM/CSS 实现；01、08、09 已按 SDD-01 验收，02、03 已按 SDD-02 验收，04 已按 SDD-03 在 320/375/430 宽度及较大字体下核对。05–07 仍需按负责阶段验收，不能声明九页完整视觉验收通过。
+- `MusicSessionProvider` 实现在 `components/music-album/music-session.tsx`，由 `app/(album)/layout.tsx` 挂载，在 04→05→06 导航期间维护唯一音频控制者；默认 AI 生成中播放本地氛围音乐，用户主动选择可播 QQ mock 后 AI 完成不得抢播。05 的播放、暂停、进度、照片跳转和结束重播，以及 06 的调整状态已完成；等待音频或无资源歌曲不得标为 AI 成品。
+- 06 的调整入口为 `POST /api/music/adjust`：AI 分支复用服务端 ACE-Step 生成边界，QQ 分支重新匹配本地 mock；候选音频通过媒体元数据校验后才替换旧版，失败时保留旧版。本阶段浏览器回归使用同契约的本地可听 WAV，不能据此宣称每次调整都完成真实外部调用。
+- 05 的 PNG 按钮文案“查看 AI 理解”与 HTML 同位置的“保存相册”热点存在差异：当前保留 PNG 文案，按 HTML 在有可播放成品时进入 07；AI 理解由默认收起的独立上拉区域提供。SDD-05 仍需闭合 07 保存入口语义与实际保存流程。
+- `public/images/memories/` 的演示摄影素材已参照设计 PNG 重生成高清 WebP；旧提取脚本 `scripts/extract-design-assets.py` 仍在仓库，重跑会覆盖同名高清素材。界面由 DOM/CSS 实现；01、08、09 已按 SDD-01 验收，02、03 已按 SDD-02 验收，04 已按 SDD-03 在 320/375/430 宽度及较大字体下核对，05/06 已按 SDD-04 在 360/390/430 宽度核对视觉与主要跳转。07 及 08/09 的保存后动态数据仍需按 SDD-05 验收，不能声明九页完整视觉与业务验收通过。
 - 临时浏览器配置、截图和验收脚本放在被忽略的 `.sdd00-work/`，不要放入 `.next/`；构建会清理 `.next/`，浏览器文件锁也可能阻断构建。持久验收摘要放在对应 `specs/*/verification/`。
 
 # 注意事项
