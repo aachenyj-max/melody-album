@@ -11,8 +11,10 @@ export function ResultFlow() {
   const [preview, setPreview] = useState<string>();
   const [browseTab, setBrowseTab] = useState<"ai" | "qq">("ai");
   useEffect(() => {
-    if (!confirmed?.photos[0]) return;
-    const url = URL.createObjectURL(confirmed.photos[0]);
+    if (!confirmed?.photos[confirmed.profile.photoOrder[0]]) return;
+    const url = URL.createObjectURL(
+      confirmed.photos[confirmed.profile.photoOrder[0]],
+    );
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [confirmed]);

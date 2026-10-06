@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowUp,
   ArrowRight,
   CalendarDays,
   ChevronRight,
@@ -12,17 +11,14 @@ import {
   Pause,
   Pencil,
   Play,
-  Plus,
   Quote,
   SkipBack,
   SkipForward,
   Sparkles,
-  Zap,
-  Guitar,
   Moon,
   UserRound,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, TouchEvent } from "react";
 import { AppShell } from "./app-shell";
 import { BottomNav } from "./bottom-nav";
 import {
@@ -34,6 +30,7 @@ import {
 } from "./demo-data";
 import { PageFrame } from "./page-frame";
 import { CreateFlow } from "./create-flow";
+import { AdjustFlow } from "./adjust-flow";
 import type { ResultViewModel } from "./music-session";
 
 function Photo({
@@ -80,77 +77,11 @@ function PhotoStack({ kind }: { kind: "home" | "save" }) {
   );
 }
 
-function AgentMessage({
-  children,
-  user = false,
-  className = "",
-}: {
-  children: ReactNode;
-  user?: boolean;
-  className?: string;
-}) {
-  return (
-    <div className={`agent-message ${user ? "user-message" : ""} ${className}`}>
-      <span className={`agent-avatar ${user ? "user-avatar" : ""}`}>
-        {user ? <Photo src={photo("graduation")} /> : <Music2 />}
-      </span>
-      <div className="message-bubble glass">{children}</div>
-    </div>
-  );
-}
-
-function Composer({
-  placeholder,
-  href,
-  confirm = false,
-}: {
-  placeholder: string;
-  href: string;
-  confirm?: boolean;
-}) {
-  return (
-    <div className="composer glass">
-      <Link href={href} aria-label="继续上传" className="composer-add">
-        <Plus />
-      </Link>
-      <input aria-label={placeholder} placeholder={placeholder} />
-      <Link
-        href={href}
-        className={confirm ? "composer-confirm dark" : "composer-send dark"}
-        aria-label={confirm ? "一键确认，开始生成" : "发送调整指令"}
-      >
-        {confirm ? (
-          <>
-            一键确认，开始生成
-            <ChevronRight />
-          </>
-        ) : (
-          <ArrowUp />
-        )}
-      </Link>
-    </div>
-  );
-}
-
-function Waveform() {
-  return (
-    <div className="waveform" aria-hidden="true">
-      {Array.from({ length: 34 }, (_, i) => 12 + ((i * 17) % 57)).map(
-        (height) => (
-          <i key={height} style={{ height: `${height}%` }} />
-        ),
-      )}
-    </div>
-  );
-}
-
 function MusicCard({
   title = "青春的回声",
-  adjusted = false,
   home = false,
 }: {
   title?: string;
-  adjusted?: boolean;
   home?: boolean;
 }) {
   return (
@@ -161,29 +92,25 @@ function MusicCard({
           ? `${demoRecentAiTrack.artist} · ${demoRecentAiTrack.duration}`
           : "AI 原创配乐 · 0:28"}
       </p>
-      {adjusted ? (
-        <Waveform />
-      ) : (
-        <p className="music-description">
-          {home ? (
-            <>
-              把时光写成一首歌，
-              <br />
-              在路上与自己相遇。
-            </>
-          ) : (
-            <>
-              轻快的钢琴与吉他，
-              <br />
-              像是阳光下的告别，也像是新的开始。
-            </>
-          )}
-        </p>
-      )}
+      <p className="music-description">
+        {home ? (
+          <>
+            把时光写成一首歌，
+            <br />
+            在路上与自己相遇。
+          </>
+        ) : (
+          <>
+            轻快的钢琴与吉他，
+            <br />
+            像是阳光下的告别，也像是新的开始。
+          </>
+        )}
+      </p>
       <Link
         href={home ? "/create" : "/play"}
         className="music-play dark"
-        aria-label={adjusted ? "重新播放" : "进入播放"}
+        aria-label="进入播放"
       >
         {home ? <Music2 /> : <Play fill="currentColor" />}
       </Link>
@@ -278,6 +205,8 @@ function ResultScreen({
 }) {
   const run = music?.run;
   const ai = run?.ai;
+  const shownAiTrack = run?.adjustedTrack ?? ai?.track;
+  const shownAiSource = run?.adjustedTrack?.source ?? ai?.source;
   const recommendations = run?.recommendations;
   const selectedQq =
     run?.selection.kind === "qq" ? run.selection.trackId : null;
@@ -387,18 +316,18 @@ function ResultScreen({
       ) : (
         <div className="music-card glass result-music-placeholder">
           <span className="result-source-label">
-            {ai?.source === "demo" ? "演示配乐" : "AI 配乐"}
+            {shownAiSource === "demo" ? "演示配乐" : "AI 配乐"}
           </span>
           <h2>
             {ai?.status === "failed"
               ? "原创配乐暂未完成"
-              : (ai?.track?.title ?? "正在生成你的配乐")}
+              : (shownAiTrack?.title ?? "正在生成你的配乐")}
           </h2>
           <p>
             {ai?.status === "failed"
               ? ai.error?.message
-              : ai?.track
-                ? `${ai.track.durationSec} 秒 · 可播放`
+              : shownAiTrack
+                ? `${shownAiTrack.durationSec} 秒 · 可播放`
                 : "先听一段氛围音乐，完成后会自动切换"}
           </p>
           <p className="music-description">
@@ -496,40 +425,97 @@ function PlayScreen({
   music,
   memoryTitle,
   photoSrc,
+  photoCount = 0,
+  memorySummary,
+  explanationOpen = false,
+  onToggleExplanation,
+  onTouchStart,
+  onTouchEnd,
 }: {
   music?: ResultViewModel;
   memoryTitle?: string;
   photoSrc?: string;
+  photoCount?: number;
+  memorySummary?: string;
+  explanationOpen?: boolean;
+  onToggleExplanation?: () => void;
+  onTouchStart?: (event: TouchEvent) => void;
+  onTouchEnd?: (event: TouchEvent) => void;
 }) {
+  if (!music?.run || !music.confirmed || !photoSrc)
+    return (
+      <>
+        <PageFrame backHref="/result" />
+        <div className="play-empty glass">
+          <h1>还没有本次可播放的记忆</h1>
+          <p>请先确认照片和音乐，再进入播放。</p>
+          <Link href="/result">返回生成结果</Link>
+        </div>
+      </>
+    );
   const active = music?.activeTrack;
   const title =
     active && "title" in active
       ? active.title
-      : (music?.run?.ai.track?.title ?? "正在准备你的音乐");
+      : (music?.run?.adjustedTrack?.title ??
+        music?.run?.ai.track?.title ??
+        "正在准备你的音乐");
   const source =
     music?.audioKind === "qq"
       ? "QQ 音乐演示推荐"
       : music?.audioKind === "ambient"
         ? "等待中的氛围音乐"
-        : music?.run?.ai.source === "demo"
+        : (music?.run?.adjustedTrack?.source ?? music?.run?.ai.source) ===
+            "demo"
           ? "AI 演示配乐"
           : "AI 原创配乐";
+  const duration = music.duration;
+  const mediaDuration = duration ?? 1;
+  const time = Math.min(music.currentTime, duration ?? music.currentTime);
+  const formatTime = (seconds: number) =>
+    `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+  const canSeek =
+    duration !== null && Number.isFinite(duration) && duration > 0;
+  const selection = music.run.selection;
+  const qqTrackId = selection.kind === "qq" ? selection.trackId : null;
+  const saveReady =
+    music.audioState !== "failed" &&
+    (music.run.selection.kind === "qq"
+      ? music.run.recommendations.tracks.some(
+          (item) => item.id === qqTrackId && item.playable && item.audioUrl,
+        )
+      : Boolean(
+          music.run.adjustedTrack?.audioUrl ?? music.run.ai.track?.audioUrl,
+        ));
+  const explanation =
+    selection.kind === "qq"
+      ? music.run.recommendations.tracks.find((item) => item.id === qqTrackId)
+          ?.reason
+      : (music.run.adjustedTrack?.explanation ??
+        (music.run.ai.status === "ready"
+          ? `这段${music.run.profile.mood}的记忆，适合${music.run.profile.style}的器乐旋律。`
+          : "专属配乐仍在生成，当前播放的是通用等待音乐。"));
   return (
-    <>
+    <div
+      className="play-content"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       <Photo
-        src={photoSrc ?? photo("graduation-backdrop")}
+        key={photoSrc}
+        src={photoSrc}
         className="play-backdrop"
-        alt="毕业那天的夕阳"
+        alt={`${memoryTitle ?? "本次记忆"}的第 ${photoCount > 1 ? Math.min(photoCount, Math.floor((time / (duration || 1)) * photoCount) + 1) : 1} 张照片`}
       />
       <div className="play-shade" />
-      <PageFrame backHref="/result" />
+      <PageFrame backHref="/result" onBack={music.stop} />
       <div className="play-event">
         <h1>{memoryTitle ?? "正在准备你的音乐记忆"}</h1>
-        <p>那些以后很难再重复的普通日子。</p>
+        <p>{memorySummary ?? "和照片一起，听见这一段记忆。"}</p>
       </div>
       <section className="player glass">
         <div className="player-heading">
-          <Photo src={photo("graduation")} alt="青春的回声封面" />
+          <Photo src={photoSrc} alt="当前记忆封面" />
           <div>
             <h2>{title}</h2>
             <p>
@@ -539,6 +525,17 @@ function PlayScreen({
                 : music?.audioState === "failed"
                   ? " · 音频不可用"
                   : ""}
+              {music.run.ai.status === "failed" &&
+                selection.kind === "ai" &&
+                !music.run.adjustedTrack && (
+                  <button
+                    type="button"
+                    className="play-inline-retry"
+                    onClick={music.retryAi}
+                  >
+                    重试配乐
+                  </button>
+                )}
             </p>
           </div>
           <button type="button" disabled aria-label="收藏（暂未开放）">
@@ -546,23 +543,63 @@ function PlayScreen({
           </button>
         </div>
         <div className="player-progress">
-          <div>
-            <i />
-          </div>
+          <input
+            type="range"
+            min={0}
+            max={mediaDuration}
+            step={0.1}
+            value={canSeek ? time : 0}
+            disabled={!canSeek || music.audioState === "failed"}
+            onChange={(event) => music.seek(Number(event.target.value))}
+            aria-label="播放进度"
+            style={
+              {
+                "--play-progress": canSeek
+                  ? `${(time / mediaDuration) * 100}%`
+                  : "0%",
+              } as CSSProperties
+            }
+          />
           <p>
-            <span>0:12</span>
-            <span>0:28</span>
+            <span>{formatTime(time)}</span>
+            <span>{duration ? formatTime(duration) : "--:--"}</span>
           </p>
         </div>
         <div className="player-controls">
-          <button type="button" disabled aria-label="上一首（暂未开放）">
+          <button
+            type="button"
+            disabled={!canSeek || photoCount < 2}
+            onClick={() =>
+              music.seek(
+                Math.max(
+                  0,
+                  (Math.floor((time / mediaDuration) * photoCount - 1) *
+                    mediaDuration) /
+                    photoCount,
+                ),
+              )
+            }
+            aria-label="上一张照片"
+          >
             <SkipBack fill="currentColor" />
           </button>
           <button
             type="button"
             className="pause-button glass"
-            onClick={() => void music?.play()}
-            aria-label="播放音乐"
+            onClick={() =>
+              music.audioState === "playing"
+                ? music.pause()
+                : music.audioState === "ended"
+                  ? void music.replay()
+                  : void music.play()
+            }
+            aria-label={
+              music.audioState === "playing"
+                ? "暂停音乐"
+                : music.audioState === "ended"
+                  ? "重新播放"
+                  : "播放音乐"
+            }
           >
             {music?.audioState === "playing" ? (
               <Pause fill="currentColor" />
@@ -570,60 +607,68 @@ function PlayScreen({
               <Play fill="currentColor" />
             )}
           </button>
-          <button type="button" disabled aria-label="下一首（暂未开放）">
+          <button
+            type="button"
+            disabled={!canSeek || photoCount < 2}
+            onClick={() =>
+              music.seek(
+                Math.min(
+                  mediaDuration - 0.01,
+                  ((Math.floor((time / mediaDuration) * photoCount) + 1) *
+                    mediaDuration) /
+                    photoCount,
+                ),
+              )
+            }
+            aria-label="下一张照片"
+          >
             <SkipForward fill="currentColor" />
           </button>
         </div>
       </section>
+      <section
+        className={`play-explanation glass ${explanationOpen ? "open" : ""}`}
+        aria-label="AI 对记忆的理解"
+      >
+        <button
+          type="button"
+          onClick={onToggleExplanation}
+          aria-expanded={explanationOpen}
+          aria-controls="play-explanation-content"
+        >
+          <span className="explanation-handle" />
+          {explanationOpen ? "收起 AI 理解" : "上拉查看 AI 理解"}
+        </button>
+        {explanationOpen && (
+          <div id="play-explanation-content">
+            <strong>{music.confirmed.profile.title}</strong>
+            <p>{memorySummary}</p>
+            <p>{explanation}</p>
+            <small>{source}</small>
+          </div>
+        )}
+      </section>
       <div className="play-actions">
-        <Link className="glass" href="/play?state=adjust">
+        <Link className="glass" href="/play?state=adjust" onClick={music.pause}>
           <Music2 />
           调整音乐
         </Link>
-        <Link className="glass" href="/play?state=save" aria-label="保存相册">
+        <Link
+          className={`glass ${!saveReady ? "disabled" : ""}`}
+          href={saveReady ? "/play?state=save" : "/play"}
+          aria-disabled={!saveReady}
+          title={saveReady ? "进入保存过渡" : "等待可播放的专属配乐后可保存"}
+          onClick={(event) => {
+            if (!saveReady) event.preventDefault();
+            else music.pause();
+          }}
+        >
           <Sparkles />
           查看 AI 理解
           <ChevronRight />
         </Link>
       </div>
-    </>
-  );
-}
-
-function AdjustScreen() {
-  return (
-    <>
-      <PageFrame title="调整音乐" backHref="/play" />
-      <AgentMessage user className="adjust-user">
-        我想更青春一点，节奏更快一些。
-      </AgentMessage>
-      <AgentMessage className="adjust-agent">
-        好的，我将音乐调整得更轻快，
-        <br />
-        充满青春感，节奏也更明快了一些。
-      </AgentMessage>
-      <Photo
-        src={photo("graduation-wide")}
-        alt="青春版配乐封面"
-        className="adjust-cover"
-      />
-      <MusicCard title="青春的回声（青春版）" adjusted />
-      <div className="adjust-suggestions">
-        <Link href="/play">
-          <Zap />
-          再快一点
-        </Link>
-        <Link href="/play">
-          <Guitar />
-          多一点吉他
-        </Link>
-        <Link href="/play">
-          <Sparkles />
-          换一种风格
-        </Link>
-      </div>
-      <Composer placeholder="继续告诉我你的想法…" href="/play" />
-    </>
+    </div>
   );
 }
 
@@ -838,6 +883,12 @@ export function AlbumScreen({
   resultMusic,
   resultBrowseTab,
   onResultBrowseTab,
+  playPhotoCount,
+  playMemorySummary,
+  explanationOpen,
+  onToggleExplanation,
+  onPlayTouchStart,
+  onPlayTouchEnd,
 }: {
   screen: number;
   album?: DemoMemoryAlbum;
@@ -847,8 +898,15 @@ export function AlbumScreen({
   resultMusic?: ResultViewModel;
   resultBrowseTab?: "ai" | "qq";
   onResultBrowseTab?: (tab: "ai" | "qq") => void;
+  playPhotoCount?: number;
+  playMemorySummary?: string;
+  explanationOpen?: boolean;
+  onToggleExplanation?: () => void;
+  onPlayTouchStart?: (event: TouchEvent) => void;
+  onPlayTouchEnd?: (event: TouchEvent) => void;
 }) {
   if (screen === 2 || screen === 3) return <CreateFlow />;
+  if (screen === 6) return <AdjustFlow />;
   return (
     <AppShell immersive={screen === 5}>
       <main
@@ -883,9 +941,13 @@ export function AlbumScreen({
             music={resultMusic}
             memoryTitle={resultTitle}
             photoSrc={resultPhotoSrc}
+            photoCount={playPhotoCount}
+            memorySummary={playMemorySummary}
+            explanationOpen={explanationOpen}
+            onToggleExplanation={onToggleExplanation}
+            onTouchStart={onPlayTouchStart}
+            onTouchEnd={onPlayTouchEnd}
           />
-        ) : screen === 6 ? (
-          <AdjustScreen />
         ) : screen === 7 ? (
           <SaveScreen />
         ) : screen === 8 ? (

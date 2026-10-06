@@ -64,6 +64,15 @@ export const creationHotspotPreconditions = {
   confirm: "当前 Memory Profile 必须有非空标题且事件或氛围至少一项有效",
 } as const;
 
+// SDD-04 runtime rules keep the original hotspot coordinates and targets.
+export const playHotspotPreconditions = {
+  enterPlay: "本次已确认记忆，并有可播放的 AI、QQ 演示推荐或通用等待音",
+  enterAdjust: "当前存在已验证可播放的 AI 或 QQ 音乐版本；进入时暂停声音",
+  enterSave: "当前存在已验证可播放的 AI 或 QQ 音乐版本；通用等待音不可保存",
+  submitAdjustment: "指令去首尾空白后为 1–300 字；待生成中不可重复提交",
+  replayAdjustment: "成功候选经媒体元数据校验后从 0 秒播放；失败保留旧版",
+} as const;
+
 export type ReadonlyConnectionCheck = {
   connected: boolean;
   checkedAt: string;

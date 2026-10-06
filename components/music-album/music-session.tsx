@@ -22,22 +22,40 @@ import {
   type MockRecommendation,
   type MusicRun,
   type PlayableAudio,
+  type AdjustmentRun,
+  normalizeAdjustmentInstruction,
 } from "@/lib/music/contract";
 
 export type AudioKind = "none" | "ambient" | "ai" | "qq";
-export type AudioState = "idle" | "playing" | "paused" | "blocked" | "failed";
+export type AudioState =
+  | "idle"
+  | "starting"
+  | "playing"
+  | "paused"
+  | "ended"
+  | "blocked"
+  | "failed";
 
 type MusicSession = {
   run: MusicRun | null;
   audioKind: AudioKind;
   audioState: AudioState;
   activeTrack: PlayableAudio | MockRecommendation | null;
+  currentTime: number;
+  duration: number | null;
+  adjustments: AdjustmentRun[];
+  confirmed: ConfirmedMemory | null;
   start: (confirmed: ConfirmedMemory) => void;
   selectRecommendation: (trackId: string) => void;
   selectAi: () => void;
   retryAi: () => void;
   retryRecommendations: () => void;
   play: () => Promise<void>;
+  pause: () => void;
+  seek: (time: number) => void;
+  replay: () => Promise<void>;
+  adjust: (instruction: string) => Promise<void>;
+  cancelAdjustment: () => void;
   stop: () => void;
 };
 
@@ -106,12 +124,21 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
   const [activeTrack, setActiveTrack] = useState<
     PlayableAudio | MockRecommendation | null
   >(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [adjustments, setAdjustments] = useState<AdjustmentRun[]>([]);
+  const [confirmed, setConfirmed] = useState<ConfirmedMemory | null>(null);
   const runRef = useRef<MusicRun | null>(null);
   const confirmedRef = useRef<ConfirmedMemory | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeIdentityRef = useRef<string | null>(null);
   const audioSerialRef = useRef(0);
   const epochRef = useRef(0);
+  const adjustmentRef = useRef<AbortController | null>(null);
+  const adjustmentIdRef = useRef<string | null>(null);
+  const userPausedRef = useRef(false);
+  const previousPathRef = useRef(pathname);
 
   const commit = useCallback((next: MusicRun | null) => {
     runRef.current = next;
@@ -128,8 +155,11 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       audioRef.current = null;
     }
     setAudioKind("none");
+    activeIdentityRef.current = null;
     setAudioState("idle");
     setActiveTrack(null);
+    setCurrentTime(0);
+    setDuration(null);
   }, []);
 
   const switchTrack = useCallback(
@@ -137,32 +167,57 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       const url = track.audioUrl;
       if (!url) return;
       const current = audioRef.current;
-      if (current?.src === new URL(url, window.location.href).href) return;
+      const identity = `${kind}:${url}:${track.title}`;
+      if (current && activeIdentityRef.current === identity) return;
       stop();
       const serial = audioSerialRef.current;
       const audio = new Audio(url);
       audio.preload = "auto";
       if (kind === "ambient") audio.loop = true;
       audioRef.current = audio;
+      activeIdentityRef.current = identity;
       setAudioKind(kind);
       setActiveTrack(track);
+      setCurrentTime(0);
+      setDuration(null);
+      audio.onloadedmetadata = () => {
+        if (serial !== audioSerialRef.current) return;
+        const actual = audio.duration;
+        setDuration(
+          Number.isFinite(actual) && actual > 0
+            ? Math.min(actual, track.durationSec)
+            : null,
+        );
+      };
+      audio.onplay = () => {
+        if (serial === audioSerialRef.current) setAudioState("playing");
+      };
+      audio.onpause = () => {
+        if (serial === audioSerialRef.current && !audio.ended)
+          setAudioState(
+            audio.currentTime >= track.durationSec - 0.1 ? "ended" : "paused",
+          );
+      };
       audio.onended = () => {
-        if (serial === audioSerialRef.current) setAudioState("paused");
+        if (serial === audioSerialRef.current) setAudioState("ended");
       };
       audio.ontimeupdate = () => {
+        if (serial === audioSerialRef.current)
+          setCurrentTime(Math.min(audio.currentTime, track.durationSec));
         if (
           kind === "ai" &&
           serial === audioSerialRef.current &&
           audio.currentTime >= track.durationSec
         ) {
           audio.pause();
-          setAudioState("paused");
+          setAudioState("ended");
         }
       };
       audio.onerror = () => {
         if (serial === audioSerialRef.current) setAudioState("failed");
       };
       try {
+        setAudioState("starting");
         await audio.play();
         if (serial === audioSerialRef.current) setAudioState("playing");
       } catch {
@@ -256,8 +311,12 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
               track: readyTrack,
               error: null,
             },
+            currentVersionId:
+              afterProbe.selection.kind === "ai"
+                ? attemptId
+                : afterProbe.currentVersionId,
           });
-          if (afterProbe.selection.kind === "ai")
+          if (afterProbe.selection.kind === "ai" && !userPausedRef.current)
             void switchTrack("ai", readyTrack);
         } catch {
           const latest = runRef.current;
@@ -352,6 +411,11 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       if (!isConfirmedMusicInput(confirmed)) return;
       if (confirmedRef.current === confirmed && runRef.current) return;
       confirmedRef.current = confirmed;
+      setConfirmed(confirmed);
+      adjustmentRef.current?.abort();
+      adjustmentIdRef.current = null;
+      setAdjustments([]);
+      userPausedRef.current = false;
       controllerRef.current?.abort();
       stop();
       const attemptId = id("ai");
@@ -370,6 +434,8 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
         },
         selection: { kind: "ai" },
         ambientTrack,
+        currentVersionId: null,
+        adjustedTrack: null,
       };
       commit(next);
       void switchTrack("ambient", ambientTrack);
@@ -386,7 +452,12 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
         (item) => item.id === trackId && item.playable && item.audioUrl,
       );
       if (!current || !track) return;
-      commit({ ...current, selection: { kind: "qq", trackId } });
+      commit({
+        ...current,
+        selection: { kind: "qq", trackId },
+        currentVersionId: trackId,
+      });
+      userPausedRef.current = false;
       void switchTrack("qq", track);
     },
     [commit, switchTrack],
@@ -395,8 +466,16 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
   const selectAi = useCallback(() => {
     const current = runRef.current;
     if (!current) return;
-    commit({ ...current, selection: { kind: "ai" } });
-    if (current.ai.status === "ready" && current.ai.track)
+    commit({
+      ...current,
+      selection: { kind: "ai" },
+      currentVersionId:
+        current.adjustedTrack?.versionId ??
+        (current.ai.status === "ready" ? current.ai.attemptId : null),
+    });
+    userPausedRef.current = false;
+    if (current.adjustedTrack) void switchTrack("ai", current.adjustedTrack);
+    else if (current.ai.status === "ready" && current.ai.track)
       void switchTrack("ai", current.ai.track);
     else if (current.ai.status === "pending" && current.ambientTrack)
       void switchTrack("ambient", current.ambientTrack);
@@ -407,7 +486,13 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
     const current = runRef.current;
     if (!current) return;
     const attemptId = id("ai");
-    commit({ ...current, ai: pendingAi(attemptId) });
+    commit({
+      ...current,
+      ai: pendingAi(attemptId),
+      adjustedTrack: null,
+      currentVersionId:
+        current.selection.kind === "ai" ? null : current.currentVersionId,
+    });
     if (current.selection.kind === "ai" && current.ambientTrack)
       void switchTrack("ambient", current.ambientTrack);
     requestAi(current.runId, attemptId);
@@ -450,6 +535,8 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
         current.recommendations.tracks.find(
           (item) => item.id === selectedTrackId && item.playable,
         ) ?? null;
+    } else if (current.adjustedTrack) {
+      track = current.adjustedTrack;
     } else if (current.ai.status === "ready") {
       track = current.ai.track;
     } else if (current.ai.status === "pending") {
@@ -457,12 +544,17 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       track = current.ambientTrack;
     }
     if (!track) return;
+    userPausedRef.current = false;
     if (
       audioRef.current &&
       audioKind === kind &&
-      activeTrack?.audioUrl === track.audioUrl
+      activeTrack?.audioUrl === track.audioUrl &&
+      activeTrack?.title === track.title
     ) {
       try {
+        if (audioRef.current.ended || audioState === "ended")
+          audioRef.current.currentTime = 0;
+        setAudioState("starting");
         await audioRef.current.play();
         setAudioState("playing");
       } catch {
@@ -471,19 +563,253 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
     } else {
       await switchTrack(kind, track);
     }
-  }, [activeTrack?.audioUrl, audioKind, switchTrack]);
+  }, [
+    activeTrack?.audioUrl,
+    activeTrack?.title,
+    audioKind,
+    audioState,
+    switchTrack,
+  ]);
+
+  const pause = useCallback(() => {
+    userPausedRef.current = true;
+    audioRef.current?.pause();
+  }, []);
+
+  const seek = useCallback(
+    (time: number) => {
+      const audio = audioRef.current;
+      if (!audio || !Number.isFinite(time) || !Number.isFinite(audio.duration))
+        return;
+      audio.currentTime = Math.max(
+        0,
+        Math.min(
+          time,
+          Math.min(audio.duration, activeTrack?.durationSec ?? audio.duration),
+        ),
+      );
+      setCurrentTime(audio.currentTime);
+    },
+    [activeTrack?.durationSec],
+  );
+
+  const replay = useCallback(async () => {
+    if (audioRef.current) audioRef.current.currentTime = 0;
+    await play();
+  }, [play]);
+
+  const cancelAdjustment = useCallback(() => {
+    adjustmentRef.current?.abort();
+    adjustmentIdRef.current = null;
+    setAdjustments((previous) =>
+      previous.map((item) =>
+        item.status === "pending"
+          ? { ...item, status: "cancelled", responseText: "已取消本次调整" }
+          : item,
+      ),
+    );
+  }, []);
+
+  const adjust = useCallback(
+    async (rawInstruction: string) => {
+      const instruction = normalizeAdjustmentInstruction(rawInstruction);
+      const current = runRef.current;
+      const memory = confirmedRef.current;
+      if (!instruction || !current || !memory || adjustmentIdRef.current)
+        return;
+      const selected =
+        current.selection.kind === "qq"
+          ? current.recommendations.tracks.find(
+              (item) =>
+                item.id ===
+                  (current.selection.kind === "qq"
+                    ? current.selection.trackId
+                    : null) && item.playable,
+            )
+          : (current.adjustedTrack ?? current.ai.track);
+      if (!selected?.audioUrl) return;
+      const requestId = id("adjust");
+      const runId = current.runId;
+      const path = current.selection.kind;
+      const baseTrackId =
+        path === "qq" && current.selection.kind === "qq"
+          ? current.selection.trackId
+          : (current.currentVersionId ?? selected.title);
+      adjustmentIdRef.current = requestId;
+      const controller = new AbortController();
+      adjustmentRef.current = controller;
+      setAdjustments((previous) => [
+        ...previous,
+        {
+          id: requestId,
+          instruction,
+          baseTrackId,
+          path,
+          status: "pending",
+          responseText: null,
+          error: null,
+        },
+      ]);
+      try {
+        const response = await fetch("/api/music/adjust", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          cache: "no-store",
+          signal: controller.signal,
+          body: JSON.stringify({
+            contractVersion: 1,
+            requestId,
+            profile: current.profile,
+            instruction,
+            path,
+            baseTrackId,
+          }),
+        });
+        const body = await response.json();
+        if (
+          controller.signal.aborted ||
+          adjustmentIdRef.current !== requestId ||
+          runRef.current?.runId !== runId
+        )
+          return;
+        if (
+          !response.ok ||
+          body.requestId !== requestId ||
+          body.contractVersion !== 1 ||
+          !body.track?.audioUrl
+        )
+          throw (
+            body.error ?? {
+              code: "NO_PLAYABLE_RESULT",
+              message: "这次没有得到可播放的音乐，请重试。",
+              retryable: true,
+            }
+          );
+        const checkedDuration = await probeAudio(
+          body.track.audioUrl,
+          path === "ai",
+        );
+        if (
+          controller.signal.aborted ||
+          adjustmentIdRef.current !== requestId ||
+          runRef.current?.runId !== runId
+        )
+          return;
+        if (!checkedDuration)
+          throw {
+            code: "NO_PLAYABLE_RESULT",
+            message: "新音乐暂时无法播放，已保留原来的版本。",
+            retryable: true,
+          };
+        const latest = runRef.current;
+        if (!latest) return;
+        if (path === "ai") {
+          const nextTrack: AiTrack & {
+            versionId: string;
+            explanation: string;
+          } = {
+            ...body.track,
+            durationSec: Math.min(body.track.durationSec, checkedDuration),
+            versionId: requestId,
+            explanation:
+              body.responseText ?? `根据“${instruction}”调整了音乐。`,
+          };
+          commit({
+            ...latest,
+            adjustedTrack: nextTrack,
+            currentVersionId: requestId,
+          });
+        } else {
+          const nextTrack: MockRecommendation = {
+            ...body.track,
+            durationSec: Math.min(body.track.durationSec, checkedDuration),
+            playable: true,
+          };
+          commit({
+            ...latest,
+            recommendations: {
+              ...latest.recommendations,
+              tracks: [
+                ...latest.recommendations.tracks.filter(
+                  (item) => item.id !== nextTrack.id,
+                ),
+                nextTrack,
+              ],
+            },
+            selection: { kind: "qq", trackId: nextTrack.id },
+            currentVersionId: requestId,
+          });
+        }
+        setAdjustments((previous) =>
+          previous.map((item) =>
+            item.id === requestId
+              ? {
+                  ...item,
+                  status: "succeeded",
+                  responseText: body.responseText ?? "已经为你准备好新的音乐。",
+                }
+              : item,
+          ),
+        );
+      } catch (error) {
+        if (
+          !controller.signal.aborted &&
+          adjustmentIdRef.current === requestId
+        ) {
+          const issue =
+            error && typeof error === "object" && "message" in error
+              ? (error as {
+                  code?: string;
+                  message: string;
+                  retryable?: boolean;
+                })
+              : { message: "调整暂时失败，请重试。" };
+          setAdjustments((previous) =>
+            previous.map((item) =>
+              item.id === requestId
+                ? {
+                    ...item,
+                    status: "failed",
+                    responseText: issue.message,
+                    error: {
+                      code: issue.code ?? "UNKNOWN",
+                      message: issue.message,
+                      retryable: issue.retryable ?? true,
+                    },
+                  }
+                : item,
+            ),
+          );
+        }
+      } finally {
+        if (adjustmentIdRef.current === requestId)
+          adjustmentIdRef.current = null;
+      }
+    },
+    [commit],
+  );
 
   useEffect(() => {
-    if (pathname === "/result" || pathname === "/play") return;
+    const previous = previousPathRef.current;
+    previousPathRef.current = pathname;
+    if (pathname === "/play") return;
+    if (pathname === "/result") {
+      if (previous === "/play") stop();
+      return;
+    }
     controllerRef.current?.abort();
+    adjustmentRef.current?.abort();
     stop();
     commit(null);
     confirmedRef.current = null;
+    setConfirmed(null);
+    setAdjustments([]);
   }, [pathname, commit, stop]);
 
   useEffect(
     () => () => {
       controllerRef.current?.abort();
+      adjustmentRef.current?.abort();
       audioRef.current?.pause();
     },
     [],
@@ -495,12 +821,21 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       audioKind,
       audioState,
       activeTrack,
+      currentTime,
+      duration,
+      adjustments,
+      confirmed,
       start,
       selectRecommendation,
       selectAi,
       retryAi,
       retryRecommendations,
       play,
+      pause,
+      seek,
+      replay,
+      adjust,
+      cancelAdjustment,
       stop,
     }),
     [
@@ -508,12 +843,21 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       audioKind,
       audioState,
       activeTrack,
+      currentTime,
+      duration,
+      adjustments,
+      confirmed,
       start,
       selectRecommendation,
       selectAi,
       retryAi,
       retryRecommendations,
       play,
+      pause,
+      seek,
+      replay,
+      adjust,
+      cancelAdjustment,
       stop,
     ],
   );

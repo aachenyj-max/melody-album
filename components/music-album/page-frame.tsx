@@ -7,12 +7,14 @@ export function PageFrame({
   large = false,
   moreLabel = "更多选项（暂未开放）",
   sharePlaceholder = false,
+  onBack,
 }: {
   title?: string;
   backHref?: string;
   large?: boolean;
   moreLabel?: string;
   sharePlaceholder?: boolean;
+  onBack?: () => void;
 }) {
   return (
     <header className={`album-header ${large ? "header-large" : ""}`}>
@@ -21,6 +23,7 @@ export function PageFrame({
           className="round-button back-button"
           href={backHref}
           aria-label="返回上一页"
+          onClick={onBack}
         >
           <ChevronLeft />
         </Link>

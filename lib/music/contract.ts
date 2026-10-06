@@ -84,7 +84,27 @@ export type MusicRun = {
   recommendations: RecommendationBranch;
   selection: MusicSelection;
   ambientTrack: PlayableAudio | null;
+  currentVersionId?: string | null;
+  adjustedTrack?: (AiTrack & { versionId: string; explanation: string }) | null;
 };
+
+export type AdjustmentRun = {
+  id: string;
+  instruction: string;
+  baseTrackId: string;
+  path: "ai" | "qq";
+  status: "pending" | "succeeded" | "failed" | "cancelled";
+  responseText: string | null;
+  error: { code: string; message: string; retryable: boolean } | null;
+};
+
+export function normalizeAdjustmentInstruction(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const instruction = value.trim();
+  return instruction.length >= 1 && instruction.length <= 300
+    ? instruction
+    : null;
+}
 
 const nonempty = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
