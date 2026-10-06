@@ -32,9 +32,9 @@
 - [ ] SDD-00 至 SDD-07 全部完成
 - [ ] 用户主链路已闭环：上传 → 理解 → 生成/推荐 → 播放 → 保存 → 刷新查看
 - [ ] 线上环境已通过 Demo 剧本验收
-- [x] 最后更新：2026-10-06，SDD-03 已实现并验收；用户主线下一阶段 SDD-04。SDD-06 规划已提前完成。
+- [x] 最后更新：2026-10-06，SDD-03 已实现并验收（提交 `fcf5424`）；用户主线下一阶段 SDD-04。SDD-06 规划已提前完成。
 
-SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清单见 [tasks.md](specs/001-app-shell/tasks.md)；SDD-01 的验证步骤与已知限制见 [quickstart.md](specs/002-memory-home/quickstart.md)。SDD-02 已实现上传和记忆理解的演示适配器；SDD-03 已接通真实音乐生成与本地 QQ mock。完整播放器和保存持久化分别留给 SDD-04/05。
+SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清单见 [tasks.md](specs/001-app-shell/tasks.md)；SDD-01 的验证步骤与已知限制见 [quickstart.md](specs/002-memory-home/quickstart.md)。SDD-02 已实现上传和记忆理解的演示适配器；SDD-03 已接通 fal.ai ACE-Step 真实音乐生成与本地 QQ mock。完整播放器和保存持久化分别留给 SDD-04/05。
 
 ## 阶段清单
 
@@ -164,7 +164,7 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 **建议**：Astra / high；必须执行 clarify；预计 1 次 AI Coding 对话，5–6 个实现回合。
 
-- [ ] 建立 `specs/007-agent-workbench/` 的 SDD 文件
+- [x] 建立 `specs/007-agent-workbench/` 的 SDD 文件
 - [ ] 建立独立内部访问路径，不加入用户端导航
 - [ ] 展示 prompt、loop、skill、tool 配置版本
 - [ ] 支持测试照片/故事运行
@@ -219,10 +219,11 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 | 2026-10-05 | SDD-02 | 完成照片输入、压缩预算、Memory Profile 理解/修正、演示失败场景、临时会话确认交接及 02/03 原型交互 | `node .sdd00-work/verify-sdd02.cjs` 14 项通过；320/375/430 无横向溢出；`npm run tscheck`、`npm run build` 通过；验收记录见 `specs/003-agent-memory-understanding/verification/` | 真实 Pi Agent 入口/凭证未提供，当前使用明确标识的演示适配器；音乐生成仍属 SDD-03 | SDD-03：音乐结果编排与等待兜底 |
 | 2026-10-06 | SDD-03 | 确认记忆转音乐意图；fal.ai MiniMax Music 2.6 真实队列生成；QQ mock 推荐；等待氛围音、跨页单音源、失败重试及过期响应保护；还原 04 号结果页 | 真实 API 两次完成并在浏览器播放；成功/慢响应/失败、QQ 空/仅元信息、自动播放阻止及旧请求场景通过；320/375/430 宽度与 125% 字体检查；format/lint/tscheck/build 通过，见 `specs/004-music-orchestration/verification/` | QQ 曲库仍为 mock；MiniMax 返回完整音频，客户端提供 28 秒试听；完整 05 播放控制与 07 保存待后续阶段 | SDD-04：沉浸式播放与自然语言调整 |
 | 2026-10-06 | SDD-03 模型切换 | 应用户要求将真实生成模型换为 fal.ai ACE-Step Prompt to Audio，发送纯器乐标记与 28 秒目标时长，保留原有队列/失败边界 | 服务端真实请求返回 `source=api`、WAV 音频地址；文件头为 `RIFF`；无头 Edge 加载音频元数据成功，时长 27.96 秒；本地代理偶发超时，队列 GET 已增加重试 | QQ 曲库仍为 mock；完整 05 播放控制与 07 保存待后续阶段 | SDD-04 |
+| 2026-10-06 | 阶段基线同步 | 核对 SDD-03 提交 `fcf5424`，同步 `AGENTS.md` 的 ACE-Step、QQ mock、音频会话与 04 号视觉验收边界；更正 SDD-06 已生成任务清单的记录 | 核对 Git 提交、SDD-03 验收文件和当前工作区；本次仅更新阶段文档，提交钩子运行 format/lint/tscheck | SDD-04/05 尚未实施；本地代理偶发连接超时 | SDD-04：沉浸式播放与自然语言调整 |
 
 ## 备注与阻塞
 
-- 2026-10-06：按用户要求提前完成 SDD-06 的规格、四项澄清及 [实施计划](specs/007-agent-workbench/plan.md)、研究、数据模型、两份接口契约和验收指南；文档链接/占位检查、18 项 FR 与 11 项 SC 追踪通过。固定 Pi v1.0.3 服务端 SDK，默认显式 demo；大模型 key 后续提供，live 验收待执行。尚未创建任务、安装 SDK、迁移内部表/bucket 或实施工作台，不勾选阶段完成；下一步可生成 SDD-06 tasks，实施前复核 SDD-03 草稿与上游契约。
+- 2026-10-06：按用户要求提前完成 SDD-06 的规格、四项澄清及 [实施计划](specs/007-agent-workbench/plan.md)、研究、数据模型、两份接口契约、验收指南和 [任务清单](specs/007-agent-workbench/tasks.md)；文档链接/占位检查、18 项 FR 与 11 项 SC 追踪通过。固定 Pi v1.0.3 服务端 SDK，默认显式 demo；大模型 key 后续提供，live 验收待执行。尚未安装 SDK、迁移内部表/bucket 或实施工作台，不勾选阶段完成；实施前复核已落地的 SDD-03 契约。
 
 - 当前状态：SDD-00 至 SDD-03 完成；SDD-04 至 SDD-07 未完成。
 - 九个状态已依 HTML/PNG 建立 DOM 框架，17 个主要跳转已验证；01、08、09 已按 SDD-01 核对结构、照片位置、文案和跳转。演示摄影素材已重生成高清版本；玻璃卡片轮廓、字体和图标仍有细节差异，05 背景及 09 照片比例后续可在取得原始素材时继续精修。
