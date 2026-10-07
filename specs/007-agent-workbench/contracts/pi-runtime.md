@@ -95,3 +95,5 @@ generateMusic 增加可选 mode/signal，原用户端调用保持现有默认 au
 原配置须通过受控版本注册与能力验证。部署已经删除旧工具/SDK 支持、协议不可用或当前凭证无法服务原模型时阻止运行；当前凭证不复制回历史。配置不可执行时返回 CONFIG_UNAVAILABLE；没有成功记录前不得冒充使用原版本。
 
 统一错误映射 CONFIG_UNAVAILABLE、MEMORY_TIMEOUT、INVALID_MEMORY_RESULT、PROVIDER_UNAVAILABLE、MUSIC_UNAVAILABLE、RUN_TIMEOUT、RUN_INTERRUPTED、DATA_UNAVAILABLE，包含阶段、可重跑性和脱敏说明。供应商原始错误不透传；HTTP 约定见 [workbench-api.md](workbench-api.md)。
+
+2026-10-07 实施登记：record_memory_profile 支持受控版本 1 与 2，输出 Memory Profile/HTTP 契约仍为 1。v2 仅在 Alibaba 映射上经官方 prepareArguments 解码 people/timeline 的 JSON 数组/null（单字段最多 16 KiB），然后照常经过 TypeBox 与 normalizeProfile；不解析其他字段、不补造数据。原 v1 保留历史行为。当前快照登记工具 2，版本与 digest 冻结，未知版本拒绝。

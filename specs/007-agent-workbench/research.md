@@ -10,7 +10,7 @@
 
 **Alternatives considered**：另建后端、迁移现有用户端 Pi adapter、以静态结果填工作台；会扩大范围或伪装运行。
 
-**Evidence**：AGENTS.md、progress.md、package.json/package-lock.json、components/music-album/photo-preparation.ts、lib/memory/*、lib/music/*。SDD-03 草稿未提交且未验收；本轮计划不完成其业务。
+**Evidence**：AGENTS.md、progress.md、package.json/package-lock.json、components/music-album/photo-preparation.ts、lib/memory/*、lib/music/*。早前研究时 SDD-03 尚为草稿；任务生成时已复核其完成提交 fcf5424，现有 generator 使用 ACE-Step，QQ 保持 mock。工作台复用已落地契约，不重新实现 SDD-03，也不覆盖当前 SDD-04 改动。
 
 ## 2. 精确 Pi 仓库、版本与嵌入方式
 
@@ -85,3 +85,5 @@
 ## 研究收敛
 
 技术设计均已确定。供应商/模型/key、SDK 实际安装、远端迁移、清理调度和宿主时限是后续实施输入及验收门槛，不是假定已接通的能力。无需为了等待 key 停止设计，也不把演示验收计为真实模型调用成功。
+
+2026-10-07 真实调用证据：Qwen 对 nullable people/timeline 返回 JSON 编码数组，导致 SDK schema 失败；工具 v2 的限定字段准备能力解决协议表示差异，未放宽最终字段/索引约束。原 v1 准确保留，9 个 Pi 隔离边界项目及实际两图/Qwen→FAL/浏览器播放通过。与仅凭官方能力描述或 faux SSE 的早期结果分开记录，见 verification/live-evidence.json。

@@ -1,0 +1,731 @@
+{
+  "workbench-production-rotation.json": [
+    {
+      "name": "old signed cookie invalid after password rotation",
+      "pass": true
+    },
+    {
+      "name": "five existing user entries reachable without internal workbench navigation",
+      "pass": true
+    }
+  ],
+  "workbench-fault-results.json": [
+    {
+      "scenario": "valid",
+      "status": "succeeded",
+      "modelCalls": 1,
+      "musicCalls": 1,
+      "qqCalls": 1,
+      "ms": 75
+    },
+    {
+      "scenario": "invalid",
+      "status": "failed",
+      "modelCalls": 3,
+      "musicCalls": 0,
+      "qqCalls": 0,
+      "ms": 174
+    },
+    {
+      "scenario": "provider",
+      "status": "failed",
+      "modelCalls": 1,
+      "musicCalls": 0,
+      "qqCalls": 0,
+      "ms": 3
+    },
+    {
+      "scenario": "ai",
+      "status": "partial",
+      "modelCalls": 1,
+      "musicCalls": 1,
+      "qqCalls": 1,
+      "ms": 74
+    },
+    {
+      "scenario": "qq",
+      "status": "partial",
+      "modelCalls": 1,
+      "musicCalls": 1,
+      "qqCalls": 1,
+      "ms": 42
+    },
+    {
+      "scenario": "both",
+      "status": "failed",
+      "modelCalls": 1,
+      "musicCalls": 1,
+      "qqCalls": 1,
+      "ms": 37
+    },
+    {
+      "scenario": "persistence",
+      "status": "failed",
+      "modelCalls": 1,
+      "musicCalls": 0,
+      "qqCalls": 0,
+      "ms": 84
+    },
+    {
+      "scenario": "abort",
+      "status": "interrupted",
+      "modelCalls": 1,
+      "musicCalls": 0,
+      "qqCalls": 0,
+      "ms": 206
+    },
+    {
+      "scenario": "timeout",
+      "status": "failed",
+      "modelCalls": 1,
+      "musicCalls": 0,
+      "qqCalls": 0,
+      "ms": 45005
+    }
+  ],
+  "workbench-production-live.json": [
+    {
+      "name": "missing live key fails, historical demo remains readable/executable without fallback",
+      "pass": true
+    },
+    {
+      "name": "five existing user entries reachable without internal workbench navigation",
+      "pass": true
+    }
+  ],
+  "workbench-audio-results.json": {
+    "nativeErrorVisible": true,
+    "font125": true,
+    "widths": [
+      320,
+      375,
+      430
+    ],
+    "overflow": false
+  },
+  "workbench-production-closed.json": [
+    {
+      "name": "all human pages/apis closed, machine maintenance remains independent",
+      "pass": true
+    },
+    {
+      "name": "five existing user entries reachable without internal workbench navigation",
+      "pass": true
+    }
+  ],
+  "workbench-browser-results.json": [
+    {
+      "name": "keyboard login and independent workbench",
+      "pass": true
+    },
+    {
+      "name": "input, config keyboard disclosure and mobile widths",
+      "pass": true
+    },
+    {
+      "name": "submit automatically executes all six stages",
+      "pass": true
+    },
+    {
+      "name": "current-default rerun and history comparison",
+      "pass": true
+    },
+    {
+      "name": "five user entries remain isolated",
+      "pass": true
+    },
+    {
+      "name": "no browser runtime errors",
+      "pass": true
+    }
+  ],
+  "workbench-results.json": {
+    "checks": [
+      {
+        "name": "unauthenticated config and history denied",
+        "pass": true
+      },
+      {
+        "name": "origin and strict login body",
+        "pass": true
+      },
+      {
+        "name": "signed eight-hour cookie",
+        "pass": true
+      },
+      {
+        "name": "durable create and idempotent retry",
+        "pass": true
+      },
+      {
+        "name": "Pi demo six-stage pipeline persists",
+        "pass": true
+      },
+      {
+        "name": "private photo and sanitized history",
+        "pass": true
+      },
+      {
+        "name": "rerun makes independent snapshot and old result stays frozen",
+        "pass": true
+      },
+      {
+        "name": "comparison is real and all-or-nothing",
+        "pass": true
+      },
+      {
+        "name": "maintenance uses independent machine auth",
+        "pass": true
+      }
+    ],
+    "runs": [
+      "cbf653d7-3e00-45fc-b568-a92698f26009",
+      "9fb7fca4-4121-4130-a2f4-02e14005510f"
+    ],
+    "creationMs": [
+      2354
+    ],
+    "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+  },
+  "workbench-boundary-results.json": [
+    {
+      "name": "signed session expiry, password rotation and logout cookie clearing",
+      "pass": true
+    },
+    {
+      "name": "unregistered historical prompt/loop/tool cannot execute",
+      "pass": true
+    },
+    {
+      "name": "nonvisual model, mismatched API, URL credentials/query and missing key rejected before stream",
+      "pass": true
+    },
+    {
+      "name": "20/20 known profile/tool/availability differences; transient audio URLs ignored",
+      "pass": true
+    }
+  ],
+  "workbench-retention.json": {
+    "parent": "44f8a94a-d73f-4500-bad8-f2cdf231938a",
+    "child": "289634c8-c29c-4898-89d5-2f4a18bb222e",
+    "expiresAt": "2026-10-07T05:51:11.917Z",
+    "hash": "e7afe3a6d2f58da73f0c98e936e1ad3e943c90bc1644997c6b2ad2da7cfd41a4",
+    "passed": true,
+    "parentDatabaseDeleted": true,
+    "parentStorageDeleted": true,
+    "childReadable": true,
+    "expiredDenialCount": 4
+  },
+  "workbench-input-results.json": [
+    {
+      "name": "zero photos",
+      "status": 400
+    },
+    {
+      "name": "ten photos",
+      "status": 400
+    },
+    {
+      "name": "non JPEG MIME",
+      "status": 400
+    },
+    {
+      "name": "invalid JPEG header",
+      "status": 400
+    },
+    {
+      "name": "story >1000",
+      "status": 400
+    },
+    {
+      "name": "arbitrary execution field",
+      "status": 400
+    },
+    {
+      "name": "multipart actual bytes >3.5MiB",
+      "status": 413
+    },
+    {
+      "name": "nine JPEG photos with empty story",
+      "runId": "fdc3933e-7b04-4419-a841-63059112b635",
+      "stages": 6,
+      "status": "succeeded"
+    }
+  ],
+  "workbench-statistics.json": {
+    "created": [
+      {
+        "runId": "07ebf9a5-13c1-4612-8fe5-ee97138806fa",
+        "count": 1,
+        "ms": 2902
+      },
+      {
+        "runId": "0a71f36a-f882-4446-8d68-3682f53a295a",
+        "count": 9,
+        "ms": 4622
+      },
+      {
+        "runId": "1c72ef37-6a27-4805-9cce-81b3983271f4",
+        "count": 1,
+        "ms": 2061
+      },
+      {
+        "runId": "48a9d217-8afe-40d4-bfc2-7c13c838f9d7",
+        "count": 9,
+        "ms": 3657
+      },
+      {
+        "runId": "ebaee661-c9a1-45f3-8c7c-bf5f36a22500",
+        "count": 1,
+        "ms": 1860
+      },
+      {
+        "runId": "1ea1cbed-6192-436b-a5f7-420d578bfe1e",
+        "count": 9,
+        "ms": 3793
+      },
+      {
+        "runId": "7549c7d7-0aa9-4c30-8782-8b3151a2027f",
+        "count": 1,
+        "ms": 1744
+      },
+      {
+        "runId": "6a0a3c4a-574d-4d4f-b39a-3cf2c5b92a3d",
+        "count": 9,
+        "ms": 3805
+      },
+      {
+        "runId": "0fb1a9e4-358f-4dd7-a88e-ccec893f051d",
+        "count": 1,
+        "ms": 1804
+      },
+      {
+        "runId": "6f5bbab0-51e0-486e-9c81-4b713dcec4f7",
+        "count": 9,
+        "ms": 3504
+      },
+      {
+        "runId": "eb7658b0-6520-4770-9f59-5b820f634635",
+        "count": 1,
+        "ms": 1858
+      },
+      {
+        "runId": "9e034f5d-c181-4fe0-bc3c-a0d7ff821371",
+        "count": 9,
+        "ms": 3645
+      },
+      {
+        "runId": "8d71edca-b73a-486c-af00-1e5a2e9fd04b",
+        "count": 1,
+        "ms": 1909
+      },
+      {
+        "runId": "415e138a-994d-4f89-884c-86d78ecd344b",
+        "count": 9,
+        "ms": 3772
+      },
+      {
+        "runId": "e4083efc-8ad7-40b0-a397-61a86a951e31",
+        "count": 1,
+        "ms": 1855
+      },
+      {
+        "runId": "f8f023ca-8a4a-462b-878e-f4a5ba3fb3e8",
+        "count": 9,
+        "ms": 3594
+      },
+      {
+        "runId": "b13f1046-ad74-4ac5-bf90-dfddd49e5426",
+        "count": 1,
+        "ms": 1814
+      },
+      {
+        "runId": "d1e50044-eac0-4a80-86fc-4c14190e9c0a",
+        "count": 9,
+        "ms": 5042
+      },
+      {
+        "runId": "7a450d39-3f36-43fa-9a5c-b3d24bc98a96",
+        "count": 1,
+        "ms": 1996
+      },
+      {
+        "runId": "91573e43-847c-43cf-a800-c882697f5751",
+        "count": 9,
+        "ms": 3656
+      }
+    ],
+    "executed": [
+      {
+        "runId": "07ebf9a5-13c1-4612-8fe5-ee97138806fa",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "1c72ef37-6a27-4805-9cce-81b3983271f4",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "ebaee661-c9a1-45f3-8c7c-bf5f36a22500",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "7549c7d7-0aa9-4c30-8782-8b3151a2027f",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "0fb1a9e4-358f-4dd7-a88e-ccec893f051d",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "eb7658b0-6520-4770-9f59-5b820f634635",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "8d71edca-b73a-486c-af00-1e5a2e9fd04b",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "e4083efc-8ad7-40b0-a397-61a86a951e31",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "b13f1046-ad74-4ac5-bf90-dfddd49e5426",
+        "status": "succeeded",
+        "stages": 6
+      },
+      {
+        "runId": "7a450d39-3f36-43fa-9a5c-b3d24bc98a96",
+        "status": "succeeded",
+        "stages": 6
+      }
+    ],
+    "reruns": [
+      {
+        "parent": "07ebf9a5-13c1-4612-8fe5-ee97138806fa",
+        "child": "cf7adc51-a2ba-434f-a9d3-f3ab4a6b6fe0",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "1c72ef37-6a27-4805-9cce-81b3983271f4",
+        "child": "d56abe2c-f148-4abf-8b0e-ca5388b539e6",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "ebaee661-c9a1-45f3-8c7c-bf5f36a22500",
+        "child": "354797a9-e072-4eb0-a46a-28cc7ac255c2",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "7549c7d7-0aa9-4c30-8782-8b3151a2027f",
+        "child": "24e77910-15c2-4587-bd84-4d706829e771",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "0fb1a9e4-358f-4dd7-a88e-ccec893f051d",
+        "child": "81ea223c-7c6d-422c-ac9c-80faa1caaf30",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "eb7658b0-6520-4770-9f59-5b820f634635",
+        "child": "251034b5-3c23-4635-a7f8-7f73650b9875",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "8d71edca-b73a-486c-af00-1e5a2e9fd04b",
+        "child": "e4a11a12-2705-4a81-b982-cb27e538baad",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "e4083efc-8ad7-40b0-a397-61a86a951e31",
+        "child": "a0039de9-ebb2-4cb7-ae8e-0369f20653bb",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "b13f1046-ad74-4ac5-bf90-dfddd49e5426",
+        "child": "27cb4d8b-dee2-4e87-aa23-f1f94ebe0363",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      },
+      {
+        "parent": "7a450d39-3f36-43fa-9a5c-b3d24bc98a96",
+        "child": "a6ecc7d1-ee9a-46b4-af84-7de99c417f5f",
+        "oldUnchanged": true,
+        "configDigest": "1d17da5ddc152f1e6a3fc1e70e5e57fc082b6c307bf771f227ac6cf20553d59f"
+      }
+    ],
+    "negative": [
+      {
+        "path": "/runs?limit=51",
+        "status": 400
+      },
+      {
+        "path": "/runs?status=unknown",
+        "status": 400
+      },
+      {
+        "path": "/runs?cursor=invalid",
+        "status": 400
+      },
+      {
+        "path": "/runs?status=queued&status=succeeded",
+        "status": 400
+      },
+      {
+        "path": "/runs/07ebf9a5-13c1-4612-8fe5-ee97138806fa/execute",
+        "status": 400
+      },
+      {
+        "path": "/runs/07ebf9a5-13c1-4612-8fe5-ee97138806fa/rerun",
+        "status": 400
+      }
+    ],
+    "cursorPassed": true,
+    "under10s": 20,
+    "passed": true
+  },
+  "workbench-concurrency.json": {
+    "ids": [
+      "22fe5542-e6a6-4765-ada2-86fb3d226a59",
+      "ab12445b-31d6-4626-a854-536f5a2157c1",
+      "fa2f4f69-c4de-4cfd-979b-51f7e0f774c5"
+    ],
+    "twoIsolated": true,
+    "third": 429,
+    "retrySucceeded": true,
+    "snapshotFrozen": true,
+    "terminalFrozen": true,
+    "stepFrozen": true,
+    "lateWriteDenied": true
+  },
+  "workbench-production-normal.json": [
+    {
+      "name": "cross restart read and rerun 07ebf9a5-13c1-4612-8fe5-ee97138806fa",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun 1c72ef37-6a27-4805-9cce-81b3983271f4",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun ebaee661-c9a1-45f3-8c7c-bf5f36a22500",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun 7549c7d7-0aa9-4c30-8782-8b3151a2027f",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun 0fb1a9e4-358f-4dd7-a88e-ccec893f051d",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun eb7658b0-6520-4770-9f59-5b820f634635",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun 8d71edca-b73a-486c-af00-1e5a2e9fd04b",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun e4083efc-8ad7-40b0-a397-61a86a951e31",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun b13f1046-ad74-4ac5-bf90-dfddd49e5426",
+      "pass": true
+    },
+    {
+      "name": "cross restart read and rerun 7a450d39-3f36-43fa-9a5c-b3d24bc98a96",
+      "pass": true
+    },
+    {
+      "name": "16KiB streamed body budget, forged Host/Origin and tampered cookie rejected",
+      "pass": true
+    },
+    {
+      "name": "publishable role cannot read tables, internal RPC or private photo",
+      "pass": true
+    },
+    {
+      "name": "no actual server credential in 23 browser artifacts",
+      "pass": true
+    },
+    {
+      "name": "five existing user entries reachable without internal workbench navigation",
+      "pass": true
+    }
+  ],
+  "workbench-same-input.json": {
+    "parent": "cbf653d7-3e00-45fc-b568-a92698f26009",
+    "runs": [
+      {
+        "runId": "adbdcc9a-1bc1-4216-9bf5-ad50aac24eac",
+        "selection": "current",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "2dd080fe-417e-43ac-8e4f-b5a9d92c303e",
+        "selection": "original",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "1f80a50d-0a04-4a25-9b8a-a46075331e12",
+        "selection": "current",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "add49312-9c32-499e-8be8-10d70e1fab44",
+        "selection": "original",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "0fa7eeb8-079e-4986-9392-8ddfc228a57e",
+        "selection": "current",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "e8093742-1a6f-456c-9355-9c772484c4cb",
+        "selection": "original",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "6687e93e-8d13-41fb-8763-1d01d9191ef3",
+        "selection": "current",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "66fc4437-d26e-4877-8d63-bf5b6d7d75e2",
+        "selection": "original",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "25fcb14b-a511-4803-9f87-8e3e6210dd5d",
+        "selection": "current",
+        "status": "succeeded",
+        "oldUnchanged": true
+      },
+      {
+        "runId": "4164859b-2e70-45a4-bc8f-b41fee4c1ea3",
+        "selection": "original",
+        "status": "succeeded",
+        "oldUnchanged": true
+      }
+    ]
+  },
+  "workbench-deadline-results.json": {
+    "ms": 210003,
+    "status": "interrupted",
+    "error": "RUN_TIMEOUT",
+    "signalCancelledMusic": true,
+    "memoryPreserved": true,
+    "qqPreserved": true,
+    "scope": "actual runner/Pi with isolated DAL and music fixtures"
+  },
+  "expired-lease-transaction": {
+    "thirdRejected": true,
+    "twoLiveClaimed": true,
+    "staleWriteRejected": true,
+    "fixtureRolledBack": true,
+    "twoStaleDoNotBlock": true
+  },
+  "workbench-hard-crash-results.json": {
+    "scope": "Two own Node server worker processes; real runner/Pi SDK/DAL/Supabase/Storage; isolated slow demo stream for memory and existing development demo delay for music; no external model call.",
+    "evidence": [
+      {
+        "mode": "memory",
+        "runId": "3c9113cb-89eb-4962-ac02-169ca8f1c92e",
+        "rerunId": "ba9e47fe-9c58-4148-9078-b4c7d2ea9e7d",
+        "killMs": 5888,
+        "leaseExpiresAt": "2026-10-07T10:47:36.093645+00:00",
+        "status": "interrupted",
+        "frozenStages": [
+          "input"
+        ],
+        "lateWriteRejected": true,
+        "manualRerun": "succeeded",
+        "autoRerun": false
+      },
+      {
+        "mode": "music",
+        "runId": "478b18f3-e2cf-4231-a2f0-58b91c6bc59a",
+        "rerunId": "dde452f7-0b18-4143-8b96-bc05bac206ad",
+        "killMs": 8813,
+        "leaseExpiresAt": "2026-10-07T10:47:44.054307+00:00",
+        "status": "interrupted",
+        "frozenStages": [
+          "input",
+          "memory",
+          "music_profile",
+          "qq_recommendations"
+        ],
+        "lateWriteRejected": true,
+        "manualRerun": "succeeded",
+        "autoRerun": false
+      }
+    ]
+  },
+  "workbench-storage-failure-results.json": {
+    "scope": "Actual cleanup module and real Supabase manifests/private JPEGs; only first Storage remove result injected as error in an isolated process. Success retry uses production local HTTP API and actual Storage API.",
+    "parentId": "bf6222c3-e74e-4dd2-a25a-310bfde3924f",
+    "childId": "bcb5b39d-c7fa-4c2e-9f19-94d308f885c9",
+    "missingObjectId": "1e298a61-ece5-42ef-84e0-79bd8e7b9727",
+    "failedCounts": {
+      "recoveredRuns": 0,
+      "deletedRuns": 0,
+      "deletedObjects": 0,
+      "failedRuns": 1,
+      "hasMore": true
+    },
+    "retryCounts": {
+      "recoveredRuns": 0,
+      "deletedRuns": 1,
+      "deletedObjects": 1,
+      "failedRuns": 0,
+      "hasMore": false
+    },
+    "missingCounts": {
+      "recoveredRuns": 0,
+      "deletedRuns": 1,
+      "deletedObjects": 1,
+      "failedRuns": 0,
+      "hasMore": false
+    },
+    "duplicateCounts": {
+      "recoveredRuns": 0,
+      "deletedRuns": 0,
+      "deletedObjects": 0,
+      "failedRuns": 0,
+      "hasMore": false
+    },
+    "manifestRetained": true,
+    "claimReleased": true,
+    "expiredDenialCount": 4,
+    "parentDatabaseDeleted": true,
+    "parentStorageDeleted": true,
+    "childHashPreserved": true
+  }
+}

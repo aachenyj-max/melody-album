@@ -6,6 +6,7 @@ import {
   type MusicProfile,
 } from "./contract";
 import { fetch as proxyFetch, ProxyAgent } from "undici";
+import { setTimeout as delay } from "node:timers/promises";
 
 export type GenerationResult =
   | { ok: true; source: "api" | "demo"; track: AiTrack }
@@ -46,7 +47,9 @@ async function falFetch(url: string, key: string, init: RequestInit = {}) {
       ...(init.body ? { "Content-Type": "application/json" } : {}),
     },
     cache: "no-store",
-    signal: AbortSignal.timeout(20_000),
+    signal: init.signal
+      ? AbortSignal.any([init.signal, AbortSignal.timeout(20_000)])
+      : AbortSignal.timeout(20_000),
   } satisfies RequestInit;
   const proxyUrl = process.env.FAL_PROXY_URL?.trim();
   if (proxyUrl) {
@@ -75,15 +78,22 @@ function responseError(status: number): MusicErrorCode {
   return "PROVIDER_ERROR";
 }
 
-async function queueGet(url: string, key: string, deadline: number) {
+async function queueGet(
+  url: string,
+  key: string,
+  deadline: number,
+  signal?: AbortSignal,
+) {
   while (Date.now() < deadline) {
+    signal?.throwIfAborted();
     try {
-      const response = await falFetch(url, key);
+      const response = await falFetch(url, key, { signal });
       if (response.ok) return response;
       if (response.status < 500 && response.status !== 429) {
         throw new Error(`fal queue request ${response.status}`);
       }
     } catch (error) {
+      signal?.throwIfAborted();
       if (
         error instanceof Error &&
         error.message.startsWith("fal queue request")
@@ -93,7 +103,7 @@ async function queueGet(url: string, key: string, deadline: number) {
         name: error instanceof Error ? error.name : "unknown",
       });
     }
-    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    await delay(2_000, undefined, { signal });
   }
   throw new DOMException("fal queue timed out", "TimeoutError");
 }
@@ -101,6 +111,7 @@ async function queueGet(url: string, key: string, deadline: number) {
 async function completedResponse(
   initial: FalQueueResponse,
   key: string,
+  signal?: AbortSignal,
 ): Promise<FalQueueResponse> {
   if (!initial.request_id) return initial;
   const statusUrl = queueUrl(initial.status_url);
@@ -111,7 +122,8 @@ async function completedResponse(
   const deadline = Date.now() + RESULT_DEADLINE_MS;
   let lastStatus: unknown;
   while (Date.now() < deadline) {
-    const response = await queueGet(statusUrl, key, deadline);
+    signal?.throwIfAborted();
+    const response = await queueGet(statusUrl, key, deadline, signal);
     const state = (await response.json()) as FalQueueResponse;
     if (state.status !== lastStatus) {
       console.info("fal music status", { status: state.status ?? "unknown" });
@@ -119,10 +131,10 @@ async function completedResponse(
     }
     if (state.status === "FAILED") throw new Error("fal queue failed");
     if (state.status === "COMPLETED") {
-      const result = await queueGet(resultUrl, key, deadline);
+      const result = await queueGet(resultUrl, key, deadline, signal);
       return (await result.json()) as FalQueueResponse;
     }
-    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    await delay(2_000, undefined, { signal });
   }
   throw new DOMException("fal queue timed out", "TimeoutError");
 }
@@ -141,19 +153,23 @@ function playableAudio(raw: FalQueueResponse): FalAudio | null {
 
 export async function generateMusic(
   profile: MusicProfile,
+  options: { mode?: "auto" | "demo" | "live"; signal?: AbortSignal } = {},
 ): Promise<GenerationResult> {
   const validated = validateMusicProfile(profile);
   if (!validated) return { ok: false, error: musicError("INVALID_PROFILE") };
 
   const key = process.env.FAL_KEY?.trim();
-  if (!key) {
+  options.signal?.throwIfAborted();
+  if (options.mode === "live" && !key)
+    return { ok: false, error: musicError("GENERATION_UNAVAILABLE") };
+  if (options.mode === "demo" || (!key && options.mode !== "live")) {
     const scenario =
       process.env.NODE_ENV === "development"
         ? process.env.FAL_DEMO_SCENARIO
         : undefined;
-    await new Promise((resolve) =>
-      setTimeout(resolve, scenario === "slow" ? 45_000 : 650),
-    );
+    await delay(scenario === "slow" ? 45_000 : 650, undefined, {
+      signal: options.signal,
+    });
     if (scenario === "error")
       return { ok: false, error: musicError("PROVIDER_ERROR") };
     return {
@@ -171,8 +187,9 @@ export async function generateMusic(
   }
 
   try {
-    const submitted = await falFetch(QUEUE_URL, key, {
+    const submitted = await falFetch(QUEUE_URL, key as string, {
       method: "POST",
+      signal: options.signal,
       body: JSON.stringify({
         prompt: validated.instrumentalPrompt,
         instrumental: true,
@@ -186,7 +203,8 @@ export async function generateMusic(
 
     const result = await completedResponse(
       (await submitted.json()) as FalQueueResponse,
-      key,
+      key as string,
+      options.signal,
     );
     const audio = playableAudio(result);
     if (!audio) {
@@ -208,6 +226,7 @@ export async function generateMusic(
       },
     };
   } catch (error) {
+    options.signal?.throwIfAborted();
     // Do not log prompts, credentials, provider bodies, or generated URLs.
     console.error("fal music transport failed", {
       name: error instanceof Error ? error.name : "unknown",

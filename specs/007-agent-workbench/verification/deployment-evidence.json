@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-07",
+  "deployment": {
+    "projectId": "prj_1tQU3Ec3DZzgqZcvzNHq0Pv8dQvF",
+    "teamId": "team_yPve3HhsqUyx6tR51RMfS1rg",
+    "deploymentId": "dpl_9ekyhNmcBYnTDDVDEWpWW1UiF2sN",
+    "environment": "preview",
+    "deploymentUrl": "https://melody-album-acceptance-12l5ycdkq-yijia-s-projects.vercel.app",
+    "origin": "https://melody-album-acceptance-yijia-s-projects.vercel.app",
+    "status": "READY",
+    "date": "2026-10-07T13:32:59.401Z",
+    "sourceSnapshotDigest": "815c72a92c11dd7d768c6e731f5b82f60c73b8fae9ee8c653cc0cedcb6d2055b"
+  },
+  "budget": {
+    "deploymentId": "dpl_9ekyhNmcBYnTDDVDEWpWW1UiF2sN",
+    "scope": "acceptance-only",
+    "elapsedMs": 240001,
+    "nodeVersion": "v24.21.0",
+    "configuredBudgetSeconds": 300,
+    "wallMs": 240638,
+    "passed": true
+  },
+  "functional": {
+    "runId": "112aef56-33ff-4ac5-b038-473ec5a8bf90",
+    "rerunId": "fd3456ba-af6e-4068-88a5-c8ce23d7d103",
+    "status": "succeeded",
+    "stages": [
+      {
+        "stage": "input",
+        "status": "succeeded",
+        "source": "deterministic"
+      },
+      {
+        "stage": "memory",
+        "status": "succeeded",
+        "source": "demo"
+      },
+      {
+        "stage": "music_profile",
+        "status": "succeeded",
+        "source": "deterministic"
+      },
+      {
+        "stage": "ai_music",
+        "status": "succeeded",
+        "source": "demo"
+      },
+      {
+        "stage": "qq_recommendations",
+        "status": "succeeded",
+        "source": "mock"
+      },
+      {
+        "stage": "summary",
+        "status": "succeeded",
+        "source": "deterministic"
+      }
+    ],
+    "secureCookie": true,
+    "unauthenticatedDenied": true,
+    "forgedOriginDenied": true,
+    "humanMaintenanceDenied": true,
+    "frozenHistory": true,
+    "independentPhoto": true,
+    "userEntries": 5,
+    "passed": true
+  },
+  "retention": {
+    "parent": "51c9da51-4eba-4161-9fd2-feceb751da45",
+    "child": "e5d49640-bfc2-47d2-8e05-8d7f5174062c",
+    "expiresAt": "2026-10-07T13:42:33.454Z",
+    "hash": "e7afe3a6d2f58da73f0c98e936e1ad3e943c90bc1644997c6b2ad2da7cfd41a4",
+    "scope": "Synthetic timed retention fixture, real private object and hosted independent rerun copy.",
+    "parentDatabaseDeleted": true,
+    "parentStorageDeleted": true,
+    "childReadable": true,
+    "expiredDenials": 4,
+    "passed": true
+  },
+  "cron": {
+    "httpRequestId": 3,
+    "created": "2026-10-07T13:43:00Z",
+    "status": 200,
+    "timedOut": false,
+    "deletedRuns": 1,
+    "deletedObjects": 1,
+    "failedRuns": 0,
+    "hasMore": false,
+    "acceptanceSchedule": "temporary minute job automatically invoked the same maintenance function",
+    "temporaryJobRemoved": true,
+    "normalSchedule": "0 * * * *",
+    "normalActive": true,
+    "naturalHourlyTickObserved": false
+  },
+  "browser": [
+    {
+      "name": "keyboard login and independent workbench",
+      "pass": true
+    },
+    {
+      "name": "input, config keyboard disclosure and mobile widths",
+      "pass": true
+    },
+    {
+      "name": "submit automatically executes all six stages",
+      "pass": true
+    },
+    {
+      "name": "current-default rerun and history comparison",
+      "pass": true
+    },
+    {
+      "name": "five user entries remain isolated",
+      "pass": true
+    },
+    {
+      "name": "no browser runtime errors",
+      "pass": true
+    }
+  ],
+  "bundle": {
+    "passed": true,
+    "htmlPages": 3,
+    "javascriptFiles": 12,
+    "privateValuesChecked": 6,
+    "valuesRecorded": false
+  },
+  "qwen": {
+    "scope": "Actual Pi SDK/Agent and registered Alibaba provider; isolated OpenAI SSE transport, no Aliyun request or real key.",
+    "requests": 1,
+    "images": 2,
+    "maxTokens": 2048,
+    "thinking": false,
+    "toolPersisted": 1,
+    "tracePersisted": 1,
+    "model": "qwen3-vl-flash",
+    "provider": "alibaba",
+    "rejectedSnapshotProtocolHostMissingKey": true,
+    "realCall": "not_run"
+  },
+  "humanTrialSamples": 0,
+  "tasksCompleted": 47,
+  "tasksTotal": 49,
+  "stageComplete": false,
+  "subsequentLiveEvidence": "live-evidence.json",
+  "subsequentNaturalHourly": {
+    "jobRunId": 20,
+    "at": "2026-10-07T14:00:00Z",
+    "httpRequestId": 11,
+    "status": 200,
+    "timedOut": false,
+    "failedRuns": 0
+  }
+}

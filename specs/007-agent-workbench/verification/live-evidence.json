@@ -1,0 +1,257 @@
+{
+  "date": "2026-10-07",
+  "currentDeployment": {
+    "projectId": "prj_1tQU3Ec3DZzgqZcvzNHq0Pv8dQvF",
+    "teamId": "team_yPve3HhsqUyx6tR51RMfS1rg",
+    "deploymentId": "dpl_81mqqN7kWZ53FTcVnxoTQ8gsMHah",
+    "environment": "preview",
+    "deploymentUrl": "https://melody-album-acceptance-6hhez2klq-yijia-s-projects.vercel.app",
+    "origin": "https://melody-album-acceptance-yijia-s-projects.vercel.app",
+    "status": "READY",
+    "date": "2026-10-07T14:49:47.995Z",
+    "sourceSnapshotDigest": "5e5cbf8904d22e48aaa2c437192c3f4ce712be70668454655e4ad4a668fe042a"
+  },
+  "liveRunDeployment": {
+    "projectId": "prj_1tQU3Ec3DZzgqZcvzNHq0Pv8dQvF",
+    "teamId": "team_yPve3HhsqUyx6tR51RMfS1rg",
+    "deploymentId": "dpl_GcBTWvrbi4QS1Kg5AqCkUhhvQKxC",
+    "environment": "preview",
+    "deploymentUrl": "https://melody-album-acceptance-fp1yiw8w2-yijia-s-projects.vercel.app",
+    "origin": "https://melody-album-acceptance-yijia-s-projects.vercel.app",
+    "status": "READY",
+    "date": "2026-10-07T14:39:18.260Z",
+    "sourceSnapshotDigest": "87a2b9ec96fd798277de6849980380ddac3cb083be3b15d17cfb67a84a205801"
+  },
+  "runId": "f1b66992-f805-4518-8629-20ff83e93ec9",
+  "rerunId": "804766b6-cf5c-4c28-bf4b-bdb6e7ccd485",
+  "photoCount": 2,
+  "elapsedMs": 28299,
+  "profile": {
+    "event": "在日落时分举起毕业帽，背景是城市天际线；一只虎斑猫躺在室内床上，阳光洒在它身上",
+    "title": "毕业时刻与猫的午后",
+    "people": [
+      "一位穿毕业袍的人"
+    ],
+    "source": "agent",
+    "version": 1,
+    "timeline": [
+      {
+        "label": "毕业庆祝",
+        "photoIndices": [
+          0
+        ]
+      },
+      {
+        "label": "居家休憩",
+        "photoIndices": [
+          1
+        ]
+      }
+    ],
+    "atmosphere": "温暖、宁静、充满希望与日常安逸",
+    "photoOrder": [
+      0,
+      1
+    ]
+  },
+  "toolCalls": [
+    {
+      "name": "record_memory_profile",
+      "version": "2",
+      "status": "succeeded"
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-10-07T14:40:18.618Z",
+      "type": "agent_start"
+    },
+    {
+      "at": "2026-10-07T14:40:18.618Z",
+      "type": "turn_start"
+    },
+    {
+      "at": "2026-10-07T14:40:21.142Z",
+      "type": "tool_execution_start",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "at": "2026-10-07T14:40:21.276Z",
+      "type": "tool_execution_end",
+      "status": "succeeded",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "at": "2026-10-07T14:40:21.277Z",
+      "type": "turn_end"
+    },
+    {
+      "at": "2026-10-07T14:40:21.277Z",
+      "type": "agent_end"
+    }
+  ],
+  "stages": [
+    {
+      "stage": "input",
+      "status": "succeeded",
+      "source": "deterministic"
+    },
+    {
+      "stage": "memory",
+      "status": "succeeded",
+      "source": "agent"
+    },
+    {
+      "stage": "music_profile",
+      "status": "succeeded",
+      "source": "deterministic"
+    },
+    {
+      "stage": "ai_music",
+      "status": "succeeded",
+      "source": "api"
+    },
+    {
+      "stage": "qq_recommendations",
+      "status": "succeeded",
+      "source": "mock"
+    },
+    {
+      "stage": "summary",
+      "status": "succeeded",
+      "source": "deterministic"
+    }
+  ],
+  "frozenHistory": true,
+  "oldDemoHistoryReadable": true,
+  "browser": {
+    "passed": true,
+    "runId": "f1b66992-f805-4518-8629-20ff83e93ec9",
+    "rerunId": "804766b6-cf5c-4c28-bf4b-bdb6e7ccd485",
+    "durationSec": 27.956833,
+    "actualPlayback": true,
+    "playbackSeconds": 1.018929,
+    "widths": [
+      320,
+      375,
+      430
+    ],
+    "comparisonGroups": 6,
+    "runtimeErrors": 0,
+    "clientTimezone": "America/Los_Angeles",
+    "beijingFilterVerified": true,
+    "scope": "Read-only verified hosted live records; no additional generation calls."
+  },
+  "invalidKey": {
+    "passed": true,
+    "error": "PROVIDER_UNAVAILABLE",
+    "realProviderRequest": true,
+    "persistedProfiles": 0,
+    "toolCalls": 0,
+    "demoFallback": false
+  },
+  "argumentBoundaries": {
+    "scope": "Actual Pi SDK and local isolated SSE transport, no provider request",
+    "results": [
+      {
+        "name": "encoded-v2",
+        "valid": true,
+        "persisted": 1,
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "name": "ordinary-v2",
+        "valid": true,
+        "persisted": 1,
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "name": "encoded-v1",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      },
+      {
+        "name": "invalid-json",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      },
+      {
+        "name": "wrong-type",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      },
+      {
+        "name": "unknown-field",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      },
+      {
+        "name": "invalid-index",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      },
+      {
+        "name": "duplicate-order",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      },
+      {
+        "name": "oversized-json",
+        "valid": false,
+        "persisted": 0,
+        "requests": 3,
+        "passed": true
+      }
+    ],
+    "unregisteredVersionRejected": true
+  },
+  "bundle": {
+    "passed": true,
+    "htmlPages": 3,
+    "javascriptFiles": 12,
+    "privateValuesChecked": 7,
+    "valuesRecorded": false
+  },
+  "initialFailedRun": {
+    "runId": "a9d9190a-de35-438f-8058-a625eb3723ba",
+    "toolVersion": "1",
+    "error": "INVALID_MEMORY_RESULT",
+    "dependentStages": "skipped",
+    "demoFallback": false
+  },
+  "naturalHourlyMaintenance": {
+    "jobRunId": 20,
+    "at": "2026-10-07T14:00:00Z",
+    "httpRequestId": 11,
+    "status": 200,
+    "timedOut": false,
+    "failedRuns": 0
+  },
+  "humanTrial": {
+    "samples": 0,
+    "userDecision": "先完成技术验收，真人试用待验证"
+  },
+  "tasks": {
+    "completed": 47,
+    "total": 49,
+    "remaining": [
+      "T045",
+      "T049"
+    ]
+  },
+  "stageComplete": false
+}

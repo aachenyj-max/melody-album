@@ -30,11 +30,11 @@
 ## 总体状态
 
 - [ ] SDD-00 至 SDD-07 全部完成
-- [ ] 用户主链路已闭环：上传 → 理解 → 生成/推荐 → 播放 → 保存 → 刷新查看
+- [x] 用户主链路已闭环：上传 → 理解 → 生成/推荐 → 播放 → 保存 → 刷新查看
 - [ ] 线上环境已通过 Demo 剧本验收
-- [x] 最后更新：2026-10-06，SDD-04 已实现并完成开发验收（实现提交 `2f6933f`），实现基线已同步至 `AGENTS.md`；用户主线下一阶段 SDD-05。SDD-06 规划已提前完成。
+- [x] 最后更新：2026-10-07，SDD-06 技术验收通过：HTTPS、真实 Qwen/ACE-Step、实际音频播放、参数兼容/跨时区修复、重跑和自动清理；47/49 项。用户选择真人试用待验证（样本 0），阶段总项仍未完成。
 
-SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清单见 [tasks.md](specs/001-app-shell/tasks.md)；SDD-01 的验证步骤与已知限制见 [quickstart.md](specs/002-memory-home/quickstart.md)。SDD-02 已实现上传和记忆理解的演示适配器；SDD-03 已接通 fal.ai ACE-Step 真实音乐生成与本地 QQ mock；SDD-04 已完成当前会话内的真实播放控制、照片同步、解释抽屉与调整。保存持久化留给 SDD-05。
+SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清单见 [tasks.md](specs/001-app-shell/tasks.md)；SDD-01 的验证步骤与已知限制见 [quickstart.md](specs/002-memory-home/quickstart.md)。SDD-02 已实现上传和记忆理解的演示适配器；SDD-03 已接通 fal.ai ACE-Step 真实音乐生成与本地 QQ mock；SDD-04 已完成当前会话内的真实播放控制、照片同步、解释抽屉与调整；SDD-05 已完成 Supabase 保存、私有照片和 08/09 动态读取。SDD-06 内部工作台已通过本地与 HTTPS 真实技术验收，完成 47/49 项；下一步收集 10 位真人试用数据并完成阶段交付，再衔接 SDD-07。
 
 ## 阶段清单
 
@@ -165,19 +165,21 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 **建议**：Astra / high；必须执行 clarify；预计 1 次 AI Coding 对话，5–6 个实现回合。
 
 - [x] 建立 `specs/007-agent-workbench/` 的 SDD 文件
-- [ ] 建立独立内部访问路径，不加入用户端导航
-- [ ] 展示 prompt、loop、skill、tool 配置版本
-- [ ] 支持测试照片/故事运行
-- [ ] 查看 Memory Profile、Music Profile、工具调用和结果
-- [ ] 支持手动重跑
-- [ ] 支持运行结果对比，旧记录不可被覆盖
+- [x] 建立独立内部访问路径，不加入用户端导航
+- [x] 展示 prompt、loop、skill、tool 配置版本
+- [x] 支持测试照片/故事运行
+- [x] 查看 Memory Profile、Music Profile、工具调用和结果
+- [x] 支持手动重跑
+- [x] 支持运行结果对比，旧记录不可被覆盖
 
 **阶段完成条件**
 
-- [ ] 内部人员可完成一次测试运行并看到完整中间结果
-- [ ] 重跑产生新记录
-- [ ] 工作台异常不影响用户主流程
-- [ ] 更新本文件并提交阶段结果
+- [x] 内部人员可完成一次测试运行并看到完整中间结果（本地 Pi demo 与 HTTPS 真实 Qwen/Pi/ACE-Step 均通过）
+- [x] 重跑产生新记录（同一输入 10 次执行通过，旧快照不变）
+- [x] 工作台异常不影响用户主流程（本地生产与 HTTPS Preview 五入口回归通过）
+- [x] 更新本文件与 AGENTS.md，并提交技术实现及脱敏验收证据
+- [ ] 10 位内部试用者完成“提交 → 详情 → 重跑 → 对比”的真人验收（T045；实际样本 0）
+- [ ] 满足全部验收条件并完成阶段交付（T049；阶段总项保持未完成）
 
 ### [ ] SDD-07：MVP 验收、硬化与上线
 
@@ -223,8 +225,19 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 | 2026-10-06 | SDD-04 | 05 本次照片同步与单音源播放控制、默认收起的 AI 解释；06 自然语言/快捷建议、同源调整路由、成功发布与失败回退；07 可播放资格门槛 | `format`/`lint`/`tscheck`/`build` 通过；生产构建下浏览器主链路 11 项、等待/推荐/键盘/自动播放 5 项通过；05/06 在 360/390/430 px 无横向溢出，见 `specs/005-immersive-playback/verification/README.md` | QQ 曲库仍为 mock 且共用演示试听音频；07 保存写入由 SDD-05 实现；05 右侧 PNG 文案与 HTML 保存目标冲突；5 名外部评审的 SC-006 尚未执行 | SDD-05：保存音乐相册与 Supabase 数据 |
 | 2026-10-06 | 阶段基线同步 | 核对 SDD-04 实现提交 `2f6933f`，同步 `AGENTS.md` 中的 05/06 播放与调整边界、07 资格门槛及逐页验收范围 | 核对 `specs/005-immersive-playback/verification/README.md` 与当前工作区；本次仅更新阶段文档，提交钩子执行 format/lint/tscheck | 07 保存写入、QQ 真实曲库、05 文案与热点语义冲突、SC-006 外部评审仍未完成 | SDD-05：保存音乐相册与 Supabase 数据 |
 | 2026-10-06 | SDD-05 | 完成 Supabase 相册持久化、私有照片、幂等保存、失败恢复、AI 失败时 QQ 可播保存、08/09 动态读取与 07→08→09 主链路 | `npm run format`、`npm run lint`、`npm run tscheck`、`npm run build` 通过；API 重复/冲突/无效照片/双 cookie 隔离通过；Playwright + Edge 在 320/375/430 通过 07→08→09→08 及无溢出检查；详见 `specs/006-save-memory-album/verification/` | QQ 曲库仍为明确标识的 mock；Storage 中途断连未做破坏性故障注入；SC-002/SC-003/SC-004/SC-005 的 10 次统计演示留给发布验收 | SDD-06：内部 Agent 工作台 |
+| 2026-10-07 | SDD-06 技术实现与提交 | 完成独立工作台、Pi 1.0.3/Qwen3-VL-Flash、配置快照、六阶段执行、重跑/对比、私有持久化与自动维护；修复 Qwen 参数兼容及详情跨时区问题；同步 AGENTS.md 并提交代码与脱敏证据 | format/lint/tscheck、本地及云端 build 通过；真实 Qwen→Pi→ACE-Step/音频播放、240 秒 HTTPS 预算、故障恢复、自动清理、权限/密钥隔离通过；见 specs/007-agent-workbench/verification/ | 47/49；T045 真人样本 0，T049 阶段交付待完成；用户端理解仍 demo、QQ mock；Preview 为测试部署 | 真人试用与阶段交付，然后 SDD-07 |
 
 ## 备注与阻塞
+
+- 2026-10-07 凭证到位后技术补验：Preview 已安全配置 Qwen/FAL Secret 并开启理解/配乐 live。两张不同实际 JPEG 经真实 Qwen形成 source=agent Profile、Pi 工具/事件 awaited 落库；ACE-Step 返回 source=api，QQ mock，父/原版子六阶段 succeeded，旧详情不变且旧 demo 可读。修复供应商字符串化 people/timeline：工具 v2 限定解码后保留 schema/语义验证，原 v1 行为保留，9 项参数边界通过；初始失败记录如实留存。真实错误 key 拒绝且无回退。直接详情时区 hydration 问题修复后，America/Los_Angeles 浏览器以北京时间显示/筛选，3 宽度/6 组对比/27.96 秒真实音频播放通过、错误 0。format/lint/tscheck/本地及云端 build、实际浏览器密钥扫描/diff 检查通过。自然整点 Cron 14:00 UTC/22:00 北京时间也已 HTTP 200。完成 47/49，用户明确先技术验收，T045 真人样本 0 与 T049 阶段交付保留未完成，SDD-06 总项不勾选。见 [live 验收](specs/007-agent-workbench/verification/live.md)与 [脱敏证据](specs/007-agent-workbench/verification/live-evidence.json)。下一步收集真人试用结果后完成阶段交付，SDD-07 正式发布仍独立判断；下方 key 未提供说明属于此前历史状态。
+
+- 2026-10-07 HTTPS 补验：按用户授权建立独立受保护 Preview 项目；实际远端请求等待 240001 ms/往返 240638 ms、HTTP 200，Node v24.21.0 满足 >=22.19；Pi demo 九照片六阶段、重跑/对比、Secure cookie/权限、部署 Edge 音频和 320/375/430 px、五入口及 12 个 JS 密钥扫描通过。Vault 配置与第六份迁移应用；临时每分钟 Cron 实际自动 HTTP 200 并物理删除父记录/照片，四类过期 404，子副本哈希不变；临时任务已移除，正常每小时任务启用，未声称观察到自然整点。T037/T039/T047 勾选，完成 47/49；T045 真人样本 0、T049 交付未完成，SDD-06 总项保持未完成。Alibaba Qwen3-VL-Flash 固定 endpoint 与协议适配/隔离传输验证完成，真实 key 尚未提供、未调用阿里云；本地/Preview 均 demo。见 [部署验收](specs/007-agent-workbench/verification/deployment.md)及 [Qwen 配置](specs/007-agent-workbench/verification/qwen.md)。下一步凭证到位后验真实模型、收集真人样本，再完成阶段交付；本次候选不是 SDD-07 正式上线。此前未部署说明为本次补验前的历史状态。
+
+- 2026-10-07 本地故障补验：memory/音乐阶段分别强制结束独立 Node 执行进程，使用实际 runner/Pi SDK/DAL/Supabase/Storage，保留窗口仅注入隔离慢速 demo。实际等待 240 秒租约后，两条运行均回收为 interrupted；音乐阶段已完成的理解/意图/QQ 及 input 完整 JSON 未改变，旧 token 写入被拒绝，手动重跑获得新 ID 并 succeeded，原详情不变。Storage 首次删除错误由隔离夹具注入，实际待删记录和对象保留、四类到期访问拒绝；本地生产 HTTP 重试后物理删除父对象及关系记录，子副本哈希不变，缺失对象/重复清理通过。见 [US2](specs/007-agent-workbench/verification/us2.md) 与 evidence.json。已准备真人试用流程/空白 CSV，实际样本 0；T037/T039/T045/T047/T049 仅保留部署自动维护/对象删除、真人操作时间、实际宿主预算和阶段交付，SDD-06 总项仍未完成。下一步在部署目标明确后衔接 SDD-07。
+
+- 2026-10-07 收尾补充：SDD-06 实际 runner 的 210 秒截止、慢音乐取消、已完成理解/QQ 保留已通过隔离夹具验证；远端增量迁移修复失效租约占用并发名额，事务夹具证明两条失效租约不阻塞新运行、第三个有效领取被拒绝、旧 token 不可写，所有夹具回滚。任务清单已完成 44/49 项；T037/T039/T045/T047/T049 保留部署自动维护、真人试用及宿主/交付验收；本地实机故障已补验，见上一条。SDD-06 总项仍未完成。
+
+- 2026-10-07：SDD-06 已实现独立口令会话、Pi 1.0.3 实际 Agent loop、配置快照、六阶段自动执行、三表/私有 bucket、手动重跑、只读对比及本机每小时清理。20/20 启动小于 10 秒（1744–5042 ms），10 次完整运行、同一输入 10 次执行重跑、10 条跨重启读取/重跑、并发 2/第三条 429、远端冻结/迟到写入保护均通过。九照片空故事、非法输入、45 秒理解超时、独立分支失败与取消通过；320/375/430、键盘、125% 字体及生产五个用户入口通过。format/lint/tscheck/build、浏览器密钥扫描、实际 publishable/authenticated 越权、本机自动物理清理通过，详见 [SDD-06 verification](specs/007-agent-workbench/verification/README.md)。用户确认尚未部署：云端 Cron 已注册但 Vault URL/token 未设置，未发生真实维护 HTTP；实际宿主 240 秒预算、10 位试用者待验收，本地进程中断和 Storage 故障已补验，阶段总项保持未完成。真实 Pi/工作台配乐 live 未执行，默认 demo 不因已有 FAL_KEY 收费。部署事项在具备目标环境后衔接 SDD-07。
 
 - 2026-10-06：SDD-05 已完成规格、计划与任务清单，并实现保存 API、幂等相册写入、私有照片 Storage、服务端身份回退、07→08 保存流、08/09 列表与详情真实读取。Supabase 迁移 `20261006133305_memory_albums.sql` 已应用；`select 1 as connected`、五表/RLS、format/lint/tscheck/build 已通过。重复 requestId、请求冲突、无效照片、AI 失败保留 QQ、双 cookie 列表/详情/照片隔离均已验证；`DEMO_SESSION_SECRET` 已配置。Playwright + Edge 已完成 07→08→09→08 热点和 320/375/430 无溢出视觉验收，SDD-05 勾选完成；下一阶段为 SDD-06。
 
@@ -234,7 +247,7 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 - 当前状态：SDD-00 至 SDD-05 完成；SDD-06 至 SDD-07 未完成。
 - 九个状态已依 HTML/PNG 建立 DOM 框架，17 个主要跳转已验证；01、08、09 已按 SDD-01 核对结构、照片位置、文案和跳转。演示摄影素材已重生成高清版本；玻璃卡片轮廓、字体和图标仍有细节差异，05 背景及 09 照片比例后续可在取得原始素材时继续精修。
-- 05 的 PNG 可见按钮“查看 AI 理解”与 HTML 保存热点命名不一致，当前按 PNG 文案、HTML 目标实现；AI 理解由独立上拉区域提供。SDD-05 需继续核对 07 保存入口语义。
+- 05 的 PNG 可见按钮“查看 AI 理解”与 HTML 保存热点命名不一致，当前按 PNG 文案、HTML 目标实现；AI 理解由独立上拉区域提供。SDD-05 已按 HTML 闭合 07 保存入口、08 列表和 09 详情跳转。
 - lint 无错误；CSS 跨组件 specificity 警告和现有 Biome 配置弃用提示已记录。
-- Pi Agent 的真实入口/凭证仍属后续接入事项；SDD-02 使用明确标识的本地 `demo` 适配器。SDD-03 已接通真实 fal.ai ACE-Step 音乐生成；QQ 曲库当前按用户要求使用 mock，不宣称真实曲库已接通。
+- 内部工作台已接通真实 Pi/Qwen 并完成 HTTPS 技术验收；SDD-02 用户端理解仍使用明确标识的本地 `demo` 适配器。SDD-03 已接通真实 fal.ai ACE-Step 音乐生成；QQ 曲库当前按用户要求使用 mock，不宣称真实曲库已接通。
 - 歌词版、真实分享、自动事件归档、多人共创、年度记忆和完整原创歌曲不属于本次 MVP 阻塞项。

@@ -2,6 +2,9 @@
   "name": "tencent-music-hackathon",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,6 +19,8 @@
     "pre-commit": "npm run format && npm run lint && npm run tscheck"
   },
   "dependencies": {
+    "@earendil-works/pi-agent-core": "1.0.3",
+    "@earendil-works/pi-ai": "1.0.3",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.76.1",
     "class-variance-authority": "^0.7.1",

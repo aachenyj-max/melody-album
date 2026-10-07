@@ -1,10 +1,10 @@
 # 实施后设置与验收指南：内部 Agent 工作台
 
-本指南是后续实施的运行/验收要求。当前仅完成规格与计划，工作台页面、SDK、表、bucket、调度尚未创建；下述步骤不代表已经通过。对应 [plan.md](plan.md)、[数据模型](data-model.md)、[HTTP 契约](contracts/workbench-api.md)、[Pi 契约](contracts/pi-runtime.md)。
+本指南包含运行设置与完整验收要求。2026-10-07 本地实现、SDK、独立表/bucket/RPC 与本机自动清理已落地，实际证据见 [verification](verification/README.md)；不是所有部署/真人试用项目均已通过。HTTPS Preview 已完成自动清理、真实 240 秒请求和浏览器补验，10 位真人试用仍未验证；用户已配置 key，真实 Qwen/ACE-Step 与实际播放验收通过。对应 [plan.md](plan.md)、[数据模型](data-model.md)、[HTTP 契约](contracts/workbench-api.md)、[Pi 契约](contracts/pi-runtime.md)。
 
 ## Q1. 实施前准备与启动
 
-1. 核对 progress.md：SDD-00–02 完成，SDD-03 草稿尚未验收。确认当前 lib/memory 和 lib/music 契约与 [tasks.md](tasks.md) 一致，保留用户现有改动；按任务清单实施。
+1. 核对 progress.md：SDD-00 至 SDD-05 已完成，SDD-03 fcf5424、SDD-04 2f6933f、SDD-05 5936015；真实配乐为 ACE-Step、QQ 为 mock。确认当前 lib/memory 和 lib/music 契约与 [tasks.md](tasks.md) 一致，保留其他阶段改动。
 2. Node >=22.19；本机 22.23.1 已满足。实施时精确添加两个 Pi 1.0.3 SDK 并提交 lockfile；不要用旧 namespace 或浮动 main。
 3. 在本地 .env.local 人工填入内部口令、session secret（至少 32 字节随机值）、可信 origin=http://localhost:3000 和独立维护 token。所有值仅本地/部署密钥管理保存，不能发送到聊天或提交。SECRET_KEY 由用户人工填入；现有 Supabase URL/publishable key 沿用。
 4. 默认 PI_EXECUTION_MODE=demo、WORKBENCH_MUSIC_MODE=demo。不需要当前提供大模型 key；配置字段完整列表见 Pi 契约。已有 FAL_KEY 不应使工作台 demo 自动调用收费配乐。
@@ -18,7 +18,9 @@ npm.cmd ci
 npm.cmd run dev
 ~~~
 
-访问 http://localhost:3000/internal/agent-workbench。若使用其他端口，同步可信 origin；禁止错误配置导致验证绕过。口令表单只属内部工作台。
+访问 http://localhost:3000/internal/agent-workbench。本机已通过 `scripts/setup-workbench-local.ps1` 配置独立随机口令/secret/token，只写入忽略的 `.env.local`；口令读取该文件的 WORKBENCH_ACCESS_PASSWORD。脚本不会覆盖现有非空值，不处理 SECRET_KEY。若使用其他端口，同步可信 origin；口令表单只属内部工作台。直连数据库不稳定时可配置服务端 WORKBENCH_SUPABASE_PROXY_URL。
+
+本机每小时清理任务已安装并自动触发验证。重新安装可执行 `pwsh -NoProfile -File scripts/workbench-maintenance.ps1 -Install`；一次手动检查为同命令去掉 `-Install`。任务需要 Node 服务正在运行；云端 Cron 无法访问本机 localhost，部署后另配置 Vault HTTPS URL/token。
 
 代码完成后执行一次适当的质量检查，记录结果：
 
@@ -30,6 +32,8 @@ npm.cmd run build
 ~~~
 
 不用新增自动化测试框架；临时脚本/截图放 .sdd00-work/，持久验收放本目录 verification/。生产构建后的部署请求再验 SDK 导入、服务端密钥隔离、执行时限与清理，不以开发服务器通过代替部署验证。
+
+[HTTPS 部署入口与访问方式](verification/deployment.md)已可用于 SDD-06 补验，无需先完成 SDD-07；正式发布独立判断。[Qwen key 配置步骤](verification/qwen.md)区分本地与 Preview，本地 Qwen 为 live、配乐默认 demo；当前 Preview 理解与配乐均 live，QQ mock。
 
 ## Q2. 内部访问与权限
 
@@ -73,7 +77,7 @@ npm.cmd run build
 
 选择两条同输入/不同配置，再选不同输入/不同结果，检查 input/config/memory/musicProfile/tools/summary 六组。故障样本的 pending、skipped、空值与不存在不同，不把时间戳和临时 URL 波动当核心变化。比较前后两条历史内容不变。
 
-预先注入 20 个已知配置/Profile/工具状态差异，至少 19 个能在同一视图识别（SC-004）；不是凭视觉印象宣称 95%。邀请至少 10 位内部试用者完成提交→详情→重跑→对比，扣除外部等待，>=9 位累计操作 <=3 分钟，并指出一个差异（SC-007）；不足样本则记录“未验证”。
+预先注入 20 个已知配置/Profile/工具状态差异，至少 19 个能在同一视图识别（SC-004）；不是凭视觉印象宣称 95%。邀请至少 10 位内部试用者完成提交→详情→重跑→对比，扣除外部等待，>=9 位累计操作 <=3 分钟，并指出一个差异（SC-007）；不足样本则记录“未验证”。可使用 [试用流程](verification/trial-guide.md) 与 [空白计时 CSV](verification/trial-results.csv)；尚未部署时可轮流使用本机，其他电脑不能用自己的 localhost 访问这台电脑。
 
 ## Q6. 失败、超时与分支
 
