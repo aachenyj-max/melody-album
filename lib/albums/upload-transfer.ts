@@ -8,7 +8,6 @@ import {
   albumPhotoPath,
   createTransferAlbum,
   findTransferAlbum,
-  missingStorageObject,
 } from "./repository";
 import { AlbumSaveError } from "./save";
 
@@ -98,20 +97,23 @@ export async function startAlbumUpload(identity: AlbumIdentity, raw: unknown) {
         "相册正在重试，请稍后再试。 ",
       );
   }
+  const stored = await db.storage
+    .from(ALBUM_BUCKET)
+    .list(`albums/${album.id}`, { limit: 10 });
+  if (stored.error || !stored.data)
+    throw new AlbumSaveError(
+      "UPLOAD_UNAVAILABLE",
+      503,
+      "暂时无法检查照片上传状态，请重试。",
+    );
+  const storedNames = new Set(stored.data.map((item) => item.name));
   const items = [];
   for (const photo of photos) {
     const path = albumPhotoPath(album.id, photo.position);
-    const present = await db.storage.from(ALBUM_BUCKET).info(path);
-    if (!present.error && present.data) {
+    if (storedNames.has(String(photo.position))) {
       items.push({ position: photo.position, path, uploaded: true });
       continue;
     }
-    if (present.error && !missingStorageObject(present.error))
-      throw new AlbumSaveError(
-        "UPLOAD_UNAVAILABLE",
-        503,
-        "暂时无法检查照片上传状态，请重试。",
-      );
     const signed = await db.storage
       .from(ALBUM_BUCKET)
       .createSignedUploadUrl(path);

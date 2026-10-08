@@ -1787,10 +1787,15 @@ textarea:focus-visible {
 }
 .detail-track > div {
   flex: 1;
+  min-width: 0;
+  padding-right: 11cqw;
 }
 .detail-track h2 {
   font-size: 4cqw;
   font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .detail-track p {
   margin-top: 1cqw;
@@ -1810,6 +1815,16 @@ textarea:focus-visible {
 }
 .detail-track > .detail-play-placeholder svg {
   width: 4.5cqw;
+}
+.detail-track audio {
+  display: none;
+}
+.detail-audio-error {
+  position: absolute;
+  right: 3cqw;
+  bottom: 1cqw;
+  font-size: 2.2cqw;
+  color: #9a3b29;
 }
 .detail-recommendations {
   position: absolute;

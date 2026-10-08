@@ -11,7 +11,7 @@ import {
 } from "./contract";
 import { transferDigest } from "./digest";
 import { persistAlbumDetails } from "./persist";
-import { albumAdmin, albumPhotoPath, missingStorageObject } from "./repository";
+import { albumAdmin, albumPhotoPath } from "./repository";
 
 export class AlbumSaveError extends Error {
   constructor(
@@ -424,20 +424,30 @@ export async function completeAlbumTransfer(
       "相册正在保存，请稍后重试。 ",
     );
   try {
+    const stored = await db.storage
+      .from(ALBUM_BUCKET)
+      .list(`albums/${albumId}`, { limit: 10 });
+    if (stored.error || !stored.data)
+      throw new AlbumSaveError(
+        "SAVE_UNAVAILABLE",
+        503,
+        "暂时无法核对照片，请重试。",
+      );
+    const storedNames = new Set(stored.data.map((item) => item.name));
     for (const photo of photos) {
       const path = albumPhotoPath(albumId, photo.position);
-      const downloaded = await db.storage.from(ALBUM_BUCKET).download(path);
-      if (downloaded.error && !missingStorageObject(downloaded.error))
-        throw new AlbumSaveError(
-          "SAVE_UNAVAILABLE",
-          503,
-          "暂时无法核对照片，请重试。",
-        );
-      if (downloaded.error || !downloaded.data)
+      if (!storedNames.has(String(photo.position)))
         throw new AlbumSaveError(
           "PHOTO_MISSING",
           409,
           `第 ${photo.position + 1} 张照片尚未上传，请重试。`,
+        );
+      const downloaded = await db.storage.from(ALBUM_BUCKET).download(path);
+      if (downloaded.error || !downloaded.data)
+        throw new AlbumSaveError(
+          "SAVE_UNAVAILABLE",
+          503,
+          "暂时无法核对照片，请重试。",
         );
       const blob = downloaded.data;
       const bytes = new Uint8Array(await blob.arrayBuffer());

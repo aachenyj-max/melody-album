@@ -32,7 +32,7 @@
 - [ ] SDD-00 至 SDD-07 全部完成
 - [x] 用户主链路已闭环：上传 → 理解 → 生成/推荐 → 播放 → 保存 → 刷新查看
 - [ ] 线上环境已通过 Demo 剧本验收
-- [x] 最后更新：2026-10-07，SDD-06 技术验收通过：HTTPS、真实 Qwen/ACE-Step、实际音频播放、参数兼容/跨时区修复、重跑和自动清理；47/49 项。用户选择真人试用待验证（样本 0），阶段总项仍未完成。
+- [x] 最后更新：2026-10-08，SDD-07 完成照片直传硬化及部分本地验收，四项质量检查通过；SDD-06 仍为 47/49、真人试用样本 0，两个阶段总项均未完成。
 
 SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清单见 [tasks.md](specs/001-app-shell/tasks.md)；SDD-01 的验证步骤与已知限制见 [quickstart.md](specs/002-memory-home/quickstart.md)。SDD-02 已实现上传和记忆理解的演示适配器；SDD-03 已接通 fal.ai ACE-Step 真实音乐生成与本地 QQ mock；SDD-04 已完成当前会话内的真实播放控制、照片同步、解释抽屉与调整；SDD-05 已完成 Supabase 保存、私有照片和 08/09 动态读取。SDD-06 内部工作台已通过本地与 HTTPS 真实技术验收，完成 47/49 项；下一步收集 10 位真人试用数据并完成阶段交付，再衔接 SDD-07。
 
@@ -185,14 +185,14 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 **建议**：Sol / high；无需 clarify；预计 1 次 AI Coding 对话，3–5 个实现回合。
 
-- [ ] 建立 `specs/008-release-and-deploy/` 的 SDD 文件
+- [x] 建立 `specs/008-release-and-deploy/` 的 SDD 文件
 - [ ] 按 Demo 剧本使用真实照片跑通完整主链路
 - [ ] 补齐加载、空状态、失败、返回和重试行为
 - [ ] 完成移动端尺寸检查
-- [ ] 运行 `npm run format`
-- [ ] 运行 `npm run lint`
-- [ ] 运行 `npm run tscheck`
-- [ ] 运行 `npm run build`
+- [x] 运行 `npm run format`
+- [x] 运行 `npm run lint`
+- [x] 运行 `npm run tscheck`
+- [x] 运行 `npm run build`
 - [ ] 配置部署环境变量：浏览器只使用 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - [ ] 确认服务端密钥未暴露到浏览器
 - [ ] 部署到目标环境并记录地址
@@ -229,7 +229,7 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 ## 备注与阻塞
 
-- 2026-10-08 SDD-07 实施中：已完成私有照片签名直传、小体积 JSON 提交、鉴权后短时照片重定向、过期未发布相册清理实现，并将兼容迁移应用到 Supabase。本地 1 张真实 WebP 的直传、幂等保存、08/09 读取和两身份拒绝通过；9 张及近 10/50 MiB、27 个视觉组合、目标宿主端到端和定时清理仍未完成，后续 Supabase 连接多次 `ECONNRESET`。正式 Vercel 目标按 GitHub 仓库名为新项目 `melody-album`，尚未创建。SDD-06 真人试用仍为 0/10、T045/T049 未完成，因此 SDD-07 阶段总项和部署项保持未勾选，正式发布受阻；下一步先完成网络恢复后的直传边界与九页验收，再完成 SDD-06 真人试用、候选构建及正式发布。详见 `specs/008-release-and-deploy/verification/`。
+- 2026-10-08 SDD-07 实施中：已完成私有照片签名直传、小体积 JSON 提交、鉴权后短时照片重定向、过期未发布相册清理实现，并将兼容迁移应用到 Supabase。本地 1/9 张 WebP 的直传、缺失补传、幂等保存、08/09 读取和两身份拒绝通过；生产构建浏览器九页 × 三宽度无溢出/坏图，07→08→09 与修正后的 09 圆形音频播放/暂停通过。近 10/50 MiB、内容不匹配重传、目标宿主完整视觉/端到端和定时清理仍未完成，Supabase 连接多次 `ECONNRESET` 并如实返回 503。正式 Vercel 目标按 GitHub 仓库名为新项目 `melody-album`，尚未创建。SDD-06 真人试用仍为 0/10、T045/T049 未完成，因此 SDD-07 阶段总项和部署项保持未勾选，正式发布受阻；下一步先完成网络恢复后的直传边界，再完成 SDD-06 真人试用、候选构建及正式发布。详见 `specs/008-release-and-deploy/verification/`。
 
 - 2026-10-07 凭证到位后技术补验：Preview 已安全配置 Qwen/FAL Secret 并开启理解/配乐 live。两张不同实际 JPEG 经真实 Qwen形成 source=agent Profile、Pi 工具/事件 awaited 落库；ACE-Step 返回 source=api，QQ mock，父/原版子六阶段 succeeded，旧详情不变且旧 demo 可读。修复供应商字符串化 people/timeline：工具 v2 限定解码后保留 schema/语义验证，原 v1 行为保留，9 项参数边界通过；初始失败记录如实留存。真实错误 key 拒绝且无回退。直接详情时区 hydration 问题修复后，America/Los_Angeles 浏览器以北京时间显示/筛选，3 宽度/6 组对比/27.96 秒真实音频播放通过、错误 0。format/lint/tscheck/本地及云端 build、实际浏览器密钥扫描/diff 检查通过。自然整点 Cron 14:00 UTC/22:00 北京时间也已 HTTP 200。完成 47/49，用户明确先技术验收，T045 真人样本 0 与 T049 阶段交付保留未完成，SDD-06 总项不勾选。见 [live 验收](specs/007-agent-workbench/verification/live.md)与 [脱敏证据](specs/007-agent-workbench/verification/live-evidence.json)。下一步收集真人试用结果后完成阶段交付，SDD-07 正式发布仍独立判断；下方 key 未提供说明属于此前历史状态。
 

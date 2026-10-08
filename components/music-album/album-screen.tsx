@@ -31,6 +31,7 @@ import {
 import { PageFrame } from "./page-frame";
 import { CreateFlow } from "./create-flow";
 import { AdjustFlow } from "./adjust-flow";
+import { DetailTrackPlayer } from "./detail-track-player";
 import type { ResultViewModel } from "./music-session";
 
 function Photo({
@@ -866,19 +867,10 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
           <p>{selectedTrack?.caption}</p>
         </div>
         {selectedTrack?.audioUrl ? (
-          <audio
-            controls
-            preload="none"
-            src={selectedTrack.audioUrl}
-            aria-label={`播放${selectedTrack.title}`}
-          >
-            <track
-              kind="captions"
-              srcLang="zh"
-              label="音乐提示"
-              src="/audio/music-album/music-captions.vtt"
-            />
-          </audio>
+          <DetailTrackPlayer
+            audioUrl={selectedTrack.audioUrl}
+            title={selectedTrack.title}
+          />
         ) : (
           <span
             className="dark detail-play-placeholder"

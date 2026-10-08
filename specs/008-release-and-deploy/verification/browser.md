@@ -1,19 +1,21 @@
 # 九页视觉与状态验收
 
-2026-10-08 CST。目标项目 `melody-album` 尚未创建；SDD-07 的 27 个“页面 × 宽度”组合均为 `not_run`。
+2026-10-08 CST。本地 Next 生产构建使用浏览器 API/Storage 拦截完成九页流程，27 个“页面 × 宽度”组合的屏幕编号、图片加载、水平溢出和底部导航位置均为 `pass`；临时截图在 `.sdd00-work/sdd07-browser/`。目标项目 `melody-album` 尚未创建，线上视觉验收仍为 `not_run`。
 
 | 页面 | 320 px | 375 px | 430 px | 原型路径 |
 | --- | --- | --- | --- | --- |
-| 01 首页 | `not_run` | `not_run` | `not_run` | `/` |
-| 02 创建上传 | `not_run` | `not_run` | `not_run` | `/create` |
-| 03 记忆理解 | `not_run` | `not_run` | `not_run` | `/create?state=understanding` |
-| 04 并列结果 | `not_run` | `not_run` | `not_run` | `/result` |
-| 05 沉浸播放 | `not_run` | `not_run` | `not_run` | `/play` |
-| 06 调整音乐 | `not_run` | `not_run` | `not_run` | `/play?state=adjust` |
-| 07 保存过渡 | `not_run` | `not_run` | `not_run` | `/play?state=save` |
-| 08 我的记忆 | `not_run` | `not_run` | `not_run` | `/memories` |
-| 09 相册详情 | `not_run` | `not_run` | `not_run` | `/memories/{id}` |
+| 01 首页 | `pass` | `pass` | `pass` | `/` |
+| 02 创建上传 | `pass` | `pass` | `pass` | `/create` |
+| 03 记忆理解 | `pass` | `pass` | `pass` | `/create?state=understanding` |
+| 04 并列结果 | `pass` | `pass` | `pass` | `/result` |
+| 05 沉浸播放 | `pass` | `pass` | `pass` | `/play` |
+| 06 调整音乐 | `pass` | `pass` | `pass` | `/play?state=adjust` |
+| 07 保存过渡 | `pass` | `pass` | `pass` | `/play?state=save` |
+| 08 我的记忆 | `pass` | `pass` | `pass` | `/memories` |
+| 09 相册详情 | `pass` | `pass` | `pass` | `/memories/{id}` |
 
-逐项还须对照 `designs/ui/01`–`09` PNG 核对布局、层级、配色、字体、图片位置、文案、无横向溢出及 HTML 热点。仅 01、08 应有底部导航。05 保留 PNG“查看 AI 理解”文案，按既有 HTML 热点与可播放资格进入 07；07 保存成功进入 08、08 卡片进入 09。既有 SDD-01–05 各阶段视觉证据不可充当此阶段目标宿主实测。
+本地脚本实际按 01→02→03→04→05→06→05→07→08→09 进入页面，验证仅 01、08 有底部导航，27 次无横向溢出、无坏图、浏览器脚本错误为 0。07 保存页、08 列表与 09 详情的 375 px 截图人工对照对应 PNG；发现 09 原生音频控件挤压歌曲标题，已改为原型形状的圆形播放按钮，并实测播放/暂停。测试仅使用一张动态照片和拦截的 API/Storage，不代表九张设计示例照片的逐像素比对，也不代表目标宿主主链路通过。
+
+逐项还须在目标宿主对照 `designs/ui/01`–`09` PNG 核对布局、层级、配色、字体、图片位置、文案及 HTML 热点。05 保留 PNG“查看 AI 理解”文案，按既有 HTML 热点与可播放资格进入 07；07 保存成功进入 08、08 卡片进入 09。既有 SDD-01–05 各阶段视觉证据不可充当此阶段目标宿主实测。
 
 正常、慢响应、AI 失败但推荐可播、保存失败和历史读取失败五类状态的目标环境复测均为 `not_run`。

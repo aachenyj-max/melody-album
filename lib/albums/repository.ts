@@ -19,15 +19,6 @@ export function albumPhotoPath(albumId: string, position: number): string {
   return `albums/${albumId}/${position}`;
 }
 
-export function missingStorageObject(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "status" in error &&
-    error.status === 404
-  );
-}
-
 export async function findTransferAlbum(ownerKey: string, requestId: string) {
   const { data, error } = await albumAdmin()
     .from("memory_albums")
