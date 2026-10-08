@@ -1,5 +1,9 @@
 import { getAlbumIdentity, sameOrigin } from "@/lib/albums/identity";
-import { AlbumSaveError, saveAlbum } from "@/lib/albums/save";
+import {
+  AlbumSaveError,
+  completeAlbumTransfer,
+  saveAlbum,
+} from "@/lib/albums/save";
 import { listAlbums } from "@/lib/albums/repository";
 
 export const runtime = "nodejs";
@@ -25,10 +29,13 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!sameOrigin(request))
     return Response.json({ error: "请求来源无效。" }, { status: 403, headers });
+  const json =
+    request.headers.get("content-type")?.startsWith("application/json") ??
+    false;
   const length = Number(request.headers.get("content-length") ?? "0");
-  if (length > 55 * 1024 * 1024)
+  if (length > (json ? 128 * 1024 : 55 * 1024 * 1024))
     return Response.json(
-      { error: "照片总大小不能超过 50 MiB。" },
+      { error: json ? "保存内容过大。" : "照片总大小不能超过 50 MiB。" },
       { status: 413, headers },
     );
   try {
@@ -38,7 +45,20 @@ export async function POST(request: Request) {
         { error: "请先建立保存会话。" },
         { status: 401, headers },
       );
-    const result = await saveAlbum(identity, await request.formData());
+    const result = json
+      ? await (async () => {
+          const body = await request.text();
+          if (body.length > 128 * 1024)
+            throw new AlbumSaveError("INVALID_INPUT", 413, "保存内容过大。 ");
+          try {
+            return await completeAlbumTransfer(identity, JSON.parse(body));
+          } catch (error) {
+            if (error instanceof SyntaxError)
+              throw new AlbumSaveError("INVALID_INPUT", 400, "保存内容无效。 ");
+            throw error;
+          }
+        })()
+      : await saveAlbum(identity, await request.formData());
     return Response.json(result, {
       status: result.alreadySaved ? 200 : 201,
       headers,

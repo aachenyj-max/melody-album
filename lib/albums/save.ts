@@ -7,8 +7,11 @@ import {
   MAX_ALBUM_BYTES,
   validPhotoFile,
   validateAlbumInput,
+  validateAlbumTransferInput,
 } from "./contract";
-import { albumAdmin, albumPhotoPath } from "./repository";
+import { transferDigest } from "./digest";
+import { persistAlbumDetails } from "./persist";
+import { albumAdmin, albumPhotoPath, missingStorageObject } from "./repository";
 
 export class AlbumSaveError extends Error {
   constructor(
@@ -329,6 +332,154 @@ export async function saveAlbum(identity: AlbumIdentity, form: FormData) {
       .eq("id", albumId)
       .eq("owner_key", identity.ownerKey)
       .eq("status", "pending");
+    databaseError();
+  }
+}
+
+function matchesPhotoHeader(bytes: Uint8Array, mimeType: string): boolean {
+  if (mimeType === "image/jpeg")
+    return (
+      bytes.length >= 3 &&
+      bytes[0] === 0xff &&
+      bytes[1] === 0xd8 &&
+      bytes[2] === 0xff
+    );
+  if (mimeType === "image/png")
+    return (
+      bytes.length >= 8 &&
+      [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every(
+        (byte, index) => bytes[index] === byte,
+      )
+    );
+  return (
+    mimeType === "image/webp" &&
+    bytes.length >= 12 &&
+    String.fromCharCode(...bytes.subarray(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.subarray(8, 12)) === "WEBP"
+  );
+}
+
+export async function completeAlbumTransfer(
+  identity: AlbumIdentity,
+  raw: unknown,
+) {
+  const checked = validateAlbumTransferInput(raw, true);
+  if (!checked.ok)
+    throw new AlbumSaveError("INVALID_INPUT", checked.status, checked.message);
+  const { snapshot, photos, albumId } = checked.value;
+  if (!albumId)
+    throw new AlbumSaveError("INVALID_INPUT", 400, "相册标识无效。 ");
+  const db = albumAdmin();
+  const { data: album, error } = await db
+    .from("memory_albums")
+    .select("id,status,input_digest,photo_manifest,upload_started_at")
+    .eq("id", albumId)
+    .eq("owner_key", identity.ownerKey)
+    .eq("request_id", snapshot.requestId)
+    .maybeSingle();
+  if (error) databaseError();
+  if (!album)
+    throw new AlbumSaveError("ALBUM_NOT_FOUND", 404, "找不到本次保存记录。 ");
+  if (
+    album.input_digest !== transferDigest(snapshot, photos) ||
+    !album.photo_manifest
+  )
+    throw new AlbumSaveError(
+      "REQUEST_CONFLICT",
+      409,
+      "本次保存内容已变化，请重新提交。 ",
+    );
+  if (album.status === "ready") return { albumId, alreadySaved: true };
+  if (album.status !== "pending")
+    throw new AlbumSaveError(
+      "SAVE_IN_PROGRESS",
+      409,
+      "相册正在保存或已过期，请稍后重试。 ",
+    );
+  if (
+    !album.upload_started_at ||
+    Date.now() - new Date(album.upload_started_at).getTime() >= 24 * 60 * 60_000
+  )
+    throw new AlbumSaveError(
+      "UPLOAD_EXPIRED",
+      409,
+      "上传已过期，请重新发起保存。 ",
+    );
+  const claim = await db
+    .from("memory_albums")
+    .update({
+      status: "verifying",
+      verification_started_at: new Date().toISOString(),
+    })
+    .eq("id", albumId)
+    .eq("owner_key", identity.ownerKey)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+  if (claim.error) databaseError();
+  if (!claim.data)
+    throw new AlbumSaveError(
+      "SAVE_IN_PROGRESS",
+      409,
+      "相册正在保存，请稍后重试。 ",
+    );
+  try {
+    for (const photo of photos) {
+      const path = albumPhotoPath(albumId, photo.position);
+      const downloaded = await db.storage.from(ALBUM_BUCKET).download(path);
+      if (downloaded.error && !missingStorageObject(downloaded.error))
+        throw new AlbumSaveError(
+          "SAVE_UNAVAILABLE",
+          503,
+          "暂时无法核对照片，请重试。",
+        );
+      if (downloaded.error || !downloaded.data)
+        throw new AlbumSaveError(
+          "PHOTO_MISSING",
+          409,
+          `第 ${photo.position + 1} 张照片尚未上传，请重试。`,
+        );
+      const blob = downloaded.data;
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const actualDigest = createHash("sha256").update(bytes).digest("hex");
+      if (
+        bytes.length !== photo.byteSize ||
+        blob.type.split(";")[0] !== photo.mimeType ||
+        !matchesPhotoHeader(bytes, photo.mimeType) ||
+        actualDigest !== photo.sha256
+      ) {
+        const removed = await db.storage.from(ALBUM_BUCKET).remove([path]);
+        if (removed.error) databaseError();
+        throw new AlbumSaveError(
+          "PHOTO_MISMATCH",
+          422,
+          `第 ${photo.position + 1} 张照片不匹配，请重新上传。`,
+        );
+      }
+    }
+    await persistAlbumDetails(
+      db,
+      albumId,
+      identity.ownerKey,
+      snapshot,
+      photos,
+      "verifying",
+    );
+    return { albumId, alreadySaved: false };
+  } catch (cause) {
+    const retryable = cause instanceof AlbumSaveError && cause.status < 500;
+    await db
+      .from("memory_albums")
+      .update({
+        status: retryable ? "pending" : "failed",
+        error_code:
+          cause instanceof AlbumSaveError ? cause.code : "SAVE_UNAVAILABLE",
+        verification_started_at: null,
+      })
+      .eq("id", albumId)
+      .eq("owner_key", identity.ownerKey)
+      .eq("status", "verifying");
+    if (cause instanceof AlbumSaveError) throw cause;
     databaseError();
   }
 }

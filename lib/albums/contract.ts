@@ -27,6 +27,110 @@ export type ValidAlbumInput = SaveAlbumInput & {
   selectedKind: "ai" | "qq";
 };
 
+export type AlbumPhotoManifestItem = {
+  position: number;
+  originalName: string;
+  mimeType: "image/jpeg" | "image/png" | "image/webp";
+  byteSize: number;
+  sha256: string;
+};
+
+export type AlbumTransferInput = {
+  snapshot: ValidAlbumInput;
+  photos: AlbumPhotoManifestItem[];
+  albumId?: string;
+};
+
+export function validateAlbumTransferInput(
+  raw: unknown,
+  requireAlbumId: boolean,
+):
+  | { ok: true; value: AlbumTransferInput }
+  | { ok: false; message: string; status: number } {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw))
+    return { ok: false, message: "保存内容无效。", status: 400 };
+  const data = raw as Record<string, unknown>;
+  const allowed = requireAlbumId
+    ? ["snapshot", "photos", "albumId"]
+    : ["snapshot", "photos"];
+  if (Object.keys(data).some((key) => !allowed.includes(key)))
+    return { ok: false, message: "保存内容包含无效字段。", status: 400 };
+  if (
+    !Array.isArray(data.photos) ||
+    data.photos.length < 1 ||
+    data.photos.length > 9
+  )
+    return { ok: false, message: "请选择 1–9 张照片。", status: 400 };
+  const photos: AlbumPhotoManifestItem[] = [];
+  let totalBytes = 0;
+  for (const [position, rawPhoto] of data.photos.entries()) {
+    if (!rawPhoto || typeof rawPhoto !== "object" || Array.isArray(rawPhoto))
+      return { ok: false, message: "照片清单无效。", status: 400 };
+    const photo = rawPhoto as Record<string, unknown>;
+    if (
+      Object.keys(photo).some(
+        (key) =>
+          ![
+            "position",
+            "originalName",
+            "mimeType",
+            "byteSize",
+            "sha256",
+          ].includes(key),
+      ) ||
+      photo.position !== position ||
+      typeof photo.originalName !== "string" ||
+      !photo.originalName.trim() ||
+      photo.originalName.length > 255 ||
+      [...photo.originalName].some(
+        (character) =>
+          character === "/" ||
+          character === "\\" ||
+          character.charCodeAt(0) < 32,
+      ) ||
+      !["image/jpeg", "image/png", "image/webp"].includes(
+        String(photo.mimeType),
+      ) ||
+      !Number.isInteger(photo.byteSize) ||
+      Number(photo.byteSize) < 1 ||
+      Number(photo.byteSize) > MAX_PHOTO_BYTES ||
+      typeof photo.sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(photo.sha256)
+    )
+      return { ok: false, message: "照片清单无效。", status: 400 };
+    totalBytes += Number(photo.byteSize);
+    photos.push({
+      position,
+      originalName: photo.originalName,
+      mimeType: photo.mimeType as AlbumPhotoManifestItem["mimeType"],
+      byteSize: Number(photo.byteSize),
+      sha256: photo.sha256,
+    });
+  }
+  if (totalBytes > MAX_ALBUM_BYTES)
+    return { ok: false, message: "照片总大小不能超过 50 MiB。", status: 413 };
+  if (
+    requireAlbumId &&
+    (typeof data.albumId !== "string" || !albumIdPattern.test(data.albumId))
+  )
+    return { ok: false, message: "相册标识无效。", status: 400 };
+  let checked: ReturnType<typeof validateAlbumInput>;
+  try {
+    checked = validateAlbumInput(data.snapshot, photos.length);
+  } catch {
+    return { ok: false, message: "保存内容无效。", status: 400 };
+  }
+  if (!checked.ok) return { ok: false, message: checked.message, status: 400 };
+  return {
+    ok: true,
+    value: {
+      snapshot: checked.value,
+      photos,
+      albumId: requireAlbumId ? (data.albumId as string) : undefined,
+    },
+  };
+}
+
 function validCalendarDay(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00.000Z`);

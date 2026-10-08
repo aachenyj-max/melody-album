@@ -1,6 +1,6 @@
 import { albumIdPattern } from "@/lib/albums/contract";
 import { getAlbumIdentity } from "@/lib/albums/identity";
-import { downloadAlbumPhoto } from "@/lib/albums/repository";
+import { signedAlbumPhoto } from "@/lib/albums/repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,14 +19,15 @@ export async function GET(
   try {
     const identity = await getAlbumIdentity();
     if (!identity) return new Response(null, { status: 404, headers });
-    const photo = await downloadAlbumPhoto(
+    const signedUrl = await signedAlbumPhoto(
       identity.ownerKey,
       id,
       Number(index),
     );
-    if (!photo) return new Response(null, { status: 404, headers });
-    return new Response(await photo.data.arrayBuffer(), {
-      headers: { ...headers, "content-type": photo.mimeType },
+    if (!signedUrl) return new Response(null, { status: 404, headers });
+    return new Response(null, {
+      status: 302,
+      headers: { ...headers, location: signedUrl },
     });
   } catch {
     return new Response(null, { status: 503, headers });

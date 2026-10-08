@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { ALBUM_BUCKET } from "./contract";
+import type { AlbumPhotoManifestItem, ValidAlbumInput } from "./contract";
 
 export function albumAdmin() {
   const key = process.env.SECRET_KEY;
@@ -16,6 +17,64 @@ export function albumAdmin() {
 
 export function albumPhotoPath(albumId: string, position: number): string {
   return `albums/${albumId}/${position}`;
+}
+
+export function missingStorageObject(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    error.status === 404
+  );
+}
+
+export async function findTransferAlbum(ownerKey: string, requestId: string) {
+  const { data, error } = await albumAdmin()
+    .from("memory_albums")
+    .select(
+      "id,owner_key,request_id,input_digest,status,photo_manifest,upload_started_at,verification_started_at",
+    )
+    .eq("owner_key", ownerKey)
+    .eq("request_id", requestId)
+    .maybeSingle();
+  if (error) throw new Error("ALBUM_STORE_UNAVAILABLE");
+  return data;
+}
+
+export async function createTransferAlbum(
+  ownerKey: string,
+  input: ValidAlbumInput,
+  photos: AlbumPhotoManifestItem[],
+  digest: string,
+) {
+  const albumId = crypto.randomUUID();
+  const { error } = await albumAdmin()
+    .from("memory_albums")
+    .insert({
+      id: albumId,
+      owner_key: ownerKey,
+      request_id: input.requestId,
+      input_digest: digest,
+      status: "pending",
+      title: input.title,
+      event_date: input.eventDate,
+      caption: input.caption,
+      memory_profile: input.memory,
+      selected_kind: input.selectedKind,
+      selected_track_id:
+        input.selectedKind === "qq" && input.music.selection.kind === "qq"
+          ? input.music.selection.trackId
+          : (input.music.adjustedTrack?.versionId ??
+            input.music.ai.attemptId ??
+            "ai"),
+      photo_count: photos.length,
+      photo_manifest: photos,
+      upload_started_at: new Date().toISOString(),
+    });
+  if (!error) return albumId;
+  const existing = await findTransferAlbum(ownerKey, input.requestId);
+  if (existing) return existing.id as string;
+  throw new Error("ALBUM_STORE_UNAVAILABLE");
 }
 
 export async function listAlbums(ownerKey: string) {
@@ -101,7 +160,7 @@ export async function getAlbum(ownerKey: string, albumId: string) {
   };
 }
 
-export async function downloadAlbumPhoto(
+export async function signedAlbumPhoto(
   ownerKey: string,
   albumId: string,
   index: number,
@@ -117,14 +176,15 @@ export async function downloadAlbumPhoto(
   if (!album) return null;
   const { data: photo } = await db
     .from("memory_album_photos")
-    .select("storage_path,mime_type")
+    .select("storage_path")
     .eq("album_id", albumId)
     .eq("position", index)
     .maybeSingle();
-  if (!photo) return null;
+  if (!photo || photo.storage_path !== albumPhotoPath(albumId, index))
+    return null;
   const { data, error } = await db.storage
     .from(ALBUM_BUCKET)
-    .download(photo.storage_path);
-  if (error || !data) return null;
-  return { data, mimeType: photo.mime_type };
+    .createSignedUrl(photo.storage_path, 60);
+  if (error || !data) throw new Error("ALBUM_READ_UNAVAILABLE");
+  return data.signedUrl;
 }

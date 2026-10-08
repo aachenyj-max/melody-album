@@ -12,6 +12,8 @@ import {
   Quote,
 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { ALBUM_BUCKET } from "@/lib/albums/contract";
+import { createClient } from "@/lib/supabase/client";
 import { AppShell } from "./app-shell";
 import { PageFrame } from "./page-frame";
 import { useMusicSession } from "./music-session";
@@ -26,6 +28,7 @@ export function SaveFlow() {
   const [eventMonth, setEventMonth] = useState("");
   const [caption, setCaption] = useState("");
   const [saving, setSaving] = useState(false);
+  const [savingLabel, setSavingLabel] = useState("正在保存…");
   const [error, setError] = useState<string | null>(null);
   const requestId = useRef(crypto.randomUUID());
 
@@ -87,29 +90,93 @@ export function SaveFlow() {
         throw new Error(
           (await session.json()).error ?? "暂时无法建立保存会话。",
         );
-      const body = new FormData();
-      body.set(
-        "snapshot",
-        JSON.stringify({
-          contractVersion: 1,
-          requestId: requestId.current,
-          title: title.trim(),
-          eventDate: eventMonth ? `${eventMonth}-01` : null,
-          caption: caption.trim(),
-          memory: confirmed.profile,
-          music: run,
-        }),
+      const snapshot = {
+        contractVersion: 1,
+        requestId: requestId.current,
+        title: title.trim(),
+        eventDate: eventMonth ? `${eventMonth}-01` : null,
+        caption: caption.trim(),
+        memory: confirmed.profile,
+        music: run,
+      };
+      const orderedFiles = confirmed.profile.photoOrder.map(
+        (index) => confirmed.photos[index],
       );
-      for (const index of confirmed.profile.photoOrder)
-        body.append("photos", confirmed.photos[index]);
+      const manifest = [];
+      for (const [position, file] of orderedFiles.entries()) {
+        setSavingLabel(`正在准备照片 ${position + 1}/${orderedFiles.length}…`);
+        const digest = await crypto.subtle.digest(
+          "SHA-256",
+          await file.arrayBuffer(),
+        );
+        manifest.push({
+          position,
+          originalName: file.name,
+          mimeType: file.type,
+          byteSize: file.size,
+          sha256: Array.from(new Uint8Array(digest), (byte) =>
+            byte.toString(16).padStart(2, "0"),
+          ).join(""),
+        });
+      }
+      setSavingLabel("正在准备上传…");
+      const intentResponse = await fetch("/api/albums/upload-intent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ snapshot, photos: manifest }),
+        cache: "no-store",
+      });
+      const intent = await intentResponse.json();
+      if (!intentResponse.ok) {
+        if (intent.code === "UPLOAD_EXPIRED")
+          requestId.current = crypto.randomUUID();
+        throw new Error(intent.error ?? "暂时无法准备照片上传，请重试。 ");
+      }
+      if (!intent.alreadySaved) {
+        const storage = createClient().storage.from(ALBUM_BUCKET);
+        for (const item of intent.photos as Array<{
+          position: number;
+          path: string;
+          uploaded: boolean;
+          token?: string;
+        }>) {
+          if (item.uploaded) continue;
+          const file = orderedFiles[item.position];
+          if (!file || !item.token)
+            throw new Error("照片上传资格无效，请重试。 ");
+          setSavingLabel(
+            `正在上传照片 ${item.position + 1}/${orderedFiles.length}…`,
+          );
+          const uploaded = await storage.uploadToSignedUrl(
+            item.path,
+            item.token,
+            file,
+            {
+              contentType: file.type,
+              cacheControl: "0",
+            },
+          );
+          if (uploaded.error)
+            throw new Error(`第 ${item.position + 1} 张照片上传失败，请重试。`);
+        }
+      }
+      setSavingLabel("正在保存相册…");
       const response = await fetch("/api/albums", {
         method: "POST",
-        body,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          snapshot,
+          photos: manifest,
+          albumId: intent.albumId,
+        }),
         cache: "no-store",
       });
       const result = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        if (result.code === "UPLOAD_EXPIRED")
+          requestId.current = crypto.randomUUID();
         throw new Error(result.error ?? "保存暂时失败，请重试。");
+      }
       music.stop();
       router.push(`/memories?justSaved=${result.albumId}`);
     } catch (cause) {
@@ -118,6 +185,7 @@ export function SaveFlow() {
       );
     } finally {
       setSaving(false);
+      setSavingLabel("正在保存…");
     }
   }
 
@@ -211,7 +279,7 @@ export function SaveFlow() {
             type="submit"
             disabled={saving}
           >
-            {saving ? "正在保存…" : "保存到我的音乐记忆"}
+            {saving ? savingLabel : "保存到我的音乐记忆"}
             <ArrowRight />
           </button>
         </form>
