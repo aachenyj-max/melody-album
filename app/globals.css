@@ -84,6 +84,7 @@ textarea:focus-visible {
   z-index: 0;
 }
 .device-status {
+  pointer-events: none;
   position: absolute;
   top: 3.6%;
   left: 13%;
@@ -110,6 +111,7 @@ textarea:focus-visible {
   height: 4.7cqw;
 }
 .device-island {
+  pointer-events: none;
   position: absolute;
   left: 36%;
   top: 2.7%;
@@ -1677,6 +1679,12 @@ textarea:focus-visible {
 }
 .memory-list-empty strong {
   font-size: 4cqw;
+}
+.detail-read-state {
+  position: absolute;
+  top: 22%;
+  left: 11%;
+  width: 78%;
 }
 .memory-list-empty p {
   margin: 3cqw 0;

@@ -6,7 +6,11 @@ export const metadata: Metadata = {
   description: "用 AI 把校园记忆整理成一张会讲故事的音乐相册。",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-full flex flex-col">{children}</body>

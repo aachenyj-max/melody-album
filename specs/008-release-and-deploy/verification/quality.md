@@ -1,13 +1,14 @@
-# SDD-07 本地质量检查
+# SDD-07 质量门槛
 
-环境：Windows 本地工作区，Node ≥22.19，Next.js 16.3.8；2026-10-08 CST。部署 ID：无（未发布）。09 详情音频控件修正后四项重新运行并退出 0。
+2026-10-08 CST；Windows 工作区 Node 22.23.1、Next.js 16.3.8。最终代码变更与共享工作区中另一项工作台对话开发共存；本阶段提交只暂存 SDD-07 文件。当前正式部署 `dpl_BQLuiZNBSinqWWRsRbASYXJTVFST` 使用 `e82745aba59121bfc4988fa5ec1735912be90f9c` 为基底，加上已核对的 09 详情重试、状态栏点击区域和根布局类型修正。部署后这三处修正会随本阶段提交入库。
 
-| 命令 | 结果 | 说明 |
-| --- | --- | --- |
-| `npm.cmd run format` | `pass`，退出 0 | 初次修正本阶段 9 个文件；后续重复运行无改动 |
-| `npm.cmd run lint` | `pass`，退出 0 | 修正本阶段照片文件名正则问题；当前保留仓库已有的 54 个 CSS specificity 警告和 1 个 Biome 配置弃用提示 |
-| `npm.cmd run tscheck` | `pass`，退出 0 | TypeScript 无错误 |
-| `npm.cmd run build` | `pass`，退出 0 | Next 生产构建完成，包含相册上传、提交、照片及维护 Route Handler |
-| `git diff --cached --check` | `pass`，退出 0 | 审阅本阶段暂存改动，无空白错误 |
+| 命令 | 实测 |
+| --- | --- |
+| `npm.cmd run format` | 退出 0，105 文件检查，无新增格式修改 |
+| `npm.cmd run lint` | 退出 0；55 条非阻断警告、1 条 Biome 配置弃用提示 |
+| `npm.cmd run tscheck` | 退出 0 |
+| `npm.cmd run build` | 退出 0；Next 生产构建包含相册与内部工作台 Route Handlers |
+| Vercel 构建 | 同一正式部署执行 `npm ci` 与 `npm run build` 并达到 READY |
+| `git diff --check` | 退出 0；无空白错误 |
 
-首个硬化提交为 `a87e1771226d076fc4df748a975e41e92e9dc51a`；其后 09 详情音频控件、Storage 有界目录检查修正均重新运行四项质量命令。本地 Next 生产构建的九页 27 视口、07→08→09 与 09 音频播放/暂停通过；实际 Storage 的 9 张补传、保存和复开通过。正式部署提交 ID、目标 Vercel 构建仍为 `not_run`。
+根目录质量命令也读到了共享工作区里未完成的工作台对话代码，四项仍通过；这些代码未纳入 SDD-07 正式部署或本阶段提交。构建输入与部署快照的业务代码差异仅为共享工作区在途文件。

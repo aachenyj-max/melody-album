@@ -26,7 +26,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # 当前实现基线（2026-10-07）
 
-- SDD-00 至 SDD-05 已完成；SDD-02 实现提交为 `0b7af75`，SDD-03 实现及 ACE-Step 模型切换提交为 `fcf5424`，SDD-04 实现提交为 `2f6933f`，SDD-05 保存持久化实现提交为 `5936015`，用户主线已闭环。SDD-06 实现与技术验收已完成，任务 47/49；真人试用样本为 0，T045 与 T049 保留未完成，阶段总项不得勾选。下一步完成真人试用与阶段交付，再衔接 SDD-07。SDD-01 的完成范围见 [SDD-01 quickstart](specs/002-memory-home/quickstart.md)，SDD-02 至 SDD-05 的验收证据分别见 [SDD-02 verification](specs/003-agent-memory-understanding/verification/)、[SDD-03 verification](specs/004-music-orchestration/verification/)、[SDD-04 verification](specs/005-immersive-playback/verification/README.md) 与 [SDD-05 verification](specs/006-save-memory-album/verification/)；阶段状态统一以 [progress.md](progress.md) 为准。
+- 2026-10-08 用户明确要求 SDD-06 不等待真人试用，继续 SDD-07 发布。已完成技术验收作为前置，真人样本仍为 0、T045/T049 保留未完成；历史“先真人试用再衔接”顺序由本条更新。
+
+- SDD-00 至 SDD-05 已完成；SDD-02 实现提交为 `0b7af75`，SDD-03 实现及 ACE-Step 模型切换提交为 `fcf5424`，SDD-04 实现提交为 `2f6933f`，SDD-05 保存持久化实现提交为 `5936015`，用户主线已闭环。SDD-06 实现与技术验收已完成，任务 47/49；真人试用样本为 0，T045 与 T049 保留未完成，阶段总项不得勾选。SDD-07 已按用户指示继续并完成正式部署；真人试用与阶段交付仍独立保留。SDD-01 的完成范围见 [SDD-01 quickstart](specs/002-memory-home/quickstart.md)，SDD-02 至 SDD-05 的验收证据分别见 [SDD-02 verification](specs/003-agent-memory-understanding/verification/)、[SDD-03 verification](specs/004-music-orchestration/verification/)、[SDD-04 verification](specs/005-immersive-playback/verification/README.md) 与 [SDD-05 verification](specs/006-save-memory-album/verification/)；阶段状态统一以 [progress.md](progress.md) 为准。
 - 页面组件集中在 `components/music-album/`：`album-screen.tsx` 渲染九个状态，`app-shell.tsx` 提供手机外壳，`demo-data.ts` 保存稳定演示数据。首页入口保留 `app/page.tsx`，其他入口位于 `app/(album)/`；不得另建同路径的 `(album)/page.tsx`。
 - 九状态路径依次为 `/`、`/create`、`/create?state=understanding`、`/result`、`/play`、`/play?state=adjust`、`/play?state=save`、`/memories`、`/memories/demo-graduation`。原型映射和 17 个主要热点保存在 `design-map.ts`，修改跳转时同步 [导航契约](specs/001-app-shell/contracts/ui-navigation.md)。
 - 底部导航仅在原稿 01、08 展示。页面应按对应 PNG 选择标题、返回和导航，不能为了复用组件统一改写原稿结构。

@@ -1,28 +1,20 @@
-# SDD-07 目标环境与发布记录
+# SDD-07 正式部署
 
-检查时间：2026-10-07 23:18 CST。当前阶段：`prepared`；正式发布：`not_run`。
+2026-10-08 CST；状态：已发布并通过正式域名主要复验；上传签名自然到期补签仍未实测，SDD-07 阶段总项未完成。
 
-## 只读目标盘点
+| 项 | 实际结果 |
+| --- | --- |
+| Vercel 项目 | `melody-album`，ID `prj_jvtE56g0FenE8QqPme2YQrXHnY5V`，团队 `team_yPve3HhsqUyx6tR51RMfS1rg` |
+| 正式域名 | `https://melody-album-yijia-s-projects.vercel.app` |
+| 同一部署 | `dpl_BQLuiZNBSinqWWRsRbASYXJTVFST`；候选 `https://melody-album-dcyluxxc8-yijia-s-projects.vercel.app` 经 `vercel promote` 指向正式域名 |
+| 源码 | 基底提交 `e82745aba59121bfc4988fa5ec1735912be90f9c`，加 09 详情重试、状态栏点击区域和根布局类型修正；未纳入共享工作区中在途的对话功能 |
+| 构建 | Vercel Next 16.3.8、Node 22.x、`npm ci`、`npm run build`、READY |
+| 配置 | `sdd07-prod-v1`；公开仅 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`；其余相册、Cron、工作台、Pi/Qwen、FAL 变量仅 production 服务端配置 |
+| 候选复验 | 1/9 张、5 张 49.05 MiB、内容不符补传、过期清理、ready 保护、真实 fal.ai 音乐、五类浏览器状态、27 视口、安全隔离全部通过 |
+| 正式复验 | 01→09、刷新回读、跨身份照片 404、工作台口令与维护令牌、3 HTML/12 JS 密钥扫描通过 |
+| 维护 | 工作台每小时 Supabase Cron active 且正式域名手动触发 200；相册每日 Vercel Cron 已配置，临时 Supabase 每分钟任务实际 HTTP 200 后移除 |
+| 关键错误日志 | Vercel CLI 在授权环境查询当前部署过去 2 小时的 5xx 请求记录为 0 |
 
-| 项 | 当前观察 | 发布判断 |
-| --- | --- | --- |
-| 现有 Vercel 验收项目 | `melody-album-acceptance`，项目 ID `prj_1tQU3Ec3DZzgqZcvzNHq0Pv8dQvF`，团队 ID `team_yPve3HhsqUyx6tR51RMfS1rg`，Hobby、`hnd1`、Fluid；项目配置经 Vercel CLI 只读核对 | 这是 SDD-06 受保护验收环境；尚未确认是 SDD-07 正式项目 |
-| 已知 Preview | `melody-album-acceptance-yijia-s-projects.vercel.app`，见 SDD-06 验收记录 | 不能当作正式公开域名或 SDD-07 主链路通过 |
-| 正式团队/项目/域名 | 用户指定按 GitHub 仓库名新建 `melody-album`；所属团队和生成域名待创建时核对 | 新项目尚未创建，发布阻断 |
-| 生产分支、部署保护、前版 ID | `not_run`：新项目尚未创建 | 发布阻断 |
-| 目标 Supabase | 项目说明指定 `tencent-music-hackathon`，区域 `ap-northeast-1`；相册私有 bucket 和 SDD-05 表已由前阶段验收 | SDD-07 仍需实测大图、隔离和线上主链路 |
-| 环境变量 | 仅核对了验收项目存在环境配置；未读取或复制值 | 正式目标的变量范围、版本与缺项待核对 |
+Vercel CLI 的 `--skip-domain` 在创建候选时仍自动产生项目别名。发现后移除首个候选别名，并在全部门槛通过后对最终同一部署执行 promote；因此不能声称候选从未临时挂别名。MCP 日志读取返回 403，授权的本地 CLI 查询成功。脚本和原始输出留在忽略的 `.sdd00-work/`，此处只记脱敏统计。
 
-Vercel MCP 对团队作用域的项目详情返回 403；按返回的同作用域 CLI 只读回退成功。工具输出含加密配置字段，本记录只保留项目标识和公开设置，不复制配置字段。
-
-2026-10-08：Supabase 远端已应用兼容迁移 `20261008024253_album_direct_upload.sql`，新增待上传清单、时间戳与清理索引。此操作未创建 Vercel 正式项目，也未改变现有 `melody-album-acceptance` 部署。
-
-相册清理计划为 `0 3 * * *`（每日一次，UTC）；[Vercel 当前文档](https://vercel.com/docs/cron-jobs/usage-and-pricing)说明 Hobby 支持每日一次，触发时间可能落在计划小时内。正式项目创建后仍需核对实际套餐、`CRON_SECRET` 存在性和首次真实调度结果。
-
-## 待发布构建
-
-`not_run`。仅在 SDD-06 交付、照片直传、视觉/故障场景、质量及隐私门槛全部通过后填写部署 ID、提交、候选 URL、配置版本与结果。
-
-## 正式域名复核
-
-`not_run`。发布和复核必须指向同一已验证构建；若重建，重新验收。
+剩余补验：Storage 上传签名固定有效期 2 小时，已测缺失项补签与 25 小时 intent 失效，但没有等待上传签名自然到期。按发布门槛，T021/T044 与阶段总项保持未完成。首次发布前没有同项目已验收生产版本，不能宣称回滚演练已通过；详见 [恢复记录](rollback.md)。

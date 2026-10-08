@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "./app-shell";
+import { PageFrame } from "./page-frame";
 import { AlbumScreen } from "./album-screen";
 import { toAlbumDetail, type AlbumDetail } from "@/lib/albums/view-model";
 
@@ -45,8 +46,9 @@ export function DetailFlow({ id }: { id: string }) {
     return (
       <AppShell>
         <main className="album-screen screen-9" data-screen="09">
+          <PageFrame backHref="/memories" />
           <div
-            className="memory-list-empty glass"
+            className="memory-list-empty detail-read-state glass"
             role={error ? "alert" : "status"}
           >
             <strong>{error ?? "正在读取音乐记忆…"}</strong>

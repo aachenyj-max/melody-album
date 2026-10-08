@@ -1,25 +1,17 @@
-# SDD-07 身份、安全和工作台前置
+# SDD-07 身份、安全与工作台验收
 
-检查时间：2026-10-07 23:18 CST。当前结果：基线 `pass`；线上安全验收 `not_run`。
+2026-10-08 CST；正式域名 `https://melody-album-yijia-s-projects.vercel.app`；部署 `dpl_BQLuiZNBSinqWWRsRbASYXJTVFST`。
 
-## 相册允许/拒绝矩阵
-
-| 入口 | 当前身份/来源要求 | 跨身份或无权预期 |
+| 边界 | 预期与实际 | 状态 |
 | --- | --- | --- |
-| `POST /api/albums/session` | 同源；建立 Supabase 匿名身份，受限时签发服务器 HMAC demo cookie | 跨源 403；建会话失败 503 |
-| `POST /api/albums/upload-intent` | 同源、现有会话；ownerKey 由服务端推导；固定相册/照片路径 | 无身份 401、跨源 403、他人相册/冲突拒绝 |
-| `POST /api/albums` | 同源、当前会话；新 JSON 提交须重新确认 owner/requestId/对象 | 无身份 401、跨源 403、他人相册拒绝 |
-| `GET /api/albums` | 当前 owner 的 `ready` 列表；无身份返回空列表 | 不含其他 owner、`pending/failed` |
-| `GET /api/albums/{id}` | 当前 owner 的 `ready` 详情 | 未知/他人一律 404 |
-| `GET /api/albums/{id}/photos/{index}` | 当前 owner 的 `ready` 相册和合法索引 | 未知/他人一律 404，不能返回照片签名地址 |
-| `GET /api/albums/maintenance` | 仅服务端 `CRON_SECRET` 调度 | 缺失/错误 token 拒绝；不能作为人类登录口令 |
+| 相册 owner | 第一身份保存、刷新可读；第二身份详情与照片均 404，无法获得签名地址 | `pass` |
+| 私有 Storage | 公开 bucket 读取失败，合法照片经相册鉴权后短时 302 | `pass` |
+| 工作台会话 | 未登录配置/运行接口 401；错误口令 401；正确口令 204 且配置/运行接口 200；退出后恢复 401 | `pass` |
+| 工作台维护 | 错误令牌 401、独立维护令牌 200；已验收 30 天清理与子运行隔离的 SDD-06 技术证据仍适用 | `pass` |
+| 相册维护 | 错误 `CRON_SECRET` 401、正确令牌 200；与工作台维护令牌不同 | `pass` |
+| 浏览器内容 | 3 个 HTML、12 个 JS 文件逐一扫描 8 项服务端凭证值，命中 0 | `pass` |
+| 正式调度 | SDD-06 每小时任务仍 active，Vault URL 已切正式域名；相册临时每分钟任务取得 HTTP 200 后移除，正式每日 `0 3 * * *` 保留 | `pass` |
 
-当前 `lib/albums/identity.ts` 不使用客户端给出的 owner；`lib/albums/repository.ts` 在列表和详情查询中按 owner 与 `ready` 过滤。`app/api/albums/route.ts` 的 POST 要求 Origin 与请求 URL 相同；照片 GET 已改为鉴权后 60 秒签名地址重定向，应用函数不传原图。本地真实 Storage 单张测试的另一身份详情和照片 404、无会话提交 401 已通过；跨源与正式域名仍待补验。
+相册 POST 与上传 intent 要求同源和当前会话，ownerKey 只由服务端推导；列表和详情只查当前 owner 的 `ready` 相册。工作台保留独立口令、Secure/HttpOnly 会话与机器维护令牌，不加入用户端导航。浏览器脚本 `.sdd00-work/verify-sdd07-formal-security.cjs` 的脱敏结果为 `.sdd00-work/sdd07-formal-security.json`，不持久记录口令、cookie、有效签名地址。
 
-## SDD-06 前置状态
-
-`progress.md` 和 `specs/007-agent-workbench/verification/README.md` 记录了 HTTPS Preview、实际 Qwen/ACE-Step、240 秒请求、隔离与自动维护的技术验收；任务 47/49。10 位内部试用者样本 0，阶段交付未完成，SDD-06 总项未勾选。因此 **SDD-07 正式发布仍为 `blocked`**，不能将工作台技术预览视为已完成前置阶段。
-
-## 待执行安全验收
-
-两身份上传/提交/列表/详情/照片隔离、无口令/错误口令/正确口令、服务端密钥浏览器扫描、维护调度和工作台异常对用户主链路影响：`not_run`。证据不得包含凭证、cookie、私人照片或有效签名地址。
+SDD-06 的 Pi/Qwen/ACE-Step、240 秒请求预算、30 天清理与隔离见 `specs/007-agent-workbench/verification/`。用户明确 SDD-07 不等待 SDD-06 真人试用；真人样本仍为 0，T045/T049 和 SDD-06 阶段总项未完成。
