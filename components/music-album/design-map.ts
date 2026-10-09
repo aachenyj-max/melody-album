@@ -57,11 +57,12 @@ export const prototypeHotspots = [
   { screen: 9, label: "返回列表", box: [3, 4, 13, 8], target: 8 },
 ] as const;
 
-// SDD-02 runtime preconditions for the three creation hotspots.
+// 2026-10-09: 02/03 are one conversation, with versioned confirmation cards.
 export const creationHotspotPreconditions = {
   addPhoto: "至少选择 1 张有效照片后才可进入理解态",
   continueUpload: "至少选择 1 张有效照片后才可进入理解态",
-  confirm: "当前 Memory Profile 必须有非空标题且事件或氛围至少一项有效",
+  confirm:
+    "仅最新有效方向卡，消息与照片版本一致、无未处理输入；按这个生成冻结快照",
 } as const;
 
 // SDD-04 runtime rules keep the original hotspot coordinates and targets.
@@ -132,7 +133,7 @@ export const designScreenMappings: DesignScreenMapping[] = [
     assetPath: "designs/ui/03-创建音乐相册-Agent记忆理解.png",
     routeKey: "create",
     stateLabel: "Agent 记忆理解状态",
-    nextAction: "一键确认，开始生成",
+    nextAction: "继续对话，或点击最新方向卡的按这个生成",
   },
   {
     designId: "04",

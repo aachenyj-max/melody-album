@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateMusic } from "@/lib/music/generator";
 import { musicError, validateMusicProfile } from "@/lib/music/contract";
+import { getAlbumIdentity, sameOrigin } from "@/lib/albums/identity";
+import { readSnapshot } from "@/lib/creation/confirmation";
 
 export const dynamic = "force-dynamic";
 
@@ -25,12 +27,45 @@ export async function POST(request: Request) {
     /^[a-zA-Z0-9_-]{1,100}$/.test(raw.requestId)
       ? raw.requestId
       : "unknown";
-  const profile = validateMusicProfile(raw.profile);
+  let profile = validateMusicProfile(raw.profile);
+  if (raw.snapshotId || raw.draftId) {
+    try {
+      if (!sameOrigin(request))
+        return NextResponse.json(
+          { error: musicError("INVALID_PROFILE") },
+          { status: 403, headers: { "cache-control": "private, no-store" } },
+        );
+      const identity = await getAlbumIdentity();
+      if (!identity)
+        return NextResponse.json(
+          { error: musicError("INVALID_PROFILE") },
+          { status: 401, headers: { "cache-control": "private, no-store" } },
+        );
+      const snapshot = await readSnapshot(
+        identity.ownerKey,
+        String(raw.draftId),
+        String(raw.snapshotId),
+      );
+      profile = snapshot.music;
+    } catch {
+      return NextResponse.json(
+        { error: musicError("INVALID_PROFILE") },
+        { status: 409, headers: { "cache-control": "private, no-store" } },
+      );
+    }
+  }
   if (
     raw.contractVersion !== 1 ||
     requestId === "unknown" ||
     Object.keys(raw).some(
-      (key) => !["contractVersion", "requestId", "profile"].includes(key),
+      (key) =>
+        ![
+          "contractVersion",
+          "requestId",
+          "profile",
+          "snapshotId",
+          "draftId",
+        ].includes(key),
     ) ||
     !profile
   )

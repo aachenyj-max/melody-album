@@ -40,6 +40,17 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 ## 阶段清单
 
+### [x] SDD-08：创建相册的连续 Agent 对话
+
+- [x] 2026-10-09 完成 grill-me 七项产品决策、[规格](specs/009-creation-dialogue/spec.md)、[实施计划](specs/009-creation-dialogue/plan.md)、研究、数据模型、接口/视觉契约、验收指南与[任务清单](specs/009-creation-dialogue/tasks.md)，文档质量检查通过。
+- [x] 完成 39 项实施任务：连续真实聊天、方向卡版本、持久恢复、照片变更与失败重试。
+- [x] 完成两段五轮真实对话、恢复/竞争/权限/维护、02/03 视觉及 04–09 主链技术验收。
+- [x] 完成 format/lint/tscheck/build 与同提交进度更新，记录发布状态。
+
+**阶段完成条件**：SC-001–008 有对应证据；历史不覆盖、刷新可恢复、卡片依赖版本有效、音乐遵循确认方向、失败可恢复且无重复消息。仅文档完成不能勾阶段总项。
+
+**已知限制与下一步**：39/39 技术实现与验收完成；两段真实 Pi/Qwen 五轮、历史卡引用补验、一次真实 ACE-Step、真实音频播放保存、18 项边界断言、7 项界面恢复、查询快照切换、权限/维护和 320/375/430 视觉通过。format/lint/tscheck/build 通过，验收见 [SDD-08 verification](specs/009-creation-dialogue/verification/README.md)。仅本地交付，尚未部署；物理手机键盘未验，MCP advisor token 已到期，权限有实际请求证据。下一步按用户指示发布或体验；不改变 SDD-06 真人样本 0 与 SDD-07 补验未完成状态。
+
 ### [x] SDD-00：可运行框架与设计基线
 
 **建议**：Sol / medium；无需 clarify；预计 1 次 AI Coding 对话，3–4 个实现回合。

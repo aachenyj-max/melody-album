@@ -2677,3 +2677,223 @@ textarea:focus-visible {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* 02/03 share one persistent conversation; original shell and photo compositions remain. */
+.album-device:has(.creation-screen) {
+  height: min(100dvh, calc(min(100vw, 432px) * 2.11124));
+  aspect-ratio: auto;
+}
+.creation-scroll {
+  position: absolute;
+  inset: 12% 8% 13%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+  padding: 2cqw 1cqw 5cqw;
+}
+.creation-screen .creation-photos {
+  position: relative;
+  top: auto;
+  left: auto;
+  width: 100%;
+  height: 67cqw;
+  flex-shrink: 0;
+  margin: 0 0 4cqw;
+}
+.creation-screen .stack-understanding {
+  height: 43cqw;
+}
+.creation-screen .stack-understanding:empty {
+  display: none;
+}
+.creation-screen .upload-caption {
+  position: static;
+  margin: 3cqw 0 7cqw;
+}
+.creation-screen .agent-message {
+  position: static;
+  left: auto;
+  width: 100%;
+  margin: 0 0 4cqw;
+  gap: 2cqw;
+}
+.creation-screen .user-message {
+  flex-direction: row-reverse;
+  padding-left: 7cqw;
+}
+.creation-screen .user-message .message-bubble {
+  background: linear-gradient(130deg, #f3f8ed, #fff);
+}
+.creation-screen .message-bubble {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: max(12px, 3.1cqw);
+  box-shadow: 0 4cqw 7cqw #292e3610;
+}
+.creation-screen .agent-avatar {
+  width: 8cqw;
+  height: 8cqw;
+}
+.creation-screen .composer {
+  top: auto;
+  bottom: 6%;
+  height: auto;
+  min-height: 12cqw;
+  background: #fffffff2;
+  box-shadow: 0 2cqw 8cqw #353b3e15;
+}
+.creation-screen .composer input {
+  font-size: max(12px, 2.9cqw);
+}
+.creation-screen button:disabled {
+  opacity: 0.45;
+}
+.creation-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2cqw;
+  margin: 2cqw 0 5cqw;
+}
+.creation-tools .understanding-status {
+  position: static;
+  left: auto;
+  width: auto;
+  padding: 2cqw 4cqw;
+  font-size: max(11px, 2.8cqw);
+}
+.creation-tools > button {
+  border-radius: 4cqw;
+  padding: 1cqw 3cqw;
+  background: #eff8e3;
+  color: #436025;
+  font-size: max(11px, 2.5cqw);
+}
+.creation-card {
+  margin: 0 0 5cqw 10cqw;
+  padding: 4cqw;
+  border-radius: 5cqw;
+  border: 1px solid #e2ebd9;
+  background: linear-gradient(150deg, #f5f9ee, #fff);
+  box-shadow: 0 3cqw 6cqw #2633180c;
+  overflow-wrap: anywhere;
+}
+.creation-card-heading {
+  display: flex;
+  gap: 2cqw;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 3cqw;
+}
+.creation-card-heading svg {
+  width: 5cqw;
+  flex-shrink: 0;
+  color: #536c36;
+}
+.creation-card-heading strong {
+  font-size: max(14px, 3.7cqw);
+}
+.creation-card-heading span {
+  font-size: max(10px, 2.4cqw);
+  color: #6b7860;
+}
+.creation-card p,
+.creation-card dd {
+  font-size: max(12px, 3cqw);
+  line-height: 1.6;
+}
+.creation-card dl {
+  display: grid;
+  gap: 2cqw;
+  margin: 3cqw 0;
+}
+.creation-card dl div {
+  display: grid;
+  grid-template-columns: 8cqw minmax(0, 1fr);
+  gap: 2cqw;
+}
+.creation-card dt {
+  color: #758369;
+  font-size: max(11px, 2.7cqw);
+}
+.creation-card dd {
+  margin: 0;
+}
+.creation-card > button {
+  display: flex;
+  gap: 2cqw;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border-radius: 8cqw;
+  padding: 3cqw;
+  font-size: max(12px, 3cqw);
+}
+.creation-card > button svg {
+  width: 4cqw;
+  height: 4cqw;
+}
+.creation-card small {
+  display: block;
+  color: #737a6a;
+  margin-top: 2cqw;
+}
+.creation-notice,
+.creation-turn-error {
+  color: #785126;
+  font-size: max(11px, 2.7cqw);
+  line-height: 1.6;
+}
+.creation-notice {
+  padding: 3cqw;
+  border-radius: 3cqw;
+  background: #fff5e7;
+  margin: 3cqw 0;
+}
+.creation-notice button,
+.creation-turn-error button {
+  text-decoration: underline;
+  margin: 2cqw 3cqw 0 0;
+}
+.creation-new-messages {
+  position: absolute;
+  bottom: 13%;
+  left: 35%;
+  background: #eff8e3;
+  border-radius: 8cqw;
+  padding: 2cqw 4cqw;
+  z-index: 4;
+}
+.creation-source,
+.creation-loading {
+  color: #8a8d86;
+  text-align: center;
+  font-size: max(10px, 2.6cqw);
+  padding: 2cqw;
+}
+.creation-screen .creation-photo-manager {
+  z-index: 6;
+  bottom: 18%;
+  max-height: 55%;
+  overflow-y: auto;
+  background: #fffffff5;
+}
+.result-restore-error {
+  position: fixed;
+  z-index: 10;
+  bottom: 8%;
+  left: 10%;
+  right: 10%;
+  padding: 16px;
+  background: #fff5e7;
+  color: #785126;
+  border-radius: 16px;
+  text-align: center;
+}
+.result-restore-error button {
+  display: block;
+  margin: 8px auto 0;
+  text-decoration: underline;
+}

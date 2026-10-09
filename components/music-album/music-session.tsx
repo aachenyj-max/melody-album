@@ -301,6 +301,12 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
               contractVersion: 1,
               requestId: attemptId,
               profile: current.profile,
+              ...(confirmedRef.current?.snapshotId
+                ? {
+                    snapshotId: confirmedRef.current.snapshotId,
+                    draftId: confirmedRef.current.draftId,
+                  }
+                : {}),
             }),
             cache: "no-store",
             signal: controller.signal,
@@ -478,7 +484,8 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       stop();
       const attemptId = id("ai");
       const recommendationAttemptId = id("rec");
-      const profile = toMusicProfile(confirmed.profile);
+      const profile =
+        confirmed.musicProfile || toMusicProfile(confirmed.profile);
       const next: MusicRun = {
         runId: id("run"),
         creationEpoch: ++epochRef.current,

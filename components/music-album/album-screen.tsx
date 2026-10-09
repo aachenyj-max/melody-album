@@ -111,7 +111,7 @@ function MusicCard({
         )}
       </p>
       <Link
-        href={home ? "/create" : "/play"}
+        href={home ? "/create?new=1" : "/play"}
         className="music-play dark"
         aria-label="进入播放"
       >
@@ -167,7 +167,7 @@ function HomeScreen() {
       </div>
       <PhotoStack kind="home" />
       <MusicCard home />
-      <Link href="/create" className="home-create glass">
+      <Link href="/create?new=1" className="home-create glass">
         生成音乐
         <span className="dark">
           <ChevronRight />

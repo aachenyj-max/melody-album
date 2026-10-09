@@ -24,7 +24,7 @@ export function BottomNav() {
       <button type="button" aria-label="探索／推荐（暂未开放）" disabled>
         <Music2 />
       </button>
-      <Link href="/create" className="nav-create" aria-label="开始创建">
+      <Link href="/create?new=1" className="nav-create" aria-label="开始创建">
         <Plus />
       </Link>
       <Link

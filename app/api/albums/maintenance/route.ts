@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { cleanupExpiredAlbumUploads } from "@/lib/albums/cleanup";
+import { cleanupCreationDrafts } from "@/lib/creation/cleanup";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,10 +22,14 @@ export async function GET(request: Request) {
     return new Response(null, { status: 401, headers });
   try {
     const result = await cleanupExpiredAlbumUploads();
-    return Response.json(result, {
-      status: result.failed ? 503 : 200,
-      headers,
-    });
+    const creation = await cleanupCreationDrafts();
+    return Response.json(
+      { ...result, creation },
+      {
+        status: result.failed || creation.failed ? 503 : 200,
+        headers,
+      },
+    );
   } catch {
     return Response.json({ error: "维护暂时失败。" }, { status: 503, headers });
   }

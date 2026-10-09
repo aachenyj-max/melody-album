@@ -1,618 +1,569 @@
 "use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { ArrowUp, Plus, Sparkles } from "lucide-react";
 import {
-  ArrowUp,
-  ChevronRight,
-  GraduationCap,
-  Music2,
-  Pencil,
-  Plus,
-  Sparkles,
-} from "lucide-react";
+  activeTurn,
+  CREATION_BUCKET,
+  type CreationDraft,
+  type DirectionCard,
+} from "@/lib/creation/contract";
+import { creationApi, snapshotInput } from "@/lib/creation/client";
+import { createClient } from "@/lib/supabase/client";
 import { AppShell } from "./app-shell";
 import { PageFrame } from "./page-frame";
 import { photo } from "./demo-data";
-import { MemoryProfileCard } from "./memory-profile-card";
+import { CreationDialogue } from "./creation-dialogue";
 import { useCreationSession } from "./creation-session";
-import {
-  prepareAnalysisFiles,
-  validateSources,
-  type PhotoInput,
-} from "./photo-preparation";
-import {
-  normalizeProfile,
-  type CreationPhase,
-  type MemoryFailure,
-  type MemoryProfile,
-  type MemorySuccess,
-} from "@/lib/memory/contract";
-
-const sampleUpload = [
-  "travel",
-  "graduation",
-  "cat",
-  "garden",
-  "sunset",
-  "vinyl",
-];
-const sampleUnderstanding = [
-  "garden",
-  "graduation-wide",
-  "graduation",
-  "travel",
-  "vinyl",
-];
-const suggestions = [
-  "更快乐一点",
-  "这是毕业，不是旅行",
-  "少一点伤感",
-  "加一些朋友的热闹感",
-];
 
 export function CreateFlow() {
   const router = useRouter();
-  const pathname = usePathname();
   const { confirm } = useCreationSession();
-  const [photos, setPhotos] = useState<PhotoInput[]>([]);
-  const [story, setStory] = useState("");
-  const [instruction, setInstruction] = useState("");
-  const [profile, setProfile] = useState<MemoryProfile | null>(null);
-  const [phase, setPhase] = useState<CreationPhase>("idle");
+  const [draft, setDraft] = useState<CreationDraft | null>(null);
+  const [text, setText] = useState("");
   const [error, setError] = useState("");
-  const [progress, setProgress] = useState("");
-  const [showUnderstanding, setShowUnderstanding] = useState(false);
-  const [showPhotoManager, setShowPhotoManager] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [manager, setManager] = useState(false);
+  const [newMessages, setNewMessages] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
-  const photosRef = useRef<PhotoInput[]>([]);
-  const sequence = useRef(0);
-  const controller = useRef<AbortController | null>(null);
-  const lastKind = useRef<"understand" | "revise">("understand");
-  const analysisFiles = useRef<File[]>([]);
-  const submitting = useRef(false);
-
-  const invalidate = useCallback(() => {
-    sequence.current += 1;
-    controller.current?.abort();
-    controller.current = null;
-    analysisFiles.current = [];
-    for (const item of photosRef.current) item.analysisFile = null;
-    setProfile(null);
-    setError("");
-    setPhase(photosRef.current.length ? "selected" : "idle");
-    submitting.current = false;
+  const scroll = useRef<HTMLDivElement>(null);
+  const follow = useRef(true);
+  const transport = useRef(false);
+  const boot = useRef<Promise<CreationDraft> | null>(null);
+  const unsent = useRef<{ id: string; text: string } | null>(null);
+  const uploadRetry = useRef<{
+    requestId: string;
+    files: File[];
+    ids: string[];
+    previous: string[];
+  } | null>(null);
+  const adopt = useCallback((next: CreationDraft) => {
+    setDraft((current) =>
+      current && current.id === next.id && current.revision > next.revision
+        ? current
+        : next,
+    );
   }, []);
-
-  const clearDraft = useCallback(() => {
-    invalidate();
-    for (const item of photosRef.current) URL.revokeObjectURL(item.previewUrl);
-    photosRef.current = [];
-    setPhotos([]);
-    setStory("");
-    setInstruction("");
-    setShowUnderstanding(false);
-    setShowPhotoManager(false);
-  }, [invalidate]);
-
-  useEffect(() => {
-    if (pathname !== "/create") clearDraft();
-  }, [pathname, clearDraft]);
-  useEffect(
-    () => () => {
-      controller.current?.abort();
-      for (const item of photosRef.current)
-        URL.revokeObjectURL(item.previewUrl);
-      photosRef.current = [];
+  const refresh = useCallback(
+    async (id: string) => {
+      const next = await creationApi<CreationDraft>(
+        `/api/creation/drafts/${id}`,
+      );
+      adopt(next);
+      return next;
     },
-    [],
+    [adopt],
   );
-
-  function chooseFiles(files: FileList | null) {
-    if (!files?.length) return;
-    const incoming = Array.from(files);
-    const problem = validateSources(photosRef.current, incoming);
-    if (problem) {
-      setError(problem);
-      setPhase("invalid");
-      return;
-    }
-    const appended = incoming.map(
-      (file, index): PhotoInput => ({
-        localId: crypto.randomUUID(),
-        file,
-        previewUrl: URL.createObjectURL(file),
-        analysisFile: null,
-        position: photosRef.current.length + index,
-        readState: "ready",
-      }),
-    );
-    photosRef.current = [...photosRef.current, ...appended];
-    setPhotos(photosRef.current);
-    invalidate();
-  }
-
-  function removePhoto(localId: string) {
-    const target = photosRef.current.find((item) => item.localId === localId);
-    if (target) URL.revokeObjectURL(target.previewUrl);
-    photosRef.current = photosRef.current
-      .filter((item) => item.localId !== localId)
-      .map((item, position) => ({ ...item, position, analysisFile: null }));
-    setPhotos(photosRef.current);
-    invalidate();
-    if (showUnderstanding) {
-      setShowUnderstanding(false);
-      window.history.replaceState(null, "", "/create");
-    }
-  }
-
-  function badPreview(localId: string) {
-    photosRef.current = photosRef.current.map((item) =>
-      item.localId === localId ? { ...item, readState: "failed" } : item,
-    );
-    setPhotos(photosRef.current);
-    invalidate();
-    setError("有照片无法读取，请移除或更换。");
-    setPhase("invalid");
-  }
-
-  function setStoryValue(value: string) {
-    setStory(value);
-    if (profile || analysisFiles.current.length) invalidate();
-    if (value.trim().length > 1000) {
-      setError("故事最多 1000 字。");
-      setPhase("invalid");
-    }
-  }
-
-  function returnToUpload() {
-    sequence.current += 1;
-    controller.current?.abort();
-    setShowUnderstanding(false);
-    setShowPhotoManager(false);
-    setPhase(photosRef.current.length ? "selected" : "idle");
-    setError("");
-    window.history.replaceState(null, "", "/create");
-    submitting.current = false;
-  }
-
-  async function submit(kind: "understand" | "revise") {
-    if (submitting.current) return;
-    if (photosRef.current.length < 1 || photosRef.current.length > 9) {
-      setError("请选择 1–9 张照片。");
-      setPhase("invalid");
-      return;
-    }
-    if (photosRef.current.some((item) => item.readState === "failed")) {
-      setError("有照片无法读取，请移除或更换。");
-      setPhase("invalid");
-      return;
-    }
-    if (story.trim().length > 1000) {
-      setError("故事最多 1000 字。");
-      setPhase("invalid");
-      return;
-    }
-    const trimmed = instruction.trim();
-    if (kind === "revise" && (trimmed.length < 1 || trimmed.length > 300)) {
-      setError("请输入 1–300 字的修正内容。");
-      return;
-    }
-    if (kind === "revise" && !profile) return;
-    submitting.current = true;
-    lastKind.current = kind;
-    const token = ++sequence.current;
-    const abort = new AbortController();
-    controller.current = abort;
-    setError("");
-    setProgress("正在准备照片…");
-    setPhase(kind === "understand" ? "understanding" : "revising");
-    if (kind === "understand") {
-      setShowUnderstanding(true);
-      setShowPhotoManager(false);
-      window.history.pushState(null, "", "/create?state=understanding");
-    }
-    try {
-      const profileJson =
-        kind === "revise" ? JSON.stringify(profile) : undefined;
-      const files = await prepareAnalysisFiles(
-        photosRef.current,
-        story.trim(),
-        profileJson,
-        kind === "revise" ? trimmed : undefined,
-      );
-      if (token !== sequence.current) return;
-      analysisFiles.current = files;
-      const form = new FormData();
-      for (const file of files) form.append("photos", file);
-      form.set("story", story.trim());
-      if (kind === "revise") {
-        form.set("profile", profileJson ?? "");
-        form.set("baseVersion", String(profile?.version));
-        form.set("instruction", trimmed);
-      }
-      setProgress(kind === "revise" ? "正在修正理解…" : "正在理解你的照片…");
-      const response = await fetch(`/api/memory/${kind}`, {
-        method: "POST",
-        body: form,
-        signal: abort.signal,
-        cache: "no-store",
+  useEffect(() => {
+    let mounted = true;
+    boot.current ??= (async () => {
+      const query = new URLSearchParams(window.location.search);
+      const id =
+        query.get("draft") ||
+        (!query.has("new")
+          ? localStorage.getItem("music-creation-draft")
+          : null);
+      if (id) return creationApi<CreationDraft>(`/api/creation/drafts/${id}`);
+      return creationApi<CreationDraft>("/api/creation/drafts", {
+        requestId: crypto.randomUUID(),
       });
-      const data = (await response.json()) as MemorySuccess | MemoryFailure;
-      if (token !== sequence.current) return;
-      if (!response.ok || !("profile" in data)) {
-        const message =
-          "error" in data ? data.error.message : "暂时无法处理，请重试。";
-        throw new Error(message);
-      }
-      const valid = normalizeProfile(data.profile, photosRef.current.length);
-      if (
-        !valid ||
-        (kind === "understand" && valid.version !== 1) ||
-        (kind === "revise" && valid.version !== (profile?.version ?? 0) + 1)
-      )
-        throw new Error("理解结果不可用，请重新尝试。");
-      setProfile(valid);
-      setInstruction("");
-      setPhase("ready");
-    } catch (caught) {
-      if (token !== sequence.current || abort.signal.aborted) return;
-      setError(
-        caught instanceof Error ? caught.message : "暂时无法处理，请重试。",
+    })();
+    void boot.current
+      .then((next) => {
+        if (!mounted) return;
+        localStorage.setItem("music-creation-draft", next.id);
+        window.history.replaceState(
+          null,
+          "",
+          `/create?draft=${next.id}${next.messages.length ? "&state=understanding" : ""}`,
+        );
+        adopt(next);
+      })
+      .catch((e: Error) => {
+        if (mounted) setError(e.message);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [adopt]);
+  const turn = draft ? activeTurn(draft) : undefined;
+  const processing = busy || turn?.status === "running";
+  const draftId = draft?.id;
+  const messageCount = draft?.messages.length || 0;
+  useEffect(() => {
+    if (!draftId || !["running", "pending"].includes(turn?.status || ""))
+      return;
+    const timer = window.setInterval(() => {
+      void refresh(draftId).catch(() => {});
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [draftId, turn?.status, refresh]);
+  useEffect(() => {
+    if (!draftId) return;
+    window.history.replaceState(
+      null,
+      "",
+      `/create?draft=${draftId}${messageCount ? "&state=understanding" : ""}`,
+    );
+  }, [draftId, messageCount]);
+  useEffect(() => {
+    if (!scroll.current || !messageCount) return;
+    if (follow.current) scroll.current.scrollTop = scroll.current.scrollHeight;
+    else setNewMessages(true);
+  }, [messageCount]);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const update = () => {
+      const device = scroll.current?.closest<HTMLElement>(".album-device");
+      if (device)
+        device.style.maxHeight = `${viewport?.height || window.innerHeight}px`;
+    };
+    viewport?.addEventListener("resize", update);
+    update();
+    return () => {
+      viewport?.removeEventListener("resize", update);
+      const device = scroll.current?.closest<HTMLElement>(".album-device");
+      if (device) device.style.maxHeight = "";
+    };
+  }, []);
+  async function execute(id: string, turnId: string) {
+    setBusy(true);
+    try {
+      adopt(
+        await creationApi<CreationDraft>(
+          `/api/creation/drafts/${id}/turns/${turnId}/execute`,
+          {},
+        ),
       );
-      setPhase("failed");
+    } catch (e) {
+      setError((e as Error).message);
+      await refresh(id).catch(() => {});
     } finally {
-      if (token === sequence.current) {
-        submitting.current = false;
-        controller.current = null;
-      }
+      setBusy(false);
     }
   }
-
-  function confirmCurrent() {
-    if (
-      !profile ||
-      !normalizeProfile(profile, photosRef.current.length) ||
-      submitting.current
-    )
+  async function send() {
+    if (!draft || transport.current || processing || turn || !text.trim())
       return;
-    submitting.current = true;
-    setPhase("confirmed");
-    confirm({ profile, photos: photosRef.current.map((item) => item.file) });
-    router.push("/result");
+    transport.current = true;
+    setError("");
+    setBusy(true);
+    const value = text.trim();
+    unsent.current =
+      unsent.current?.text === value
+        ? unsent.current
+        : { id: crypto.randomUUID(), text: value };
+    try {
+      const received = await creationApi<{
+        draft: CreationDraft;
+        turnId: string;
+      }>(`/api/creation/drafts/${draft.id}/messages`, {
+        clientMessageId: unsent.current.id,
+        expectedRevision: draft.revision,
+        text: value,
+      });
+      adopt(received.draft);
+      setText((current) => (current.trim() === value ? "" : current));
+      unsent.current = null;
+      await execute(draft.id, received.turnId);
+    } catch (e) {
+      setError((e as Error).message);
+      const restored = await refresh(draft.id).catch(() => null);
+      if (
+        restored?.messages.some((m) => m.clientMessageId === unsent.current?.id)
+      ) {
+        setText((current) => (current.trim() === value ? "" : current));
+        unsent.current = null;
+      }
+    } finally {
+      transport.current = false;
+      setBusy(false);
+    }
   }
-
-  const busy =
-    phase === "understanding" || phase === "revising" || phase === "confirmed";
-  const sample = showUnderstanding ? sampleUnderstanding : sampleUpload;
-  const visiblePhotos = photos.length
-    ? photos
-    : sample.map((name, position) => ({
-        localId: name,
-        previewUrl: photo(name),
-        position,
-      }));
+  async function upload(files: File[]) {
+    if (!draft || uploading || !files.length) return;
+    const base = draft;
+    if (
+      (!uploadRetry.current && base.photos.length + files.length > 9) ||
+      files.some(
+        (f) =>
+          !["image/jpeg", "image/png", "image/webp"].includes(f.type) ||
+          !f.size ||
+          f.size > 10 * 1024 * 1024,
+      ) ||
+      (!uploadRetry.current &&
+        base.photos.reduce((n, p) => n + p.bytes, 0) +
+          files.reduce((n, f) => n + f.size, 0) >
+          50 * 1024 * 1024)
+    ) {
+      setError(
+        "请选择 JPEG、PNG 或 WebP：最多 9 张，单张 10 MiB，总计 50 MiB。",
+      );
+      return;
+    }
+    const input = uploadRetry.current || {
+      requestId: crypto.randomUUID(),
+      files,
+      ids: files.map(() => crypto.randomUUID()),
+      previous: base.photos.map((p) => p.id),
+    };
+    uploadRetry.current = input;
+    setUploading(true);
+    setError("");
+    try {
+      const prepared = await creationApi<{
+        draft: CreationDraft;
+        photos: { id: string; path: string; token: string }[];
+      }>(`/api/creation/drafts/${base.id}/photos`, {
+        action: "prepare",
+        requestId: input.requestId,
+        expectedRevision: base.revision,
+        files: input.files.map((f, i) => ({
+          clientPhotoId: input.ids[i],
+          name: f.name,
+          mime: f.type,
+          bytes: f.size,
+        })),
+      });
+      adopt(prepared.draft);
+      const storage = createClient().storage.from(CREATION_BUCKET);
+      for (let i = 0; i < input.files.length; i++) {
+        const p = prepared.photos[i];
+        const result = await storage.uploadToSignedUrl(
+          p.path,
+          p.token,
+          input.files[i],
+          { contentType: input.files[i].type },
+        );
+        if (
+          result.error &&
+          !/already exists|duplicate/i.test(result.error.message)
+        )
+          throw new Error("照片上传失败，点击重试上传。");
+      }
+      const latest = await refresh(base.id);
+      const currentIds = latest.photos.map((p) => p.id);
+      const alreadyCommitted = input.ids.every((id) => currentIds.includes(id));
+      if (
+        !alreadyCommitted &&
+        JSON.stringify(currentIds) !== JSON.stringify(input.previous)
+      ) {
+        uploadRetry.current = null;
+        throw new Error("照片已在另一处更新，请重新选择要添加的照片。");
+      }
+      const committed = await creationApi<{
+        draft: CreationDraft;
+        turnId: string | null;
+      }>(`/api/creation/drafts/${base.id}/photos`, {
+        action: "commit",
+        requestId: input.requestId,
+        expectedRevision: latest.revision,
+        photoIds: [...input.previous, ...input.ids],
+      });
+      adopt(committed.draft);
+      uploadRetry.current = null;
+      setUploading(false);
+      if (committed.turnId) await execute(base.id, committed.turnId);
+    } catch (e) {
+      setError((e as Error).message);
+      await refresh(base.id).catch(() => {});
+    } finally {
+      setUploading(false);
+    }
+  }
+  async function remove(id: string) {
+    if (!draft || uploading) return;
+    setUploading(true);
+    setError("");
+    try {
+      const next = await creationApi<{
+        draft: CreationDraft;
+        turnId: string | null;
+      }>(`/api/creation/drafts/${draft.id}/photos`, {
+        action: "commit",
+        requestId: crypto.randomUUID(),
+        expectedRevision: draft.revision,
+        photoIds: draft.photos.filter((p) => p.id !== id).map((p) => p.id),
+      });
+      adopt(next.draft);
+      setUploading(false);
+      if (next.turnId) await execute(draft.id, next.turnId);
+    } catch (e) {
+      setError((e as Error).message);
+      await refresh(draft.id).catch(() => {});
+    } finally {
+      setUploading(false);
+    }
+  }
+  async function confirmCard(card: DirectionCard) {
+    if (!draft || transport.current || processing || uploading || text.trim()) {
+      if (text.trim()) setError("先发送或清空尚未发送的内容，再确认音乐方向。");
+      return;
+    }
+    transport.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const result = await creationApi<{ draftId: string; snapshotId: string }>(
+        `/api/creation/drafts/${draft.id}/confirm`,
+        {
+          requestId: crypto.randomUUID(),
+          cardId: card.id,
+          expectedRevision: draft.revision,
+          messageRevision: draft.messageRevision,
+          photoRevision: draft.photoRevision,
+        },
+      );
+      confirm(await snapshotInput(result.draftId, result.snapshotId));
+      router.push(
+        `/result?draft=${result.draftId}&snapshot=${result.snapshotId}`,
+      );
+    } catch (e) {
+      setError((e as Error).message);
+      await refresh(draft.id).catch(() => {});
+    } finally {
+      transport.current = false;
+      setBusy(false);
+    }
+  }
+  const understanding = Boolean(draft?.messages.length);
+  const examples = ["travel", "graduation", "cat", "garden", "sunset", "vinyl"];
+  const images = draft?.photos.length
+    ? draft.photos
+    : understanding
+      ? []
+      : examples.map((name) => ({ id: name, url: photo(name) }));
   return (
     <AppShell>
       <main
-        className={`album-screen screen-${showUnderstanding ? 3 : 2}`}
-        data-screen={showUnderstanding ? "03" : "02"}
-        aria-label={
-          showUnderstanding
-            ? "创建音乐相册 · Agent记忆理解"
-            : "创建音乐相册 · 上传照片"
-        }
+        className={`album-screen screen-${understanding ? 3 : 2} creation-screen`}
+        data-screen={understanding ? "03" : "02"}
+        aria-label="创建音乐相册 · 连续对话"
       >
         <PageFrame title="创建音乐相册" backHref="/" />
         <input
           ref={fileInput}
+          className="sr-only"
           type="file"
           accept="image/jpeg,image/png,image/webp"
           multiple
-          className="sr-only"
           aria-label="选择照片"
-          onChange={(event) => {
-            chooseFiles(event.target.files);
-            event.target.value = "";
+          onChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            e.target.value = "";
+            uploadRetry.current = null;
+            void upload(files);
           }}
         />
         <div
-          className={`photo-stack stack-${showUnderstanding ? "understanding" : "upload"}`}
+          className="creation-scroll"
+          ref={scroll}
+          onScroll={() => {
+            if (!scroll.current) return;
+            follow.current =
+              scroll.current.scrollHeight -
+                scroll.current.scrollTop -
+                scroll.current.clientHeight <
+              60;
+            if (follow.current) setNewMessages(false);
+          }}
         >
-          {visiblePhotos
-            .slice(0, showUnderstanding ? 5 : 6)
-            .map((item, index) => (
-              <div
-                className={`stack-photo stack-photo-${index + 1} flow-photo`}
-                key={item.localId}
-              >
-                {/* Dynamic object URLs cannot be optimized by Next Image. */}
-                {/* biome-ignore lint/performance/noImgElement: Local object URLs are ephemeral */}
+          <div
+            className={`photo-stack stack-${understanding ? "understanding" : "upload"} creation-photos`}
+          >
+            {images.slice(0, understanding ? 5 : 6).map((p, i) => (
+              <div className={`stack-photo stack-photo-${i + 1}`} key={p.id}>
+                {/* biome-ignore lint/performance/noImgElement: Private images require current cookie authorization */}
                 <img
-                  src={item.previewUrl}
-                  alt={photos.length ? `已选照片 ${index + 1}` : "照片示意"}
-                  onError={
-                    photos.length ? () => badPreview(item.localId) : undefined
-                  }
+                  src={p.url}
+                  alt={draft?.photos.length ? `已选照片 ${i + 1}` : "照片示意"}
                 />
-                {photos.length > 0 && !busy && !showUnderstanding && (
-                  <button
-                    type="button"
-                    aria-label={`删除第 ${index + 1} 张照片`}
-                    className="flow-photo-remove"
-                    onClick={() => removePhoto(item.localId)}
-                  >
-                    ×
-                  </button>
-                )}
               </div>
             ))}
-          {!showUnderstanding && (
-            <button
-              type="button"
-              className="add-photo glass"
-              onClick={() => fileInput.current?.click()}
-              aria-label="添加照片"
-              disabled={busy}
-            >
-              <Plus />
-              <span>{photos.length}/9 张</span>
-            </button>
-          )}
-        </div>
-        {showUnderstanding ? (
-          <>
-            <div className="understanding-status glass" role="status">
-              <Sparkles />
-              {busy
-                ? progress
-                : phase === "failed"
-                  ? "处理失败，可重试"
-                  : profile
-                    ? `已理解 · 第 ${profile.version} 版`
-                    : "正在理解你的照片…"}
-            </div>
-            {photos.length > 0 && (
+            {!understanding && (
               <button
                 type="button"
-                className="flow-manage-trigger"
-                onClick={() => setShowPhotoManager(true)}
-                disabled={busy}
-              >
-                管理 {photos.length} 张照片
-              </button>
-            )}
-            <div className="agent-message understanding-message">
-              <span className="agent-avatar">
-                <Music2 />
-              </span>
-              <div className="message-bubble glass">
-                {profile ? (
-                  <>
-                    <p>
-                      {profile.event ??
-                        profile.atmosphere ??
-                        "这段回忆有待补充。"}
-                    </p>
-                    <MemoryProfileCard
-                      profile={profile}
-                      photoCount={photos.length}
-                    />
-                  </>
-                ) : (
-                  <p>
-                    {busy
-                      ? progress
-                      : "还没有可用的理解结果，可以重试或返回修改照片。"}
-                  </p>
-                )}
-              </div>
-            </div>
-            {profile && (
-              <div className="event-title glass">
-                <span>
-                  <GraduationCap />
-                </span>
-                <strong>{profile.title}</strong>
-                {profile.source === "demo" && (
-                  <small className="flow-source">演示结果</small>
-                )}
-                <button
-                  type="button"
-                  aria-label="可通过下方输入修正标题"
-                  disabled
-                >
-                  <Pencil />
-                </button>
-              </div>
-            )}
-            <div className="agent-message confirm-message">
-              <span className="agent-avatar">
-                <Music2 />
-              </span>
-              <div className="message-bubble glass">
-                {profile
-                  ? "这样的理解对吗？你也可以告诉我…"
-                  : "请等待理解结果，或返回修改照片。"}
-              </div>
-            </div>
-            <div className="understanding-suggestions">
-              {suggestions.map((label) => (
-                <button
-                  type="button"
-                  key={label}
-                  onClick={() => setInstruction(label)}
-                  disabled={!profile || busy}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="composer glass">
-              <button
-                type="button"
-                className="composer-add"
-                onClick={returnToUpload}
-                aria-label="返回修改照片"
+                className="add-photo glass"
+                aria-label="添加照片"
+                disabled={!draft || uploading}
+                onClick={() => fileInput.current?.click()}
               >
                 <Plus />
-              </button>
-              <input
-                aria-label="修正记忆理解"
-                placeholder="继续补充或直接确认…"
-                value={instruction}
-                onChange={(event) => setInstruction(event.target.value)}
-                disabled={!profile || busy}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") void submit("revise");
-                }}
-              />
-              {instruction.trim() ? (
-                <button
-                  type="button"
-                  className="composer-send dark"
-                  onClick={() => void submit("revise")}
-                  disabled={!profile || busy}
-                  aria-label="发送修正指令"
-                >
-                  <ArrowUp />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="composer-confirm dark"
-                  onClick={confirmCurrent}
-                  disabled={!profile || busy}
-                >
-                  一键确认，开始生成
-                  <ChevronRight />
-                </button>
-              )}
-            </div>
-            {phase === "failed" && (
-              <button
-                type="button"
-                className="flow-retry"
-                onClick={() => void submit(lastKind.current)}
-              >
-                {lastKind.current === "revise" ? "重试修正" : "重试理解"}
+                <span>{draft?.photos.length || 0}/9 张</span>
               </button>
             )}
-            {profile && instruction.trim() && !busy && (
-              <button
-                type="button"
-                className="flow-confirm-previous"
-                onClick={confirmCurrent}
-              >
-                确认当前第 {profile.version} 版
-              </button>
-            )}
-          </>
-        ) : (
-          <>
+          </div>
+          {!understanding && (
             <div className="upload-caption">
               <h2>上传 1–9 张照片</h2>
               <p>让 AI 帮你把回忆变成一首歌</p>
-              {photos.length > 6 && (
+            </div>
+          )}
+          {understanding && (
+            <div className="creation-tools">
+              <span className="understanding-status glass" role="status">
+                <Sparkles />
+                {uploading
+                  ? "正在上传照片…"
+                  : processing
+                    ? "正在理解你的照片…"
+                    : turn
+                      ? "本轮需要重试"
+                      : "一起聊聊这段记忆"}
+              </span>
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => setManager(true)}
+              >
+                管理 {draft?.photos.length || 0} 张照片
+              </button>
+            </div>
+          )}
+          {draft ? (
+            <CreationDialogue
+              draft={draft}
+              busy={processing || uploading}
+              onConfirm={(c) => void confirmCard(c)}
+              onRetry={(id) => {
+                setError("");
+                void execute(draft.id, id);
+              }}
+            />
+          ) : (
+            <p className="creation-loading" role="status">
+              {error ? "当前对话无法恢复" : "正在恢复对话…"}
+            </p>
+          )}
+          {error && (
+            <div className="creation-notice" role="alert">
+              <p>{error}</p>
+              {uploadRetry.current && (
                 <button
                   type="button"
-                  className="flow-manage-inline"
-                  onClick={() => setShowPhotoManager(true)}
+                  disabled={uploading}
+                  onClick={() => void upload(uploadRetry.current?.files || [])}
                 >
-                  管理全部 {photos.length} 张
+                  重试上传
+                </button>
+              )}
+              {!draft && (
+                <button type="button" onClick={() => window.location.reload()}>
+                  重试恢复
+                </button>
+              )}
+              {!draft && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem("music-creation-draft");
+                    window.location.href = "/create?new=1";
+                  }}
+                >
+                  创建新相册
+                </button>
+              )}
+              {draft && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    void refresh(draft.id)
+                      .then(() => setError(""))
+                      .catch((e: Error) => setError(e.message))
+                  }
+                >
+                  重新读取
                 </button>
               )}
             </div>
-            <div className="agent-message upload-message-one">
-              <span className="agent-avatar">
-                <Music2 />
-              </span>
-              <div className="message-bubble glass">
-                发给我一组照片，我会先理解
-                <br />
-                这段回忆，再帮你生成音乐。
-              </div>
-            </div>
-            <div className="agent-message user-message upload-user">
-              <span className="agent-avatar user-avatar">
-                <Music2 />
-              </span>
-              <div className="message-bubble glass">
-                {story.trim() ||
-                  "你可以补充这段回忆的故事，让理解更贴近你的感受。"}
-              </div>
-            </div>
-            <div className="agent-message upload-message-two">
-              <span className="agent-avatar">
-                <Music2 />
-              </span>
-              <div className="message-bubble glass">
-                {photos.length
-                  ? `已选择 ${photos.length} 张照片。还可以告诉我一些细节，或者直接开始理解。`
-                  : "太好了！这些照片充满了青春的故事。你还可以告诉我一些细节，比如想要的音乐风格、氛围，或者这段回忆的关键词，我会为你量身创作。"}
-              </div>
-            </div>
-            <div className="composer glass">
-              <button
-                type="button"
-                className="composer-add"
-                onClick={() => fileInput.current?.click()}
-                aria-label="继续上传"
-              >
-                <Plus />
-              </button>
-              <input
-                aria-label="和我聊聊这组照片"
-                placeholder="和我聊聊这组照片…"
-                value={story}
-                onChange={(event) => setStoryValue(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") void submit("understand");
-                }}
-              />
-              <button
-                type="button"
-                className="composer-send dark"
-                aria-label="开始理解照片"
-                onClick={() => void submit("understand")}
-                disabled={busy}
-              >
-                <ArrowUp />
-              </button>
-            </div>
-          </>
+          )}
+          {draft?.source === "demo" && (
+            <p className="creation-source">当前为明确标识的 Agent 演示模式</p>
+          )}
+        </div>
+        {newMessages && (
+          <button
+            type="button"
+            className="creation-new-messages"
+            onClick={() => {
+              if (scroll.current)
+                scroll.current.scrollTop = scroll.current.scrollHeight;
+              follow.current = true;
+              setNewMessages(false);
+            }}
+          >
+            查看新消息 ↓
+          </button>
         )}
-        {error && (
-          <div className="flow-error" role="alert">
-            {error}
-          </div>
-        )}
-        {showPhotoManager && (
+        <div className="composer glass">
+          <button
+            type="button"
+            className="composer-add"
+            disabled={!draft || uploading}
+            aria-label="继续上传"
+            onClick={() => fileInput.current?.click()}
+          >
+            <Plus />
+          </button>
+          <input
+            aria-label="和我聊聊这组照片"
+            placeholder={
+              understanding ? "继续聊聊这段记忆…" : "和我聊聊这组照片…"
+            }
+            maxLength={1000}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.nativeEvent.isComposing) void send();
+            }}
+          />
+          <button
+            type="button"
+            className="composer-send dark"
+            aria-label="发送消息"
+            disabled={
+              !draft || processing || uploading || Boolean(turn) || !text.trim()
+            }
+            onClick={() => void send()}
+          >
+            <ArrowUp />
+          </button>
+        </div>
+        {manager && (
           <section
-            className="flow-photo-manager glass"
+            className="flow-photo-manager glass creation-photo-manager"
             aria-label="管理已选照片"
           >
             <div className="flow-photo-manager-head">
-              <strong>已选照片 · {photos.length}/9</strong>
-              <button type="button" onClick={() => setShowPhotoManager(false)}>
+              <strong>已选照片 · {draft?.photos.length || 0}/9</strong>
+              <button type="button" onClick={() => setManager(false)}>
                 完成
               </button>
             </div>
             <div className="flow-photo-manager-grid">
-              {photos.map((item, index) => (
-                <div key={item.localId}>
-                  {/* biome-ignore lint/performance/noImgElement: Local object URLs are ephemeral */}
-                  <img src={item.previewUrl} alt={`第 ${index + 1} 张照片`} />
+              {draft?.photos.map((p, i) => (
+                <div key={p.id}>
+                  {/* biome-ignore lint/performance/noImgElement: Private photo route validates ownership */}
+                  <img src={p.url} alt={`第 ${i + 1} 张照片`} />
                   <button
                     type="button"
-                    onClick={() => removePhoto(item.localId)}
-                    aria-label={`删除第 ${index + 1} 张照片`}
+                    disabled={uploading}
+                    aria-label={`删除第 ${i + 1} 张照片`}
+                    onClick={() => void remove(p.id)}
                   >
                     移除
                   </button>
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileInput.current?.click()}
+            >
+              添加照片
+            </button>
           </section>
         )}
       </main>
