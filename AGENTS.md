@@ -30,7 +30,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # 当前实现基线（2026-10-07）
 
-- 2026-10-09 SDD-08：02/03 已改为持久连续对话，服务端边界在 `lib/creation/`，Pi 聊天执行器在 `lib/agent/dialogue-runtime.ts`；首轮观察、自由补充、历史卡上下文、原轮失败重试与照片版本均接同一草稿。`creation_drafts` JSONB 聚合和私有 `creation-photos` 已迁移，RPC CAS 保证追加与归属；默认最后成功活动后 30 天到期，维护沿用受保护入口。最新卡确认冻结 snapshot，新链路直接使用卡中 MusicProfile，不再由默认关键词转换覆盖曲风。两段真实五轮、一次真实 ACE-Step、播放保存、恢复/竞争/维护及手机视口技术验收见 [SDD-08 verification](specs/009-creation-dialogue/verification/README.md)。本次源码未部署，真人样本统计和既有 SDD-06/07 未完成项保持原状。
+- 2026-10-09 SDD-08：02/03 已改为持久连续对话，服务端边界在 `lib/creation/`，Pi 聊天执行器在 `lib/agent/dialogue-runtime.ts`；首轮观察、自由补充、历史卡上下文、原轮失败重试与照片版本均接同一草稿。`creation_drafts` JSONB 聚合和私有 `creation-photos` 已迁移，RPC CAS 保证追加与归属；默认最后成功活动后 30 天到期，维护沿用受保护入口。最新卡确认冻结 snapshot，新链路直接使用卡中 MusicProfile，不再由默认关键词转换覆盖曲风。两段真实五轮、一次真实 ACE-Step、播放保存、恢复/竞争/维护及手机视口技术验收见 [SDD-08 verification](specs/009-creation-dialogue/verification/README.md)。源码提交 `e8a4b53` 已部署到正式用户端与受保护 Agent 项目；本次线上复验覆盖部署版本、页面可达性和工作台鉴权边界，未重新执行付费对话生成。真人样本统计和既有 SDD-06/07 未完成项保持原状。
 
 - 2026-10-08 用户明确要求 SDD-06 不等待真人试用，继续 SDD-07 发布。已完成技术验收作为前置，真人样本仍为 0、T045/T049 保留未完成；历史“先真人试用再衔接”顺序由本条更新。
 

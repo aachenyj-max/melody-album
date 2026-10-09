@@ -49,7 +49,7 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 **阶段完成条件**：SC-001–008 有对应证据；历史不覆盖、刷新可恢复、卡片依赖版本有效、音乐遵循确认方向、失败可恢复且无重复消息。仅文档完成不能勾阶段总项。
 
-**已知限制与下一步**：39/39 技术实现与验收完成；两段真实 Pi/Qwen 五轮、历史卡引用补验、一次真实 ACE-Step、真实音频播放保存、18 项边界断言、7 项界面恢复、查询快照切换、权限/维护和 320/375/430 视觉通过。format/lint/tscheck/build 通过，验收见 [SDD-08 verification](specs/009-creation-dialogue/verification/README.md)。仅本地交付，尚未部署；物理手机键盘未验，MCP advisor token 已到期，权限有实际请求证据。下一步按用户指示发布或体验；不改变 SDD-06 真人样本 0 与 SDD-07 补验未完成状态。
+**已知限制与下一步**：39/39 技术实现与验收完成；两段真实 Pi/Qwen 五轮、历史卡引用补验、一次真实 ACE-Step、真实音频播放保存、18 项边界断言、7 项界面恢复、查询快照切换、权限/维护和 320/375/430 视觉通过。format/lint/tscheck/build 通过，验收见 [SDD-08 verification](specs/009-creation-dialogue/verification/README.md)。源码提交 `e8a4b53` 已发布到正式用户端与受保护工作台；物理手机键盘和此次线上付费对话生成未复验，MCP advisor token 已到期，权限有实际请求证据。下一步进行线上真人体验；不改变 SDD-06 真人样本 0 与 SDD-07 补验未完成状态。
 
 ### [x] SDD-00：可运行框架与设计基线
 
@@ -316,3 +316,9 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 - 两份新增 Supabase 迁移 `agent_workbench_dialogue` 与 `saved_album_music_confirmation` 均已在目标项目的迁移列表中。正式 Vercel 项目 `melody-album` 将同一源码快照构建为 `dpl_Ga1dXRy3JqDk463exD3h4vikcuAM`，候选页面和音频资源 HTTP 200 后 promote 到 `https://melody-album-yijia-s-projects.vercel.app`。
 - 受保护的 `melody-album-acceptance` 项目从同一提交构建 `dpl_a6zuq53mX4io1LGiZi1RGdpeDKG9`，更新预览别名 `https://melody-album-acceptance-yijia-s-projects.vercel.app`。两处固定域名均反查到对应 READY 部署和提交；正式首页、创建、相册、调整页与等待音频返回 200；工作台页面经保护旁路返回 200，未登录配置 API 返回 401。
 - 本次发布未重新执行线上付费 Pi/Qwen、ACE-Step 生成或 10 位真人试用；此前各项本地与技术验收记录独立保留。SDD-06 真人样本仍为 0、T045/T049 未完成，SDD-07 上传签名自然到期补验仍未完成，阶段总项不变。
+
+## 2026-10-09 · SDD-08 同步发布
+
+- 将连续 Agent 对话提交 `e8a4b53` 快进到 GitHub `master`，工作区干净；本地 `npm run tscheck`、`npm run build` 通过。目标 Supabase 项目已列出 `creation_dialogue` 与 `creation_dialogue_cas_fix` 两份迁移。
+- 正式用户端 `melody-album` 同源码快照构建 `dpl_7xfofNyY1GvnQsqChDjDf6UQg4dr` 并 promote 到 `https://melody-album-yijia-s-projects.vercel.app`；受保护的 Agent 预览项目构建 `dpl_D8RYh1o4DTu9iXXdp1AjqgMUqjaX`，更新别名 `https://melody-album-acceptance-yijia-s-projects.vercel.app`。两者源码摘要相同，固定域名反查均为对应 READY 部署。
+- 正式首页、`/create`、`/create?new=1`、相册及音频资源返回 200；工作台经保护旁路返回 200，未登录配置 API 返回 401，无旁路访问被 Vercel 保护重定向。此前本地真实 Pi/Qwen 与 ACE-Step 验收有效；本次发布未重跑线上付费生成或物理手机键盘体验。下一步组织线上真人体验并补齐独立保留的 SDD-06/07 待办。
