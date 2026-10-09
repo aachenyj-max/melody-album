@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "width": 320,
+      "overflow": false,
+      "paragraphCounts": [
+        3,
+        3
+      ],
+      "headingCount": 2
+    },
+    {
+      "width": 375,
+      "overflow": false,
+      "paragraphCounts": [
+        3,
+        3
+      ],
+      "headingCount": 2
+    },
+    {
+      "width": 430,
+      "overflow": false,
+      "paragraphCounts": [
+        3,
+        3
+      ],
+      "headingCount": 2
+    }
+  ],
+  "errors": [],
+  "fixture": true
+}

@@ -341,3 +341,9 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 - 新草稿冻结 `creation-dialogue-2`，旧草稿执行时附加最新表达与推进策略，无需重新上传。卡片和照片契约、45秒/最多3次内部请求预算、失败重试和用户确认后生成继续保留。
 - 两组真实Pi/Qwen测试均在第3轮取得合法卡，涵盖旅行补充与“是／围坐交谈”短回答；另验一次构造第3轮收束。五项边界检查、320/375/430 UI分段与无水平溢出/运行错误0、Biome、TypeScript及生产构建通过。证据见 [结构化对话验证](specs/009-creation-dialogue/verification/structured-dialogue.md)。
 - 真实调用在内存完成，UI使用独立fixture，两者均未修改用户草稿或生成音乐。下一步沿用用户线上发布授权更新正式项目并记录部署证据，真人样本及既有独立待办不变。
+
+## 2026-10-09 · 结构化对话策略正式发布
+
+- 沿用用户线上发布授权，将源码 `9ac05a9` 构建为正式项目 READY 部署 `dpl_7p3QcMNFP7UndEHK4BFdzT5sgdx4`，候选检查通过后 promote。正式域名反查部署ID与源码一致，首页、新建、原草稿创建页面和相册均200，无会话草稿读取/内部配置均401。
+- 正式构建使用独立API fixture复验320/375/430分段与标签、无水平溢出、浏览器运行错误0；真实2–3轮方向收束采用前述本地Pi/Qwen验收，未冒称线上模型实测。证据见 [发布摘要](specs/009-creation-dialogue/verification/structured-dialogue-release-evidence.json) 和 [线上界面](specs/009-creation-dialogue/verification/structured-dialogue-live-ui-summary.json)。
+- 用户原草稿未被执行或改写；刷新后历史分段显示，下一次补充应用新版推进策略。生成音乐仍需确认最新卡。仅更新正式用户端，内部工作台和真人试用统计不变。

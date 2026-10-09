@@ -1,0 +1,67 @@
+{
+  "project": "melody-album",
+  "projectId": "prj_jvtE56g0FenE8QqPme2YQrXHnY5V",
+  "teamId": "team_yPve3HhsqUyx6tR51RMfS1rg",
+  "target": "production",
+  "deploymentId": "dpl_7p3QcMNFP7UndEHK4BFdzT5sgdx4",
+  "deploymentUrl": "https://melody-album-2rqw8ttiz-yijia-s-projects.vercel.app",
+  "commit": "9ac05a911edbc66d2128cae6434ed7fad175f745",
+  "snapshotDigest": "465e2ba78f8461242b86989aafb699031c189f46c7ad7b7d5ba8e87f5ae922e7",
+  "status": "READY",
+  "origin": "https://melody-album-yijia-s-projects.vercel.app",
+  "date": "2026-10-09T13:07:40.517Z",
+  "candidateChecks": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/create?new=1",
+      "status": 200
+    },
+    {
+      "path": "/create?draft=86d73df8-3dc7-4ad6-b66f-9abd8c2b9761&state=understanding",
+      "status": 200
+    },
+    {
+      "path": "/memories",
+      "status": 200
+    },
+    {
+      "path": "/api/creation/drafts/86d73df8-3dc7-4ad6-b66f-9abd8c2b9761",
+      "status": 401
+    },
+    {
+      "path": "/api/internal/agent-workbench/config",
+      "status": 401
+    }
+  ],
+  "liveChecks": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/create?new=1",
+      "status": 200
+    },
+    {
+      "path": "/create?draft=86d73df8-3dc7-4ad6-b66f-9abd8c2b9761&state=understanding",
+      "status": 200
+    },
+    {
+      "path": "/memories",
+      "status": 200
+    },
+    {
+      "path": "/api/creation/drafts/86d73df8-3dc7-4ad6-b66f-9abd8c2b9761",
+      "status": 401
+    },
+    {
+      "path": "/api/internal/agent-workbench/config",
+      "status": 401
+    }
+  ],
+  "liveAliasVerified": true,
+  "paidModelRerun": false
+}
