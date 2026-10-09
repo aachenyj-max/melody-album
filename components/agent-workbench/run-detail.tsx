@@ -17,6 +17,7 @@ import {
   statusNames,
   when,
 } from "./client";
+import { DialoguePanel } from "./dialogue-panel";
 
 function AudioResult({ value }: { value: Json }) {
   const [failed, setFailed] = useState<Record<number, boolean>>({});
@@ -177,7 +178,7 @@ export function RunDetailView({
         }),
       );
       router.push(
-        `/internal/agent-workbench/runs/${result.runId}${result.status === "queued" ? "?execute=1" : ""}`,
+        `/internal/agent-workbench/runs/${result.runId}${result.status === "queued" && !result.inputSnapshot.chatMode ? "?execute=1" : ""}`,
       );
     } catch (value) {
       setError(value instanceof Error ? value.message : "重跑失败。");
@@ -263,7 +264,7 @@ export function RunDetailView({
             {run.error.code}：{run.error.message}
           </p>
         )}
-        {run.status === "queued" && (
+        {run.status === "queued" && !run.inputSnapshot.chatMode && (
           <button
             type="button"
             disabled={executing}
@@ -277,6 +278,9 @@ export function RunDetailView({
           <pre>{JSON.stringify(run.configSnapshot, null, 2)}</pre>
         </details>
       </section>
+      {run.inputSnapshot.chatMode && (
+        <DialoguePanel run={run} onRunChange={setRun} />
+      )}
       <section className="wb-panel">
         <h2>测试输入</h2>
         <p className="wb-story">{run.inputSnapshot.story || "故事未提供"}</p>

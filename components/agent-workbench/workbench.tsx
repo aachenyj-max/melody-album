@@ -13,6 +13,7 @@ import {
   type RunDetail,
   type RunListItem,
 } from "@/lib/workbench/contract";
+import type { EditableConfig } from "@/lib/workbench/config";
 import { api, ApiError, postJson, statusNames, when } from "./client";
 
 export function Workbench({ authenticated }: { authenticated: boolean }) {
@@ -22,7 +23,16 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
   const [busy, setBusy] = useState(false);
   const [photos, setPhotos] = useState<PhotoInput[]>([]);
   const [story, setStory] = useState("");
+  const [interactive, setInteractive] = useState(true);
   const [config, setConfig] = useState<ConfigSnapshot | null>(null);
+  const [editable, setEditable] = useState<EditableConfig | null>(null);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [configNotice, setConfigNotice] = useState("");
+  const [userAgent, setUserAgent] = useState<{
+    configVersion: number;
+    mode: "demo" | "live";
+  } | null>(null);
+  const [userAgentReason, setUserAgentReason] = useState<string | null>(null);
   const [items, setItems] = useState<RunListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,9 +58,19 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
   useEffect(() => {
     if (!authenticated) return;
     let active = true;
-    api<{ configSnapshot: ConfigSnapshot }>("/config")
+    api<{
+      configSnapshot: ConfigSnapshot;
+      editable: EditableConfig;
+      userAgent: { configVersion: number; mode: "demo" | "live" } | null;
+      userAgentReason: string | null;
+    }>("/config")
       .then((result) => {
-        if (active) setConfig(result.configSnapshot);
+        if (active) {
+          setConfig(result.configSnapshot);
+          setEditable(result.editable);
+          setUserAgent(result.userAgent);
+          setUserAgentReason(result.userAgentReason);
+        }
       })
       .catch((value) => {
         if (active) setError(value.message);
@@ -91,6 +111,38 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
       setError(value instanceof Error ? value.message : "验证失败。");
     } finally {
       setBusy(false);
+    }
+  }
+  async function saveConfig(event: FormEvent) {
+    event.preventDefault();
+    if (!editable) return;
+    setSavingConfig(true);
+    setConfigNotice("");
+    try {
+      const result = await api<{
+        editable: EditableConfig;
+        configSnapshot: ConfigSnapshot;
+      }>("/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectedVersion: editable.version,
+          promptText: editable.promptText,
+          skillText: editable.skillText,
+          maxTurns: editable.maxTurns,
+          maxOutputTokens: editable.maxOutputTokens,
+        }),
+      });
+      setEditable(result.editable);
+      setConfig(result.configSnapshot);
+      setConfigNotice(
+        `已保存配置版本 ${result.editable.version}。新测试将使用此版本。`,
+      );
+      requestId.current = null;
+    } catch (value) {
+      setConfigNotice(value instanceof Error ? value.message : "保存失败。");
+    } finally {
+      setSavingConfig(false);
     }
   }
   function choose(files: File[]) {
@@ -143,10 +195,11 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
       body.set("contractVersion", "1");
       body.set("requestId", requestId.current);
       body.set("story", story.trim());
+      if (interactive) body.set("chatMode", "1");
       for (const file of compressed) body.append("photos", file);
       const run = await api<RunDetail>("/runs", { method: "POST", body });
       router.push(
-        `/internal/agent-workbench/runs/${run.runId}${run.status === "queued" ? "?execute=1" : ""}`,
+        `/internal/agent-workbench/runs/${run.runId}${run.status === "queued" && !interactive ? "?execute=1" : ""}`,
       );
     } catch (value) {
       setError(value instanceof Error ? value.message : "提交失败，请重试。");
@@ -305,6 +358,18 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
               }}
             />
             <p className="wb-muted">{story.trim().length}/1000 字</p>
+            <label className="wb-mode-choice">
+              <input
+                type="checkbox"
+                checked={interactive}
+                disabled={busy}
+                onChange={(event) => {
+                  setInteractive(event.target.checked);
+                  requestId.current = null;
+                }}
+              />
+              先与 Agent 多轮讨论，确认意图后生成音乐
+            </label>
             {error && (
               <p role="alert" className="wb-error">
                 {error}
@@ -327,6 +392,14 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
         </section>
         <section className="wb-panel wb-config">
           <h2>本次配置</h2>
+          {userAgent && (
+            <p className="wb-muted">
+              本环境用户端：固定版本 {userAgent.configVersion} ·{" "}
+              {userAgent.mode === "live" ? "真实理解" : "演示理解"}
+              。保存工作台试验版本不会自动同步。
+            </p>
+          )}
+          {userAgentReason && <p className="wb-muted">{userAgentReason}</p>}
           {config ? (
             <>
               <dl>
@@ -343,12 +416,84 @@ export function Workbench({ authenticated }: { authenticated: boolean }) {
                 <dt>Prompt</dt>
                 <dd>{config.prompt.version}</dd>
                 <dt>Loop</dt>
-                <dd>{config.loop.version}，最多 3 轮</dd>
+                <dd>
+                  {config.loop.version}，最多 {config.loop.maxTurns} 轮
+                </dd>
                 <dt>模型</dt>
                 <dd>{config.memoryModel.modelDescriptor.id}</dd>
               </dl>
+              {editable && (
+                <details>
+                  <summary>编辑工作台配置 · 版本 {editable.version}</summary>
+                  <form onSubmit={saveConfig}>
+                    <p className="wb-muted">
+                      修改只有保存为新版本后才用于新测试；现有运行保持原快照。用户端固定使用已发布版本，测试通过后再切换版本并部署。
+                    </p>
+                    <label htmlFor="wb-prompt">系统提示词</label>
+                    <textarea
+                      id="wb-prompt"
+                      rows={7}
+                      value={editable.promptText}
+                      maxLength={8000}
+                      onChange={(event) =>
+                        setEditable({
+                          ...editable,
+                          promptText: event.target.value,
+                        })
+                      }
+                    />
+                    <label htmlFor="wb-skill">记忆理解指令</label>
+                    <textarea
+                      id="wb-skill"
+                      rows={7}
+                      value={editable.skillText}
+                      maxLength={8000}
+                      onChange={(event) =>
+                        setEditable({
+                          ...editable,
+                          skillText: event.target.value,
+                        })
+                      }
+                    />
+                    <label htmlFor="wb-turns">单次理解最多轮数（1–3）</label>
+                    <input
+                      id="wb-turns"
+                      type="number"
+                      min={1}
+                      max={3}
+                      value={editable.maxTurns}
+                      onChange={(event) =>
+                        setEditable({
+                          ...editable,
+                          maxTurns: Number(event.target.value),
+                        })
+                      }
+                    />
+                    <label htmlFor="wb-tokens">
+                      单轮输出预算（512–2048 tokens）
+                    </label>
+                    <input
+                      id="wb-tokens"
+                      type="number"
+                      min={512}
+                      max={2048}
+                      value={editable.maxOutputTokens}
+                      onChange={(event) =>
+                        setEditable({
+                          ...editable,
+                          maxOutputTokens: Number(event.target.value),
+                        })
+                      }
+                    />
+                    <button type="submit" disabled={savingConfig}>
+                      {savingConfig ? "保存中…" : "保存为新版本"}
+                    </button>
+                  </form>
+                  {configNotice && <p role="status">{configNotice}</p>}
+                </details>
+              )}
               <details>
-                <summary>指令与版本快照</summary>
+                <summary>当前完整配置快照</summary>
                 <pre>{JSON.stringify(config, null, 2)}</pre>
               </details>
             </>

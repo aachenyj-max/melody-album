@@ -53,7 +53,7 @@ export const prototypeHotspots = [
   { screen: 7, label: "稍后再说", box: [38, 94, 24, 5], target: 5 },
   { screen: 8, label: "查看详情", box: [4, 18, 92, 15], target: 9 },
   { screen: 8, label: "播放毕业相册", box: [4, 18, 28, 15], target: 9 },
-  { screen: 9, label: "生成音乐", box: [8, 87, 84, 8], target: 4 },
+  { screen: 9, label: "修改音乐", box: [8, 87, 84, 8], target: 6 },
   { screen: 9, label: "返回列表", box: [3, 4, 13, 8], target: 8 },
 ] as const;
 
@@ -174,6 +174,6 @@ export const designScreenMappings: DesignScreenMapping[] = [
     assetPath: "designs/ui/09-音乐相册详情页.png",
     routeKey: "memory-detail",
     stateLabel: "音乐相册详情",
-    nextAction: "生成音乐（进入结果页）",
+    nextAction: "修改音乐（进入当前相册的调整页）",
   },
 ];

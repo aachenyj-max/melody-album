@@ -1,16 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { type AlbumListItem, toAlbumCard } from "@/lib/albums/view-model";
 import { AlbumScreen } from "./album-screen";
-import { toAlbumCard, type AlbumListItem } from "@/lib/albums/view-model";
+import type { DemoMemoryAlbum } from "./demo-data";
+import { demoLibrary, readDemoLibrary } from "./demo-library";
 
 export function MemoriesFlow() {
   const searchParams = useSearchParams();
+  const [demos, setDemos] = useState<DemoMemoryAlbum[]>(demoLibrary);
   const [items, setItems] = useState<AlbumListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const reload = useCallback(async () => {
+    setDemos(readDemoLibrary());
     setLoading(true);
     setError(null);
     try {
@@ -35,7 +39,7 @@ export function MemoriesFlow() {
   return (
     <AlbumScreen
       screen={8}
-      albums={items.map(toAlbumCard)}
+      albums={[...items.map(toAlbumCard), ...demos]}
       memoriesLoading={loading}
       memoriesError={error}
       onMemoriesRetry={() => void reload()}

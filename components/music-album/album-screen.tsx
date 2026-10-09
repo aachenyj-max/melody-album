@@ -1,5 +1,3 @@
-import Image from "next/image";
-import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
@@ -7,6 +5,7 @@ import {
   Ellipsis,
   GraduationCap,
   Heart,
+  Moon,
   Music2,
   Pause,
   Pencil,
@@ -15,24 +14,27 @@ import {
   SkipBack,
   SkipForward,
   Sparkles,
-  Moon,
   UserRound,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import type { CSSProperties, TouchEvent } from "react";
+import { AdjustFlow } from "./adjust-flow";
+import { AlbumPhotoGallery } from "./album-photo-gallery";
 import { AppShell } from "./app-shell";
 import { BottomNav } from "./bottom-nav";
+import { CreateFlow } from "./create-flow";
 import {
+  type DemoMemoryAlbum,
   demoMemoryAlbums,
   demoRecentAiTrack,
   getRecentDemoMemoryAlbums,
   photo,
-  type DemoMemoryAlbum,
 } from "./demo-data";
-import { PageFrame } from "./page-frame";
-import { CreateFlow } from "./create-flow";
-import { AdjustFlow } from "./adjust-flow";
 import { DetailTrackPlayer } from "./detail-track-player";
+import { MemoriesScreen } from "./memories-screen";
 import type { ResultViewModel } from "./music-session";
+import { PageFrame } from "./page-frame";
 
 function Photo({
   src,
@@ -718,106 +720,12 @@ function SaveScreen() {
   );
 }
 
-function MemoriesScreen({
-  albums,
-  loading = false,
-  error,
-  onRetry,
-  justSaved,
-}: {
-  albums: DemoMemoryAlbum[];
-  loading?: boolean;
-  error?: string | null;
-  onRetry?: () => void;
-  justSaved?: string | null;
-}) {
-  return (
-    <>
-      <PageFrame title="我的音乐记忆" large />
-      <div className="memory-filters">
-        {["全部", "旅行", "生活", "宠物", "其他"].map((label, index) => (
-          <button
-            key={label}
-            type="button"
-            disabled
-            className={index === 0 ? "selected" : ""}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="memory-list">
-        {loading && (
-          <div className="memory-list-empty glass" role="status">
-            正在读取音乐记忆…
-          </div>
-        )}
-        {error && (
-          <div className="memory-list-empty glass" role="alert">
-            <strong>读取失败</strong>
-            <p>{error}</p>
-            <button type="button" onClick={onRetry}>
-              重试
-            </button>
-          </div>
-        )}
-        {!loading && !error && albums.length === 0 && (
-          <div className="memory-list-empty glass">
-            <strong>还没有音乐记忆</strong>
-            <p>上传照片，让第一段回忆拥有自己的声音。</p>
-            <Link href="/create">创建音乐相册</Link>
-          </div>
-        )}
-        {!loading &&
-          !error &&
-          albums.map((album, index) => (
-            <Link
-              className="memory-row glass"
-              href={`/memories/${album.id}`}
-              key={album.id}
-              aria-label={`查看${album.title}详情`}
-            >
-              <div className="memory-row-cover">
-                <Photo
-                  src={album.coverImage || photo("garden")}
-                  alt={album.title}
-                  eager={index === 0}
-                />
-                <span className="tile-play glass">
-                  <Play fill="currentColor" />
-                </span>
-              </div>
-              <div className="memory-row-info">
-                <h2>
-                  {album.title}
-                  {justSaved === album.id ? " · 已保存" : ""}
-                </h2>
-                <p>
-                  {album.photoCount} 张照片 · {album.trackCount} 首音乐
-                </p>
-                <p>{album.subtitle}</p>
-                <time>
-                  {album.createdAt
-                    ? album.createdAt.replaceAll("-", ".")
-                    : "日期待补充"}
-                </time>
-              </div>
-              <Ellipsis className="memory-row-more" aria-hidden="true" />
-            </Link>
-          ))}
-      </div>
-      <BottomNav />
-    </>
-  );
-}
-
 function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
   const aiTrack = album.tracks.find((track) => track.kind === "ai");
   const selectedTrack =
     album.tracks.find((track) => track.id === album.selectedTrackId) ??
     aiTrack ??
     album.tracks[0];
-  const recommendedTracks = album.tracks.filter((track) => track.kind === "qq");
   return (
     <>
       <Photo
@@ -868,6 +776,7 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
         </div>
         {selectedTrack?.audioUrl ? (
           <DetailTrackPlayer
+            key={selectedTrack.audioUrl}
             audioUrl={selectedTrack.audioUrl}
             title={selectedTrack.title}
           />
@@ -880,38 +789,13 @@ function DetailScreen({ album }: { album: DemoMemoryAlbum }) {
           </span>
         )}
       </div>
-      <section className="detail-recommendations">
-        <div className="section-title">
-          <h2>推荐歌曲</h2>
-          <span>
-            查看全部
-            <ChevronRight />
-          </span>
-        </div>
-        <div className="detail-track-list">
-          {recommendedTracks.length === 0 && (
-            <p className="detail-no-recommendations">暂无推荐歌曲</p>
-          )}
-          {recommendedTracks.map((track) => (
-            <div className="detail-recommendation glass" key={track.id}>
-              <Photo src={track.image} alt={track.title} />
-              <div>
-                <h3>{track.title}</h3>
-                <p>
-                  {track.artist} · {track.duration}
-                </p>
-                <p>{track.caption}</p>
-              </div>
-              <span title={`${track.title}试听暂未开放`}>
-                <Play fill="currentColor" aria-hidden="true" />
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-      <Link href="/result" className="detail-generate pill-button glass">
+      <AlbumPhotoGallery photos={album.photos} title={album.title} />
+      <Link
+        href={`/memories/${album.id}?state=adjust`}
+        className="detail-generate pill-button glass"
+      >
         <Music2 />
-        生成音乐
+        修改音乐
         <span className="dark">
           <ChevronRight />
         </span>

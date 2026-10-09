@@ -1,0 +1,124 @@
+{
+  "albumId": "demo-garden",
+  "title": "春日微风",
+  "generatedAt": "2026-10-09T03:31:01.782Z",
+  "elapsedMs": 52509,
+  "story": "春天的公园，阳光透过树叶，微风吹动枝叶，散步时感到宁静、舒展、充满新生的希望。",
+  "inputs": [
+    {
+      "path": "public/images/memories/garden.webp",
+      "agentInputSha256": "2846401bf511cc56e98cdb28ad088280f7ce945760f18d9d619590cc7f1f4d68"
+    }
+  ],
+  "model": "qwen3-vl-flash",
+  "memorySource": "agent",
+  "memory": {
+    "version": 1,
+    "title": "春日公园的绿意与光影",
+    "people": null,
+    "event": "春天的公园里，阳光透过树叶洒下斑驳光影，微风吹动枝叶，营造出宁静、舒展的氛围。",
+    "atmosphere": "阳光柔和，绿叶鲜亮，光影交错，微风轻拂，整体氛围宁静、舒展，充满新生的希望。",
+    "timeline": [
+      {
+        "label": "春日午后，阳光穿过枝叶",
+        "photoIndices": [
+          0
+        ]
+      }
+    ],
+    "photoOrder": [
+      0
+    ],
+    "source": "agent"
+  },
+  "toolCalls": [
+    {
+      "name": "record_memory_profile",
+      "version": "2",
+      "status": "succeeded"
+    }
+  ],
+  "events": [
+    {
+      "type": "agent_start",
+      "at": "2026-10-09T03:30:09.319Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:30:09.319Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:30:11.644Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:30:11.644Z",
+      "toolName": "record_memory_profile",
+      "status": "failed"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:30:11.644Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:30:11.644Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:30:13.718Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:30:13.720Z",
+      "toolName": "record_memory_profile",
+      "status": "succeeded"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:30:13.720Z"
+    },
+    {
+      "type": "agent_end",
+      "at": "2026-10-09T03:30:13.720Z"
+    }
+  ],
+  "musicProfile": {
+    "contractVersion": 1,
+    "memoryVersion": 1,
+    "memoryTitle": "春日公园的绿意与光影",
+    "mood": "阳光柔和，绿叶鲜亮，光影交错，微风轻拂，整体氛围宁静、舒展，充满新生的希望。",
+    "style": "清新原声民谣",
+    "tempo": "lively",
+    "structure": "uplifting",
+    "instrumentalPrompt": "无歌词、无人声。 Fresh pastoral chamber folk instrumental, delicate fingerstyle acoustic guitar, airy wooden flute singing a graceful melody, soft piano, warm cello, very light hand percussion. 90 BPM. Flowing melodic phrases, gentle evolving harmonies, organic breathing dynamics. Peaceful garden morning intro, blossoming melodic lift, soft complete ending. Detailed natural acoustic timbres, warm spacious professional recording, no vocals. Mood: 阳光柔和，绿叶鲜亮，光影交错，微风轻拂，整体氛围宁静、舒展，充满新生的希望。",
+    "targetDurationSec": 30
+  },
+  "arrangementRefinement": "Theme-specific editorial arrangement added to the deterministic music profile after real photo understanding.",
+  "musicSource": "api",
+  "musicModel": "fal-ai/ace-step/prompt-to-audio",
+  "audio": {
+    "path": "public/audio/music-album/demo-garden-ace-step.mp3",
+    "durationSec": 29.907313,
+    "sha256": "5da9ace072107be95b9689ea674c9b7fc454a46a061bfee890685ee0a63a13d7",
+    "originalSha256": "5b9b8630089bbf581339b23e752719169854fae513d9644b11765cdda2073db0",
+    "bytes": 719468,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "29.907313"
+      }
+    }
+  }
+}

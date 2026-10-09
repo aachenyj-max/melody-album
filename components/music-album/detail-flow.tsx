@@ -1,17 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { AppShell } from "./app-shell";
-import { PageFrame } from "./page-frame";
+import { type AlbumDetail, toAlbumDetail } from "@/lib/albums/view-model";
+import { AlbumMusicAdjust } from "./album-music-adjust";
 import { AlbumScreen } from "./album-screen";
-import { toAlbumDetail, type AlbumDetail } from "@/lib/albums/view-model";
+import { AppShell } from "./app-shell";
+import type { DemoMemoryAlbum } from "./demo-data";
+
+import { readDemoLibrary } from "./demo-library";
+import { PageFrame } from "./page-frame";
 
 export function DetailFlow({ id }: { id: string }) {
+  const searchParams = useSearchParams();
+  const [demo, setDemo] = useState<DemoMemoryAlbum | null>(null);
   const [album, setAlbum] = useState<AlbumDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const reload = useCallback(async () => {
+    if (id.startsWith("demo-")) {
+      const entry = readDemoLibrary().find((item) => item.id === id);
+      setDemo(entry ?? null);
+      setError(entry ? null : "找不到这段音乐记忆。");
+      setLoading(false);
+      return;
+    }
+    setDemo(null);
     setLoading(true);
     setError(null);
     try {
@@ -42,6 +57,12 @@ export function DetailFlow({ id }: { id: string }) {
   useEffect(() => {
     void reload();
   }, [reload]);
+  if (demo)
+    return searchParams.get("state") === "adjust" ? (
+      <AlbumMusicAdjust key={id} album={demo} onSaved={() => void reload()} />
+    ) : (
+      <AlbumScreen screen={9} album={demo} />
+    );
   if (loading || error || !album)
     return (
       <AppShell>
@@ -64,5 +85,13 @@ export function DetailFlow({ id }: { id: string }) {
         </main>
       </AppShell>
     );
-  return <AlbumScreen screen={9} album={toAlbumDetail(album)} />;
+  return searchParams.get("state") === "adjust" ? (
+    <AlbumMusicAdjust
+      key={id}
+      album={toAlbumDetail(album)}
+      onSaved={() => void reload()}
+    />
+  ) : (
+    <AlbumScreen screen={9} album={toAlbumDetail(album)} />
+  );
 }

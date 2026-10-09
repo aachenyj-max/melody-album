@@ -1,30 +1,30 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
-import { usePathname } from "next/navigation";
-import type { ConfirmedMemory } from "./creation-session";
-import { getMockRecommendations } from "@/lib/music/mock-recommendations";
-import { toMusicProfile } from "@/lib/music/profile";
 import {
-  isConfirmedMusicInput,
-  musicError,
+  type AdjustmentRun,
   type AiBranch,
   type AiTrack,
+  isConfirmedMusicInput,
   type MockRecommendation,
   type MusicRun,
-  type PlayableAudio,
-  type AdjustmentRun,
+  musicError,
   normalizeAdjustmentInstruction,
+  type PlayableAudio,
 } from "@/lib/music/contract";
+import { getMockRecommendations } from "@/lib/music/mock-recommendations";
+import { toMusicProfile } from "@/lib/music/profile";
+import type { ConfirmedMemory } from "./creation-session";
 
 export type AudioKind = "none" | "ambient" | "ai" | "qq";
 export type AudioState =
@@ -63,12 +63,29 @@ export type ResultViewModel = MusicSession;
 
 const Context = createContext<MusicSession | null>(null);
 const ambientTrack: PlayableAudio = {
-  title: "记忆的氛围",
-  durationSec: 8,
-  audioUrl: "/audio/music-album/ambient.wav",
-  audioMimeType: "audio/wav",
+  title: "等待时的钢琴与弦乐",
+  durationSec: 75,
+  audioUrl: "/audio/music-album/waiting-piano.mp3",
+  audioMimeType: "audio/mpeg",
   source: "ambient",
 };
+const AMBIENT_VOLUME = 0.35;
+
+async function fadeVolume(
+  audio: HTMLAudioElement,
+  target: number,
+  isCurrent: () => boolean,
+) {
+  const initial = audio.volume;
+  const started = performance.now();
+  while (isCurrent()) {
+    const progress = Math.min((performance.now() - started) / 600, 1);
+    audio.volume = initial + (target - initial) * progress;
+    if (progress === 1) return true;
+    await new Promise((resolve) => setTimeout(resolve, 40));
+  }
+  return false;
+}
 
 function id(prefix: string) {
   return `${prefix}-${crypto.randomUUID()}`;
@@ -134,6 +151,7 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeIdentityRef = useRef<string | null>(null);
   const audioSerialRef = useRef(0);
+  const transitionSerialRef = useRef(0);
   const epochRef = useRef(0);
   const adjustmentRef = useRef<AbortController | null>(null);
   const adjustmentIdRef = useRef<string | null>(null);
@@ -146,6 +164,7 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const stop = useCallback(() => {
+    transitionSerialRef.current += 1;
     audioSerialRef.current += 1;
     const current = audioRef.current;
     if (current) {
@@ -163,16 +182,36 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const switchTrack = useCallback(
-    async (kind: AudioKind, track: PlayableAudio | MockRecommendation) => {
+    async (
+      kind: AudioKind,
+      track: PlayableAudio | MockRecommendation,
+      smooth = false,
+    ) => {
       const url = track.audioUrl;
       if (!url) return;
       const current = audioRef.current;
       const identity = `${kind}:${url}:${track.title}`;
       if (current && activeIdentityRef.current === identity) return;
+      const transition = ++transitionSerialRef.current;
+      const shouldFade = smooth && current && !current.paused;
+      if (shouldFade) {
+        const completed = await fadeVolume(
+          current,
+          0,
+          () =>
+            transition === transitionSerialRef.current &&
+            !userPausedRef.current,
+        );
+        if (!completed) return;
+      }
+      if (smooth && userPausedRef.current) return;
       stop();
       const serial = audioSerialRef.current;
+      const fadeSerial = transitionSerialRef.current;
       const audio = new Audio(url);
       audio.preload = "auto";
+      const volume = kind === "ambient" ? AMBIENT_VOLUME : 1;
+      audio.volume = shouldFade ? 0 : volume;
       if (kind === "ambient") audio.loop = true;
       audioRef.current = audio;
       activeIdentityRef.current = identity;
@@ -219,9 +258,28 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
       try {
         setAudioState("starting");
         await audio.play();
-        if (serial === audioSerialRef.current) setAudioState("playing");
+        if (serial !== audioSerialRef.current) return;
+        if (userPausedRef.current) {
+          audio.pause();
+          audio.volume = volume;
+          setAudioState("paused");
+          return;
+        }
+        setAudioState("playing");
+        if (shouldFade)
+          await fadeVolume(
+            audio,
+            volume,
+            () =>
+              serial === audioSerialRef.current &&
+              fadeSerial === transitionSerialRef.current &&
+              !userPausedRef.current,
+          );
       } catch {
-        if (serial === audioSerialRef.current) setAudioState("blocked");
+        if (serial === audioSerialRef.current) {
+          audio.volume = volume;
+          setAudioState(userPausedRef.current ? "paused" : "blocked");
+        }
       }
     },
     [stop],
@@ -317,7 +375,7 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
                 : afterProbe.currentVersionId,
           });
           if (afterProbe.selection.kind === "ai" && !userPausedRef.current)
-            void switchTrack("ai", readyTrack);
+            void switchTrack("ai", readyTrack, true);
         } catch {
           const latest = runRef.current;
           if (
@@ -573,7 +631,12 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
 
   const pause = useCallback(() => {
     userPausedRef.current = true;
-    audioRef.current?.pause();
+    transitionSerialRef.current += 1;
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.volume = audio.loop ? AMBIENT_VOLUME : 1;
+    }
   }, []);
 
   const seek = useCallback(
@@ -808,6 +871,8 @@ export function MusicSessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(
     () => () => {
+      transitionSerialRef.current += 1;
+      audioSerialRef.current += 1;
       controllerRef.current?.abort();
       adjustmentRef.current?.abort();
       audioRef.current?.pause();

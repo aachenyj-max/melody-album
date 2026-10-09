@@ -1,0 +1,26 @@
+{
+  "demo-graduation": {
+    "title": "青春的回声",
+    "style": "电影感钢琴与弦乐",
+    "audioUrl": "/audio/music-album/demo-graduation-ace-step.mp3",
+    "durationSec": 29.907313
+  },
+  "demo-travel": {
+    "title": "海风与自由",
+    "style": "海岸木吉他流行",
+    "audioUrl": "/audio/music-album/demo-travel-ace-step.mp3",
+    "durationSec": 29.907313
+  },
+  "demo-cat": {
+    "title": "团子的午后",
+    "style": "温柔爵士与木贝斯",
+    "audioUrl": "/audio/music-album/demo-cat-ace-step.mp3",
+    "durationSec": 29.907313
+  },
+  "demo-garden": {
+    "title": "春日微风",
+    "style": "清新原声民谣",
+    "audioUrl": "/audio/music-album/demo-garden-ace-step.mp3",
+    "durationSec": 29.907313
+  }
+}

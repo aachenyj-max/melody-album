@@ -1,5 +1,5 @@
 import { requireHuman, requireOrigin } from "@/lib/workbench/auth";
-import { assertExecutable, currentConfig } from "@/lib/workbench/config";
+import { activeConfig, assertExecutable } from "@/lib/workbench/config";
 import {
   assertVersion,
   readJson,
@@ -8,6 +8,7 @@ import {
 } from "@/lib/workbench/contract";
 import { endpoint, queryFields, response } from "@/lib/workbench/http";
 import { getRun, rerunRecord } from "@/lib/workbench/repository";
+import { createDialogue } from "@/lib/workbench/dialogue";
 export const runtime = "nodejs";
 export async function POST(
   request: Request,
@@ -28,12 +29,14 @@ export async function POST(
       throw new WorkbenchError("INVALID_INPUT", "配置选择无效。");
     const id = uuid((await params).id);
     const original = await getRun(id);
-    let config: Awaited<ReturnType<typeof currentConfig>>;
+    let config: Awaited<ReturnType<typeof activeConfig>>;
     if (selection === "original") {
       assertExecutable(original.configSnapshot, original.configDigest);
       config = original.configSnapshot;
-    } else config = currentConfig();
+    } else config = await activeConfig();
     const result = await rerunRecord(id, uuid(body.requestId), config);
+    if (original.inputSnapshot.chatMode)
+      await createDialogue(result.detail.runId);
     return response(result.detail, result.created ? 201 : 200);
   });
 }

@@ -1,0 +1,118 @@
+{
+  "albumId": "demo-graduation",
+  "title": "青春的回声",
+  "generatedAt": "2026-10-09T03:30:04.842Z",
+  "elapsedMs": 30511,
+  "story": "毕业那天，在校园夕阳下举起学士帽。回望一起走过的青春，温暖、感激，带着一点告别的不舍和对未来的希望。",
+  "inputs": [
+    {
+      "path": "public/images/memories/demo-graduation.webp",
+      "agentInputSha256": "efd1fea95cd6fd88a37e8f788dd171d607190811274d87d2d670ed50785e2be7"
+    },
+    {
+      "path": "public/images/memories/graduation.webp",
+      "agentInputSha256": "c801ea33605147ebb2efdc36dde583a785aa9184edab5e5191f22d824b96ec1e"
+    }
+  ],
+  "model": "qwen3-vl-flash",
+  "memorySource": "agent",
+  "memory": {
+    "version": 1,
+    "title": "毕业黄昏：学士帽与夕阳的告别",
+    "people": [
+      "毕业生"
+    ],
+    "event": "在校园夕阳下举起学士帽，回望青春，表达对过往的感激与对未来的希望",
+    "atmosphere": "温暖、感激、不舍、充满希望；金色夕阳光线洒满画面，微风轻拂长发，背景是熟悉的校园建筑与城市天际线",
+    "timeline": [
+      {
+        "label": "背影举帽",
+        "photoIndices": [
+          0
+        ]
+      },
+      {
+        "label": "侧脸仰望",
+        "photoIndices": [
+          1
+        ]
+      }
+    ],
+    "photoOrder": [
+      0,
+      1
+    ],
+    "source": "agent"
+  },
+  "toolCalls": [
+    {
+      "name": "record_memory_profile",
+      "version": "2",
+      "status": "succeeded"
+    }
+  ],
+  "events": [
+    {
+      "type": "agent_start",
+      "at": "2026-10-09T03:29:34.383Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:29:34.385Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:29:36.671Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:29:36.682Z",
+      "toolName": "record_memory_profile",
+      "status": "succeeded"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:29:36.682Z"
+    },
+    {
+      "type": "agent_end",
+      "at": "2026-10-09T03:29:36.682Z"
+    }
+  ],
+  "musicProfile": {
+    "contractVersion": 1,
+    "memoryVersion": 1,
+    "memoryTitle": "毕业黄昏：学士帽与夕阳的告别",
+    "mood": "温暖、感激、不舍、充满希望；金色夕阳光线洒满画面，微风轻拂长发，背景是熟悉的校园建筑与城市天际线",
+    "style": "电影感钢琴与弦乐",
+    "tempo": "lively",
+    "structure": "uplifting",
+    "instrumentalPrompt": "无歌词、无人声。 Cinematic coming-of-age instrumental, warm expressive acoustic piano lead, lush legato string ensemble, gentle acoustic guitar, subtle brushed drums. 82 BPM. Memorable lyrical melody with varied phrasing, evolving major seventh harmonies. Intimate piano intro, hopeful full ensemble lift, tender resolved ending. Natural human dynamics, rich professional film-score production, no vocals. Mood: 温暖、感激、不舍、充满希望；金色夕阳光线洒满画面，微风轻拂长发，背景是熟悉的校园建筑与城市天际线",
+    "targetDurationSec": 30
+  },
+  "arrangementRefinement": "Theme-specific editorial arrangement added to the deterministic music profile after real photo understanding.",
+  "musicSource": "api",
+  "musicModel": "fal-ai/ace-step/prompt-to-audio",
+  "audio": {
+    "path": "public/audio/music-album/demo-graduation-ace-step.mp3",
+    "durationSec": 29.907313,
+    "sha256": "aa9e203df2a3a2b31ef9ab357e991610eac736bbaf53dc19141504760acbcb28",
+    "originalSha256": "248815d481de73386547b48c739237309193cd47a8bb4d1266636fcd839cedbe",
+    "bytes": 719468,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "29.907313"
+      }
+    }
+  }
+}

@@ -175,6 +175,52 @@
   color: #65758b;
   font-size: 13px;
 }
+.wb-mode-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+.wb-dialogue-messages,
+.wb-music-versions {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  display: grid;
+  gap: 12px;
+}
+.wb-dialogue-messages li,
+.wb-music-versions li,
+.wb-proposal {
+  border: 1px solid #d8e1eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow-wrap: anywhere;
+}
+.wb-dialogue-messages li[data-role="user"] {
+  background: #eef5ff;
+  margin-left: min(10%, 60px);
+}
+.wb-dialogue-messages li[data-role="assistant"] {
+  background: #f7f9fc;
+  margin-right: min(10%, 60px);
+}
+.wb-dialogue-messages p {
+  white-space: pre-wrap;
+  margin: 8px 0;
+}
+.wb-dialogue-messages small {
+  color: #65758b;
+}
+.wb-proposal {
+  margin: 18px 0;
+  background: #f7fbf5;
+}
+.wb-music-versions audio {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+}
 .wb-error {
   background: #fff3f1;
   color: #a13024;

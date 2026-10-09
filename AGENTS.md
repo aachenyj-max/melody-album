@@ -24,6 +24,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 每个涉及用户端界面的 SDD 阶段都要核对对应编号的画面，包括布局、层级、配色、字体、图片位置、按钮文案和主要跳转；动态数据与状态可以替换设计稿中的示例内容，但不能改变界面结构。
 - 内部 Agent 工作台不属于这 9 张用户端设计稿，不加入用户端导航。
 
+- 2026-10-09 用户明确更新 09：详情下半部分展示相册照片网格并支持放大查看，底部改为“修改音乐”。进入 `/memories/[id]?state=adjust`，采用生成候选→试听→确认替换；失败或取消保留旧音乐。此条覆盖 09 原稿的推荐歌曲区和生成音乐→04 热点，06 原创建中调整流程保留。
+
 # 当前实现基线（2026-10-07）
 
 - 2026-10-08 用户明确要求 SDD-06 不等待真人试用，继续 SDD-07 发布。已完成技术验收作为前置，真人样本仍为 0、T045/T049 保留未完成；历史“先真人试用再衔接”顺序由本条更新。
@@ -33,7 +35,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 九状态路径依次为 `/`、`/create`、`/create?state=understanding`、`/result`、`/play`、`/play?state=adjust`、`/play?state=save`、`/memories`、`/memories/demo-graduation`。原型映射和 17 个主要热点保存在 `design-map.ts`，修改跳转时同步 [导航契约](specs/001-app-shell/contracts/ui-navigation.md)。
 - 底部导航仅在原稿 01、08 展示。页面应按对应 PNG 选择标题、返回和导航，不能为了复用组件统一改写原稿结构。
 - 首页仍使用稳定的本地演示数据；08/09 已改为按当前服务端会话读取真实保存相册，并保留加载、空列表、失败和重试状态。04 号结果页已承接确认记忆，AI 生成状态和音频接入真实服务，QQ 推荐为明确标识的 mock；05/06 已接续本次照片与单一音源，实现播放控制、照片同步、AI 解释及自然语言调整。07 已完成可播放资格门槛、保存表单、Supabase 持久化和 07→08 跳转；收藏和分类筛选仍不在本阶段范围内。
-- SDD-02 的照片上传、记忆理解、自然语言修正和确认交接已完成；用户端记忆理解仍使用明确标识的同契约 `source=demo` 适配器。SDD-06 内部工作台已接通真实 Pi/Qwen，尚未替换用户端理解入口，不得把用户端演示结果宣称为真实 Agent 结果。
+- SDD-02 的照片上传、记忆理解、自然语言修正和确认交接已完成。2026-10-08 本地已将用户端理解/修正接到与工作台相同的 Pi/Qwen 执行器，配置核心位于 `lib/agent/config.ts`；`USER_AGENT_CONFIG_VERSION` 固定用户端版本（0 为代码基线），工作台 active 草稿不会自动发布给用户。`USER_AGENT_MODE` 未设置时沿用显式 `PI_EXECUTION_MODE`；真实失败明确报错。现有线上部署尚未包含本次改动，线上用户端理解仍为 demo；本地真实调用通过不代表线上已更新。流程与边界见 [Agent 统一](specs/007-agent-workbench/agent-unification.md)。
 - SDD-03 的音乐生成入口为 `POST /api/music/generate`，由 `lib/music/generator.ts` 在服务端调用 fal.ai `fal-ai/ace-step/prompt-to-audio`。只从服务端读取 `FAL_KEY`，本地直连受阻时可设置服务端 `FAL_PROXY_URL`；两者不得提交或暴露给浏览器。未配置 key 时才返回明确标识的 `source=demo`，真实调用失败必须显示错误，不静默回退。QQ 推荐使用 `lib/music/mock-recommendations.ts` 的本地 mock，不宣称已接通 QQ 曲库。
 - `MusicSessionProvider` 实现在 `components/music-album/music-session.tsx`，由 `app/(album)/layout.tsx` 挂载，在 04→05→06 导航期间维护唯一音频控制者；默认 AI 生成中播放本地氛围音乐，用户主动选择可播 QQ mock 后 AI 完成不得抢播。05 的播放、暂停、进度、照片跳转和结束重播，以及 06 的调整状态已完成；等待音频或无资源歌曲不得标为 AI 成品。
 - 06 的调整入口为 `POST /api/music/adjust`：AI 分支复用服务端 ACE-Step 生成边界，QQ 分支重新匹配本地 mock；候选音频通过媒体元数据校验后才替换旧版，失败时保留旧版。本阶段浏览器回归使用同契约的本地可听 WAV，不能据此宣称每次调整都完成真实外部调用。

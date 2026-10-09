@@ -65,8 +65,8 @@ export interface ConfigSnapshot {
   prompt: { version: string; text: string; sha256: string };
   loop: {
     version: string;
-    maxTurns: 3;
-    maxOutputTokens: 2048;
+    maxTurns: number;
+    maxOutputTokens: number;
     memoryTimeoutMs: 45000;
   };
   skills: { name: string; version: string; text: string; sha256: string }[];
@@ -95,6 +95,7 @@ export interface ConfigSnapshot {
 }
 export interface InputSnapshot {
   contractVersion: 1;
+  chatMode?: true;
   story: string;
   photoCount: number;
   photoOrder: number[];
@@ -241,13 +242,17 @@ export async function boundedBody(
   }
   return bytes;
 }
-export async function readJson(request: Request, allowed: string[]) {
+export async function readJson(
+  request: Request,
+  allowed: string[],
+  maxBytes = 16 * 1024,
+) {
   if (
     request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !==
     "application/json"
   )
     throw new WorkbenchError("INVALID_INPUT", "请使用 JSON 请求。");
-  const bytes = await boundedBody(request, 16 * 1024);
+  const bytes = await boundedBody(request, maxBytes);
   let parsed: unknown;
   try {
     parsed = JSON.parse(

@@ -1,0 +1,135 @@
+{
+  "albumId": "demo-travel",
+  "title": "海风与自由",
+  "generatedAt": "2026-10-09T03:30:09.266Z",
+  "elapsedMs": 34931,
+  "story": "厦门旅行，沿着蔚蓝海岸慢慢走，海风吹过，心情自由、轻松而明亮。想保留阳光下度假的快乐。",
+  "inputs": [
+    {
+      "path": "public/images/memories/demo-coast.webp",
+      "agentInputSha256": "c11e273bff11b60a39cd25c4d675356ae47b593a6e27c1d2d9f48a92d47c3c9e"
+    },
+    {
+      "path": "public/images/memories/travel.webp",
+      "agentInputSha256": "b6a3012b2b0d96131bbcd83d9a5888171f569bffb0c9f43c27bf51eb436d6662"
+    }
+  ],
+  "model": "qwen3-vl-flash",
+  "memorySource": "agent",
+  "memory": {
+    "version": 1,
+    "title": "厦门海岸漫步：阳光、海风与自由的假期",
+    "people": null,
+    "event": "沿着厦门蔚蓝海岸慢慢行走，享受海风吹拂的自由时刻",
+    "atmosphere": "阳光明媚，天空湛蓝，海水清澈碧蓝，心情轻松明亮；远处城市天际线与自然山海交融，度假氛围浓厚",
+    "timeline": [
+      {
+        "label": "沿海步道与红顶别墅区",
+        "photoIndices": [
+          0
+        ]
+      },
+      {
+        "label": "陡峭岩岸与远眺海湾",
+        "photoIndices": [
+          1
+        ]
+      }
+    ],
+    "photoOrder": [
+      0,
+      1
+    ],
+    "source": "agent"
+  },
+  "toolCalls": [
+    {
+      "name": "record_memory_profile",
+      "version": "2",
+      "status": "succeeded"
+    }
+  ],
+  "events": [
+    {
+      "type": "agent_start",
+      "at": "2026-10-09T03:29:34.417Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:29:34.417Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:29:36.655Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:29:36.655Z",
+      "toolName": "record_memory_profile",
+      "status": "failed"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:29:36.655Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:29:36.655Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:29:38.624Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:29:38.626Z",
+      "toolName": "record_memory_profile",
+      "status": "succeeded"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:29:38.626Z"
+    },
+    {
+      "type": "agent_end",
+      "at": "2026-10-09T03:29:38.626Z"
+    }
+  ],
+  "musicProfile": {
+    "contractVersion": 1,
+    "memoryVersion": 1,
+    "memoryTitle": "厦门海岸漫步：阳光、海风与自由的假期",
+    "mood": "阳光明媚，天空湛蓝，海水清澈碧蓝，心情轻松明亮；远处城市天际线与自然山海交融，度假氛围浓厚",
+    "style": "海岸木吉他流行",
+    "tempo": "lively",
+    "structure": "uplifting",
+    "instrumentalPrompt": "无歌词、无人声。 Sunny coastal indie folk instrumental, bright fingerpicked acoustic guitar melody, warm electric bass, soft shakers and organic brushed drums, delicate piano answers. 106 BPM. Fresh uplifting melody, syncopated gentle groove, changing chord progression and melodic variations. Breezy intro, joyful melodic chorus, smooth resolved outro. Warm natural acoustic instruments, polished spacious studio mix, no vocals. Mood: 阳光明媚，天空湛蓝，海水清澈碧蓝，心情轻松明亮；远处城市天际线与自然山海交融，度假氛围浓厚",
+    "targetDurationSec": 30
+  },
+  "arrangementRefinement": "Theme-specific editorial arrangement added to the deterministic music profile after real photo understanding.",
+  "musicSource": "api",
+  "musicModel": "fal-ai/ace-step/prompt-to-audio",
+  "audio": {
+    "path": "public/audio/music-album/demo-travel-ace-step.mp3",
+    "durationSec": 29.907313,
+    "sha256": "88336820b48234bf8601a881a0d85d6b9c8f7c77040b3c91f4becfc7ea234b5d",
+    "originalSha256": "700faa7fa5db8115505c5521352c560d0614f1fac9376922a654eed77020cbd1",
+    "bytes": 719468,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "29.907313"
+      }
+    }
+  }
+}

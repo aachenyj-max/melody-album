@@ -48,6 +48,7 @@ export type MemorySuccess = {
   contractVersion: 1;
   requestId: string;
   profile: MemoryProfile;
+  agent?: { promptVersion: string; mode: "demo" | "live"; digest: string };
 };
 
 const nonempty = (value: unknown): value is string =>

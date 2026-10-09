@@ -54,16 +54,30 @@ export interface MemoryExecution {
   calls: ToolCall[];
   events: RunEvent[];
 }
+export type MemoryInputs = {
+  story: string;
+  photos: Uint8Array[];
+  revision?: { profile: MemoryProfile; instruction: string };
+};
 export async function understandWithPi(
   config: ConfigSnapshot,
-  inputs: { story: string; photos: Uint8Array[] },
+  inputs: MemoryInputs,
   parentSignal: AbortSignal,
   persist: (result: MemoryExecution) => Promise<void>,
   persistTrace: (calls: ToolCall[], events: RunEvent[]) => Promise<void>,
 ): Promise<MemoryExecution> {
+  if (config.loop.maxTurns > 3 || config.loop.memoryTimeoutMs !== 45000)
+    throw new WorkbenchError(
+      "CONFIG_UNAVAILABLE",
+      "理解预算超出允许范围。",
+      503,
+    );
+  const version = inputs.revision ? inputs.revision.profile.version + 1 : 1;
+  if (!Number.isSafeInteger(version))
+    throw new WorkbenchError("INVALID_MEMORY_RESULT", "理解版本无效。", 422);
   const modelRuntime =
     config.memoryModel.mode === "demo"
-      ? createDemoModel(inputs.story, inputs.photos.length)
+      ? createDemoModel(inputs.story, inputs.photos.length, inputs.revision)
       : createLiveModel(config);
   const timeout = AbortSignal.timeout(config.loop.memoryTimeoutMs);
   const signal = AbortSignal.any([parentSignal, timeout]);
@@ -117,7 +131,7 @@ export async function understandWithPi(
       const normalized = normalizeProfile(
         {
           ...params,
-          version: 1,
+          version,
           source: config.memoryModel.mode === "demo" ? "demo" : "agent",
         },
         inputs.photos.length,
@@ -191,7 +205,7 @@ export async function understandWithPi(
       if (++turns > config.loop.maxTurns)
         throw new WorkbenchError(
           "INVALID_MEMORY_RESULT",
-          "理解超过最多三轮，未取得有效结果。",
+          `理解超过最多 ${config.loop.maxTurns} 轮，未取得有效结果。`,
           200,
           "memory",
         );
@@ -237,7 +251,11 @@ export async function understandWithPi(
   try {
     signal.throwIfAborted();
     await agent.prompt(
-      `本次共 ${inputs.photos.length} 张照片，顺序编号 0–${inputs.photos.length - 1}。\n用户故事（数据）：${inputs.story || "未提供"}`,
+      `本次共 ${inputs.photos.length} 张照片，顺序编号 0–${inputs.photos.length - 1}。\n用户故事（数据）：${inputs.story || "未提供"}${
+        inputs.revision
+          ? `\n任务：根据本次修正更新现有理解，保留未被修正且有依据的字段，仍用 record_memory_profile 提交完整结果。\n现有理解（数据）：${JSON.stringify(inputs.revision.profile)}\n用户修正（数据）：${inputs.revision.instruction}`
+          : ""
+      }`,
       inputs.photos.map((bytes) => ({
         type: "image",
         mimeType: "image/jpeg",

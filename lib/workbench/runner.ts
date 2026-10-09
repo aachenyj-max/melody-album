@@ -7,6 +7,7 @@ import { getMockRecommendations } from "@/lib/music/mock-recommendations";
 import { toMusicProfile } from "@/lib/music/profile";
 import { requireHuman } from "./auth";
 import { assertExecutable } from "./config";
+import { approvedInitialProposal } from "./dialogue";
 import {
   errorData,
   jsonValue,
@@ -29,6 +30,12 @@ export async function executeRun(id: string, requestSignal: AbortSignal) {
   const initial = await getRun(id);
   if (!["uploading", "queued", "running"].includes(initial.status))
     return initial;
+  if (initial.inputSnapshot.chatMode && !(await approvedInitialProposal(id)))
+    throw new WorkbenchError(
+      "INTENT_NOT_CONFIRMED",
+      "请先在对话中确认音乐意图。",
+      409,
+    );
   assertExecutable(initial.configSnapshot, initial.configDigest);
   const claim = await claimRun(id);
   if (claim.terminal) return getRun(id);
@@ -57,33 +64,40 @@ export async function executeRun(id: string, requestSignal: AbortSignal) {
       initial.configSnapshot.memoryModel.mode === "demo" ? "demo" : "agent",
     );
     let memorySnapshot: Json = null;
-    const memory = await understandWithPi(
-      initial.configSnapshot,
-      inputs,
-      signal,
-      async (value) => {
-        memorySnapshot = jsonValue(value.profile);
-        await writeStep(id, token, "memory", {
-          status: "running",
-          source: value.profile.source,
-          result: jsonValue(value.profile),
-          calls: value.calls,
-          events: value.events,
-        });
-      },
-      async (calls, events) => {
-        await writeStep(id, token, "memory", {
-          status: "running",
-          source:
-            initial.configSnapshot.memoryModel.mode === "demo"
-              ? "demo"
-              : "agent",
-          result: memorySnapshot,
-          calls,
-          events,
-        });
-      },
-    );
+    const approved = await approvedInitialProposal(id).catch((error) => {
+      if (error instanceof WorkbenchError && error.code === "NOT_FOUND")
+        return null;
+      throw error;
+    });
+    const memory = approved
+      ? { profile: approved.memory, calls: [], events: [] }
+      : await understandWithPi(
+          initial.configSnapshot,
+          inputs,
+          signal,
+          async (value) => {
+            memorySnapshot = jsonValue(value.profile);
+            await writeStep(id, token, "memory", {
+              status: "running",
+              source: value.profile.source,
+              result: jsonValue(value.profile),
+              calls: value.calls,
+              events: value.events,
+            });
+          },
+          async (calls, events) => {
+            await writeStep(id, token, "memory", {
+              status: "running",
+              source:
+                initial.configSnapshot.memoryModel.mode === "demo"
+                  ? "demo"
+                  : "agent",
+              result: memorySnapshot,
+              calls,
+              events,
+            });
+          },
+        );
     await writeStep(id, token, "memory", {
       status: "succeeded",
       source: memory.profile.source,
@@ -95,7 +109,9 @@ export async function executeRun(id: string, requestSignal: AbortSignal) {
     activeStage = "music_profile";
     await begin("music_profile", "deterministic");
     const started = Date.now();
-    const profile = validateMusicProfile(toMusicProfile(memory.profile));
+    const profile = validateMusicProfile(
+      approved?.music ?? toMusicProfile(memory.profile),
+    );
     if (!profile)
       throw new WorkbenchError(
         "INVALID_MEMORY_RESULT",

@@ -1301,16 +1301,16 @@ textarea:focus-visible {
   height: 5cqw;
 }
 .player-controls .pause-button {
-  width: 15cqw;
-  height: 15cqw;
+  width: clamp(44px, 12cqw, 52px);
+  height: clamp(44px, 12cqw, 52px);
   background: #ffffffba;
   border-radius: 50%;
   color: #111;
   border: 0.2cqw solid white;
 }
 .player-controls .pause-button svg {
-  width: 6cqw;
-  height: 6cqw;
+  width: 5cqw;
+  height: 5cqw;
 }
 .play-actions {
   position: absolute;
@@ -2280,4 +2280,400 @@ textarea:focus-visible {
   .play-backdrop {
     animation: none;
   }
+}
+.memory-list {
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-bottom: 2cqw;
+}
+.memory-row-link {
+  display: flex;
+  align-items: stretch;
+  gap: 3.5cqw;
+  width: 100%;
+  min-width: 0;
+}
+.memory-row-cover img {
+  object-fit: cover;
+}
+.memory-row-info h2 {
+  padding-right: 7cqw;
+}
+.memory-row-info p + p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.memory-actions {
+  position: absolute;
+  right: 3cqw;
+  top: 3cqw;
+  z-index: 2;
+}
+.memory-actions .memory-row-more {
+  position: static;
+  display: grid;
+  place-items: center;
+  border: 0;
+  cursor: pointer;
+}
+.memory-row-more svg {
+  width: 4cqw;
+  height: 4cqw;
+}
+.memory-action-menu {
+  position: absolute;
+  top: 8cqw;
+  right: 0;
+  width: 24cqw;
+  padding: 1cqw;
+  border-radius: 3cqw;
+  background: white;
+  box-shadow: 0 2cqw 8cqw #0002;
+  border: 1px solid #eee;
+}
+.memory-action-menu button {
+  display: block;
+  width: 100%;
+  padding: 3cqw;
+  border: 0;
+  border-radius: 2cqw;
+  background: transparent;
+  text-align: left;
+  font-size: 3.3cqw;
+  cursor: pointer;
+}
+.memory-action-menu button:hover {
+  background: #f4f8ee;
+}
+.danger {
+  color: #bb3838;
+}
+.memory-read-notice {
+  flex-shrink: 0;
+  font-size: 3cqw;
+  padding: 2cqw;
+  color: #777;
+}
+.memory-read-notice button {
+  text-decoration: underline;
+}
+.memory-edit-dialog {
+  width: min(88vw, 360px);
+  margin: auto;
+  padding: 26px;
+  border: 1px solid #eee;
+  border-radius: 24px;
+  background: #fff;
+  color: #171717;
+  box-shadow: 0 20px 80px #0003;
+}
+.memory-edit-dialog::backdrop {
+  background: #0005;
+  backdrop-filter: blur(4px);
+}
+.memory-edit-dialog h2 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  padding-right: 25px;
+}
+.memory-edit-dialog p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 14px 0;
+}
+.memory-edit-dialog label {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-top: 16px;
+}
+.memory-edit-dialog input,
+.memory-edit-dialog textarea {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font: inherit;
+  color: #171717;
+  background: #f8f9f6;
+}
+.memory-dialog-close {
+  position: absolute;
+  top: 22px;
+  right: 20px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+}
+.memory-dialog-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+.memory-dialog-buttons button {
+  flex: 1;
+  border: 0;
+  border-radius: 30px;
+  padding: 12px;
+  background: #f1f2ee;
+  font-size: 14px;
+  cursor: pointer;
+}
+.memory-dialog-buttons .dark {
+  background: #20211e;
+  color: white;
+}
+.memory-dialog-buttons .delete-confirm {
+  background: #bb3838;
+  color: white;
+}
+.memory-edit-dialog button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.detail-photos {
+  position: absolute;
+  top: 57.4%;
+  left: 9%;
+  width: 82%;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+}
+.detail-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2.5cqw;
+  overflow-y: auto;
+  padding: 1cqw 0;
+  scrollbar-width: none;
+}
+.detail-photo-grid button {
+  padding: 0;
+  border: 0.2cqw solid #fff;
+  background: #eee;
+  border-radius: 3cqw;
+  overflow: hidden;
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+.detail-photo-grid img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.album-photo-dialog {
+  width: min(94vw, 720px);
+  max-height: 94dvh;
+  margin: auto;
+  padding: 48px 12px 12px;
+  border: 0;
+  border-radius: 20px;
+  background: #171815;
+  color: white;
+}
+.album-photo-dialog::backdrop {
+  background: #000b;
+}
+.album-photo-dialog img {
+  display: block;
+  width: 100%;
+  max-height: 72dvh;
+  object-fit: contain;
+}
+.photo-dialog-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: 0;
+  color: white;
+}
+.photo-dialog-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  font-size: 14px;
+}
+.photo-dialog-controls button {
+  border: 0;
+  background: transparent;
+  color: white;
+}
+.photo-dialog-controls button:disabled {
+  opacity: 0.3;
+}
+.saved-album-adjust > audio {
+  display: none;
+}
+.saved-adjust-body {
+  position: absolute;
+  top: 15%;
+  bottom: 22%;
+  left: 8%;
+  width: 84%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-bottom: 2cqw;
+}
+.saved-adjust-conversation {
+  font-size: 3.2cqw;
+  line-height: 1.6;
+  margin-bottom: 4cqw;
+}
+.saved-adjust-conversation > p {
+  padding: 3cqw 4cqw;
+  border-radius: 4cqw;
+}
+.saved-adjust-conversation .saved-adjust-user {
+  margin-left: 20%;
+  margin-bottom: 2cqw;
+  background: #e9f5d9;
+}
+.saved-adjust-conversation svg {
+  width: 4cqw;
+  height: 4cqw;
+  display: inline-block;
+  margin-right: 2cqw;
+  vertical-align: middle;
+}
+.saved-adjust-cover {
+  width: 100%;
+  height: 45cqw;
+  object-fit: cover;
+  border-radius: 5cqw;
+  border: 0.3cqw solid white;
+  margin-bottom: 3cqw;
+}
+.saved-adjust-track {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  border-radius: 4cqw;
+  padding: 4cqw;
+  margin-bottom: 3cqw;
+}
+.saved-adjust-track > div {
+  min-width: 0;
+  flex: 1;
+}
+.saved-adjust-track h2 {
+  font-size: 3.8cqw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.saved-adjust-track p {
+  font-size: 2.9cqw;
+  color: #777;
+  margin-top: 1.5cqw;
+}
+.saved-adjust-track button {
+  width: 10cqw;
+  height: 10cqw;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #292b26;
+  color: white;
+  flex-shrink: 0;
+}
+.saved-adjust-track button svg {
+  width: 4.5cqw;
+  height: 4.5cqw;
+}
+.saved-adjust-candidate {
+  border: 0.3cqw solid #cbe7a5;
+  background: #f5fbed;
+}
+.saved-adjust-confirm {
+  display: flex;
+  gap: 2cqw;
+  margin-top: 3cqw;
+}
+.saved-adjust-confirm button {
+  flex: 1;
+  padding: 3cqw 2cqw;
+  border: 0;
+  border-radius: 8cqw;
+  font-size: 3.2cqw;
+  background: #eeeeea;
+}
+.saved-adjust-confirm button.dark {
+  color: white;
+  background: #292b26;
+}
+.saved-adjust-error {
+  color: #a23a2c;
+  font-size: 3cqw;
+  line-height: 1.6;
+  padding: 2cqw;
+}
+.saved-adjust-cancel {
+  font-size: 3.2cqw;
+  border: 0;
+  color: #666;
+  background: transparent;
+  padding: 2cqw;
+  text-decoration: underline;
+}
+.saved-adjust-suggestions {
+  position: absolute;
+  top: 80%;
+  left: 8%;
+  width: 84%;
+  display: flex;
+  gap: 2cqw;
+}
+.saved-adjust-suggestions button {
+  flex: 1;
+  padding: 2.5cqw 1cqw;
+  border: 0.2cqw solid white;
+  border-radius: 8cqw;
+  background: #f5f9ee;
+  font-size: 3cqw;
+}
+.saved-adjust-composer {
+  position: absolute;
+  top: 87%;
+  left: 8%;
+  width: 84%;
+  height: 8%;
+  border-radius: 9cqw;
+  padding: 2cqw 3cqw;
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+.saved-adjust-composer input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 3.4cqw;
+  padding: 2cqw;
+}
+.saved-adjust-composer button {
+  width: 11cqw;
+  height: 11cqw;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: white;
+}
+.saved-adjust-composer button svg {
+  width: 5cqw;
+  height: 5cqw;
+}
+.saved-album-adjust button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

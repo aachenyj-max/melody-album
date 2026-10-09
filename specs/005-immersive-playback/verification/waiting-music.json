@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-10-09T04:57:33.026Z",
+  "model": "fal-ai/ace-step/prompt-to-audio",
+  "source": "api",
+  "prompt": "Instrumental only, no vocals, no lyrics. Gentle expressive felt piano melody with soft warm legato strings, 72 BPM, peaceful and reassuring, intimate acoustic recording. Natural varied melodic phrases, warm major seventh harmonies, delicate human dynamics. A complete flowing miniature with a quiet introduction, tender evolving middle and softly resolved ending. No beeps, no synth pulses, no drums, no dramatic build. Background music for patiently revisiting happy memories.",
+  "requestedDurationSec": 75,
+  "seed": 674932201,
+  "audio": {
+    "path": "public/audio/music-album/waiting-piano.mp3",
+    "durationSec": 74.954021,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "74.954021"
+      }
+    },
+    "sha256": "831faaf2565bdfaf6e1c80dfc271ec713e4f1cb5ebd42f0d40e568ec9a3226a3"
+  }
+}

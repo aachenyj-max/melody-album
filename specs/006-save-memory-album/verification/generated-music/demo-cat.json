@@ -1,0 +1,124 @@
+{
+  "albumId": "demo-cat",
+  "title": "团子的午后",
+  "generatedAt": "2026-10-09T03:30:56.501Z",
+  "elapsedMs": 47229,
+  "story": "团子来到家的第一天，小猫躺在温暖的被子里，阳光照进房间。小小的幸福，慵懒、亲密、安心，也有一点好奇与俏皮。",
+  "inputs": [
+    {
+      "path": "public/images/memories/cat.webp",
+      "agentInputSha256": "1a8ec4d87eb2837ca19b873b7b44d25e43da80cf54765e351a611e14d72c8265"
+    }
+  ],
+  "model": "qwen3-vl-flash",
+  "memorySource": "agent",
+  "memory": {
+    "version": 1,
+    "title": "团子初到家的第一天",
+    "people": null,
+    "event": "团子来到家的第一天，躺在温暖的被子里，阳光照进房间",
+    "atmosphere": "小小的幸福，慵懒、亲密、安心，也有一点好奇与俏皮",
+    "timeline": [
+      {
+        "label": "团子初到家的第一天",
+        "photoIndices": [
+          0
+        ]
+      }
+    ],
+    "photoOrder": [
+      0
+    ],
+    "source": "agent"
+  },
+  "toolCalls": [
+    {
+      "name": "record_memory_profile",
+      "version": "2",
+      "status": "succeeded"
+    }
+  ],
+  "events": [
+    {
+      "type": "agent_start",
+      "at": "2026-10-09T03:30:09.311Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:30:09.311Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:30:11.091Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:30:11.091Z",
+      "toolName": "record_memory_profile",
+      "status": "failed"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:30:11.091Z"
+    },
+    {
+      "type": "turn_start",
+      "at": "2026-10-09T03:30:11.091Z"
+    },
+    {
+      "type": "tool_execution_start",
+      "at": "2026-10-09T03:30:13.073Z",
+      "toolName": "record_memory_profile"
+    },
+    {
+      "type": "tool_execution_end",
+      "at": "2026-10-09T03:30:13.076Z",
+      "toolName": "record_memory_profile",
+      "status": "succeeded"
+    },
+    {
+      "type": "turn_end",
+      "at": "2026-10-09T03:30:13.076Z"
+    },
+    {
+      "type": "agent_end",
+      "at": "2026-10-09T03:30:13.076Z"
+    }
+  ],
+  "musicProfile": {
+    "contractVersion": 1,
+    "memoryVersion": 1,
+    "memoryTitle": "团子初到家的第一天",
+    "mood": "小小的幸福，慵懒、亲密、安心，也有一点好奇与俏皮",
+    "style": "温柔爵士与木贝斯",
+    "tempo": "slow",
+    "structure": "gentle",
+    "instrumentalPrompt": "无歌词、无人声。 Cozy playful acoustic jazz instrumental, soft felt piano lead with a charming lyrical melody, warm plucked upright bass, quiet brushed drums, delicate nylon-string guitar. 76 BPM gentle swing. Rich jazz seventh chords, little melodic call-and-response phrases, subtle harmonic movement. Tender intro, playful middle, sleepy resolved ending. Intimate natural room sound, expressive human performance, balanced professional mix, no vocals. Mood: 小小的幸福，慵懒、亲密、安心，也有一点好奇与俏皮",
+    "targetDurationSec": 30
+  },
+  "arrangementRefinement": "Theme-specific editorial arrangement added to the deterministic music profile after real photo understanding.",
+  "musicSource": "api",
+  "musicModel": "fal-ai/ace-step/prompt-to-audio",
+  "audio": {
+    "path": "public/audio/music-album/demo-cat-ace-step.mp3",
+    "durationSec": 29.907313,
+    "sha256": "818f937fbeafbe89d83bf678262bdbbd3b68919d6c9e98c9e6ff00e1ebef7e24",
+    "originalSha256": "720d3523f42757410fb1711e831fc292c576bf2b41daccf5260537b991d9652d",
+    "bytes": 719468,
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "48000",
+          "channels": 2
+        }
+      ],
+      "format": {
+        "duration": "29.907313"
+      }
+    }
+  }
+}

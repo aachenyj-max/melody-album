@@ -2,6 +2,9 @@ import { CONTRACT_VERSION } from "@/lib/memory/contract";
 import { reviseMemory } from "@/lib/memory/adapter";
 import { parseMemoryRequest, requestErrorResponse } from "@/lib/memory/request";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
   try {
@@ -10,7 +13,7 @@ export async function POST(request: Request) {
       "revise",
     );
     if (!profile || !instruction) throw new Error("Missing revision data");
-    const next = await reviseMemory(
+    const result = await reviseMemory(
       request,
       photos,
       story,
@@ -18,7 +21,7 @@ export async function POST(request: Request) {
       instruction,
     );
     return Response.json(
-      { contractVersion: CONTRACT_VERSION, requestId, profile: next },
+      { contractVersion: CONTRACT_VERSION, requestId, ...result },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireHuman } from "./auth";
-import { canonical, configDigest, currentConfig, sha256 } from "./config";
+import { activeConfig, canonical, configDigest, sha256 } from "./config";
 import {
   boundedBody,
   errorData,
@@ -249,6 +249,7 @@ export interface UploadInput {
   requestId: string;
   story: string;
   photos: Uint8Array[];
+  chatMode?: true;
 }
 export async function parseUpload(request: Request): Promise<UploadInput> {
   const contentType = request.headers.get("content-type");
@@ -267,12 +268,21 @@ export async function parseUpload(request: Request): Promise<UploadInput> {
   }
   if (
     [...form.keys()].some(
-      (k) => !["contractVersion", "requestId", "story", "photos"].includes(k),
+      (k) =>
+        ![
+          "contractVersion",
+          "requestId",
+          "story",
+          "photos",
+          "chatMode",
+        ].includes(k),
     ) ||
     ["contractVersion", "requestId", "story"].some(
       (k) => form.getAll(k).length !== 1,
     ) ||
-    form.get("contractVersion") !== "1"
+    form.get("contractVersion") !== "1" ||
+    (form.has("chatMode") &&
+      (form.getAll("chatMode").length !== 1 || form.get("chatMode") !== "1"))
   )
     throw new WorkbenchError("INVALID_INPUT", "表单字段或契约版本无效。");
   const story = form.get("story");
@@ -294,6 +304,7 @@ export async function parseUpload(request: Request): Promise<UploadInput> {
     requestId: uuid(form.get("requestId")),
     story: story.trim(),
     photos,
+    ...(form.get("chatMode") === "1" ? { chatMode: true as const } : {}),
   };
 }
 async function createRecord(
@@ -310,6 +321,7 @@ async function createRecord(
   }));
   const snapshot: InputSnapshot = {
     contractVersion: 1,
+    ...(input.chatMode ? { chatMode: true } : {}),
     story: input.story,
     photoCount: photos.length,
     photoOrder: photos.map((p) => p.position),
@@ -387,7 +399,7 @@ async function createRecord(
 }
 export async function createRun(input: UploadInput) {
   await requireHuman();
-  return createRecord(input, currentConfig());
+  return createRecord(input, await activeConfig());
 }
 export async function loadInputs(id: string) {
   const record = (await stored([id]))[0];
@@ -486,10 +498,14 @@ export async function rerunRecord(
   config: ConfigSnapshot,
 ) {
   await requireHuman();
-  await getRun(id);
+  const original = await getRun(id);
   const inputs = await loadInputs(id);
   return createRecord(
-    { requestId: uuid(requestId), ...inputs },
+    {
+      requestId: uuid(requestId),
+      ...inputs,
+      ...(original.inputSnapshot.chatMode ? { chatMode: true as const } : {}),
+    },
     config,
     uuid(id),
   );
