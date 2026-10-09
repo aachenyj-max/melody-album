@@ -2736,6 +2736,16 @@ textarea:focus-visible {
   width: 8cqw;
   height: 8cqw;
 }
+.creation-reply p + p {
+  margin-top: 2.5cqw;
+}
+.creation-reply strong {
+  display: block;
+  margin-bottom: 0.8cqw;
+  font-size: 0.9em;
+  color: #64734e;
+  font-weight: 650;
+}
 .creation-screen .composer {
   top: auto;
   bottom: 6%;

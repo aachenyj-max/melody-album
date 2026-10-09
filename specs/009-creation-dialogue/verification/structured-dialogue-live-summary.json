@@ -1,0 +1,16 @@
+[
+  {
+    "sample": "normal",
+    "proposalRound": 3,
+    "paragraphs": 2,
+    "style": "清新民谣风",
+    "frozenDialogueVersion": "creation-dialogue-1"
+  },
+  {
+    "sample": "short-answers",
+    "proposalRound": 3,
+    "paragraphs": 2,
+    "style": "民谣吉他+弦乐轻伴奏",
+    "frozenDialogueVersion": "creation-dialogue-1"
+  }
+]

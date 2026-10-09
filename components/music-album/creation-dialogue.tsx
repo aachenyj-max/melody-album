@@ -1,5 +1,6 @@
 "use client";
 import { Music2 } from "lucide-react";
+import { structureDialogueReply } from "@/lib/agent/dialogue-reply";
 import type { CreationDraft, DirectionCard } from "@/lib/creation/contract";
 import { CreationDirectionCard } from "./creation-direction-card";
 export function CreationDialogue({
@@ -53,7 +54,31 @@ export function CreationDialogue({
               <Music2 />
             </span>
             <div className="message-bubble glass">
-              <p>{message.text}</p>
+              {message.role === "assistant" ? (
+                <div className="creation-reply">
+                  {structureDialogueReply(message.text)
+                    .split(/\n\s*\n/)
+                    .map((paragraph) => {
+                      const labeled = paragraph.match(
+                        /^(照片里|你的补充|音乐建议|想确认)[：:]\s*([\s\S]*)$/,
+                      );
+                      return (
+                        <p key={`${message.id}-${paragraph}`}>
+                          {labeled ? (
+                            <>
+                              <strong>{labeled[1]}</strong>
+                              {labeled[2]}
+                            </>
+                          ) : (
+                            paragraph
+                          )}
+                        </p>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p>{message.text}</p>
+              )}
               {retryable && (
                 <div className="creation-turn-error" role="status">
                   <span>

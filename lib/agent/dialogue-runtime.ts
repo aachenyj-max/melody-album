@@ -6,7 +6,8 @@ import type { DraftRow } from "@/lib/creation/repository";
 import { normalizeProfile } from "@/lib/memory/contract";
 import { validateMusicProfile } from "@/lib/music/contract";
 import { toMusicProfile } from "@/lib/music/profile";
-import { retainSingleQuestion } from "./dialogue-reply";
+import { DIALOGUE_REPLY_POLICY } from "./dialogue-config";
+import { compactDialogueReply, dialogueRound } from "./dialogue-reply";
 import { createLiveModel } from "./models";
 
 const nullableText = Type.Union([
@@ -94,7 +95,16 @@ export async function runCreationDialogue(
   const canOfferCard =
     images.length > 0 &&
     messages.some((m) => m.role === "user" && m.kind === "text");
-  const prompt = `${row.dialogue_config.prompt}\n${currentInfo}`;
+  const round = dialogueRound(state.messages);
+  const keepDiscussing =
+    /(?:先别|暂时不要|暂不).{0,8}(?:生成|出卡)|(?:先|继续)(?:聊聊|讨论)/.test(
+      last.text,
+    );
+  const mustPropose = canOfferCard && round >= 3 && !keepDiscussing;
+  const policy = row.dialogue_config.prompt.includes(DIALOGUE_REPLY_POLICY)
+    ? ""
+    : DIALOGUE_REPLY_POLICY;
+  const prompt = `${row.dialogue_config.prompt}\n${policy}\n${currentInfo}\n当前是第${round}轮。${keepDiscussing ? "用户明确要求继续讨论，本轮只回应，不提出方向卡。" : mustPropose ? "本轮必须调用 propose_music_direction，使用已有信息提出可确认的音乐建议，不再追问，不编造未知事实。" : "信息足够时尽快提出方向卡；只在影响配乐的关键不确定处追问。"}`;
   if (prompt.length + messages.reduce((n, m) => n + m.text.length, 0) > 64000)
     throw new CreationError(
       "CONTEXT_CAPACITY",
@@ -125,6 +135,7 @@ export async function runCreationDialogue(
     );
     const canPropose =
       canOfferCard &&
+      !keepDiscussing &&
       memory &&
       (/决定|生成|爵士|曲风|音乐|温柔|轻快/.test(last.text) ||
         messages.length >= 3);
@@ -135,9 +146,9 @@ export async function runCreationDialogue(
     }
     return {
       text: canPropose
-        ? "演示模式：已按你补充的内容整理音乐方向，看看下面这张确认卡。"
+        ? "音乐建议：演示模式已按你的补充整理方向。\n\n点下方‘按这个生成’即可开始，也可以继续告诉我想修改的地方。"
         : images.length
-          ? "演示模式：照片已收到。你最想留下这段回忆里的什么感受？"
+          ? "照片里：演示模式已收到照片。\n\n想确认：你最想留下这段回忆里的什么感受？"
           : "演示模式：我记下了。可以先上传照片，我们再一起整理这段记忆。",
       proposal:
         canPropose && memory && music
@@ -218,7 +229,7 @@ export async function runCreationDialogue(
       systemPrompt: prompt,
       messages: prior,
       model: runtime.model,
-      tools: canOfferCard ? [tool] : [],
+      tools: canOfferCard && !keepDiscussing ? [tool] : [],
       thinkingLevel: "off",
     },
     streamFn: (model, context, options) => {
@@ -238,6 +249,14 @@ export async function runCreationDialogue(
       });
     },
     getApiKey: () => process.env.PI_LLM_API_KEY,
+    onPayload: (payload, model) => {
+      if (!mustPropose || proposal || model.api !== "openai-completions")
+        return;
+      return {
+        ...(payload as Record<string, unknown>),
+        tool_choice: { type: "function", function: { name: tool.name } },
+      };
+    },
     toolExecution: "sequential",
     maxRetryDelayMs: 1000,
   });
@@ -284,14 +303,23 @@ export async function runCreationDialogue(
         .join("\n")
         .trim();
     let text = replySince(historyLength);
+    if (mustPropose && !proposal) {
+      const offset = agent.state.messages.length;
+      await agent.prompt(
+        "已有照片和用户补充，现在请你决定尚未指定的音乐偏好，立即调用 propose_music_direction 提出确认卡。不要再询问问题、不要只用文字描述音乐、不要生成音频。不确定的人物身份与事件填null，photoOrder覆盖当前全部照片，提示词必须含‘无歌词’和‘无人声’。",
+      );
+      signal.throwIfAborted();
+      text = replySince(offset);
+    }
     if (
       !proposal &&
-      ((text.match(/[？?]/g)?.length || 0) > 1 || text.length > 240)
+      !mustPropose &&
+      ((text.match(/[？?]/g)?.length || 0) > 1 || text.length > 180)
     ) {
       const offset = agent.state.messages.length;
       agent.state.tools = [];
       await agent.prompt(
-        "请把刚才的回复整理成不超过180字的一段自然中文，保留有依据的观察，不列选项、不预设曲风。删除次要的疑问句和反问句；不确定的推测可以省略，不能改成确定事实。如果需要追问，只在最后保留一个最关键的问句，全文最多一个问号。不要提交方向卡。",
+        "请把刚才的回复整理成60–140字，分成2–3个短段，段落间空一行，按需使用‘照片里：’‘你的补充：’‘音乐建议：’‘想确认：’标签。不复述整段历史，不列选项，不编造或确定化推测。删除次要疑问句；只保留一个关键追问和一个问号。不要提交方向卡。",
       );
       signal.throwIfAborted();
       text = replySince(offset);
@@ -299,10 +327,11 @@ export async function runCreationDialogue(
     // Wording repair may still contain a rhetorical question plus a follow-up.
     // Omit surplus question sentences instead of rejecting a valid image reply
     // or turning an uncertain observation into an asserted fact.
-    text = retainSingleQuestion(text);
+    text = compactDialogueReply(text);
     const result = proposal as DialogueResult["proposal"];
     if (
       (!text && !result) ||
+      (mustPropose && !result) ||
       text.length > 4000 ||
       (text.match(/[？?]/g)?.length || 0) > 1 ||
       invalidTool ||
@@ -316,7 +345,9 @@ export async function runCreationDialogue(
             ? "model_error"
             : !text && !result
               ? "empty_reply"
-              : "reply_format",
+              : mustPropose && !result
+                ? "missing_proposal"
+                : "reply_format",
         turns,
         replyLength: text.length,
         questionCount: text.match(/[？?]/g)?.length ?? 0,
@@ -330,7 +361,7 @@ export async function runCreationDialogue(
     return {
       text:
         text ||
-        "我已根据这段记忆和你的配乐要求整理了下面的音乐方向，看看是否符合你的想法。",
+        "音乐建议：已根据照片和你的补充整理了下面的方向。\n\n点下方‘按这个生成’即可开始，也可以继续告诉我想修改的地方。",
       proposal: result,
     };
   } catch (error) {
