@@ -298,3 +298,10 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 - AI 配乐就绪后等待音乐 600 ms 淡出，生成配乐从头 600 ms 淡入。用户暂停、选 QQ 或离开时取消过渡，继续尊重用户播放选择。
 - 验证：Edge 7 项播放及中途取消回归通过，浏览器运行错误 0；素材全量解码、TypeScript 与变更组件 Biome 检查通过。来源与验收见 [等待音乐验证](specs/005-immersive-playback/verification/waiting-music.md)。
 - 限制：本次未部署线上，真机移动浏览器音量渐变尚未试听；真人试用样本仍为 0，既有阶段状态不变。
+
+## 2026-10-09 · GitHub 与 Vercel 同步发布
+
+- 将此前工作区的用户端相册管理、四首真实演示配乐、09 照片网格与已保存音乐调整、等待音乐、用户端 Pi/Qwen 统一，以及内部 Agent 工作台对话扩展，合并提交为 `46ad584` 并推送至 GitHub `master`。提交钩子的 format/lint/tscheck 与本地生产构建通过；lint 保留非阻断警告。
+- 两份新增 Supabase 迁移 `agent_workbench_dialogue` 与 `saved_album_music_confirmation` 均已在目标项目的迁移列表中。正式 Vercel 项目 `melody-album` 将同一源码快照构建为 `dpl_Ga1dXRy3JqDk463exD3h4vikcuAM`，候选页面和音频资源 HTTP 200 后 promote 到 `https://melody-album-yijia-s-projects.vercel.app`。
+- 受保护的 `melody-album-acceptance` 项目从同一提交构建 `dpl_a6zuq53mX4io1LGiZi1RGdpeDKG9`，更新预览别名 `https://melody-album-acceptance-yijia-s-projects.vercel.app`。两处固定域名均反查到对应 READY 部署和提交；正式首页、创建、相册、调整页与等待音频返回 200；工作台页面经保护旁路返回 200，未登录配置 API 返回 401。
+- 本次发布未重新执行线上付费 Pi/Qwen、ACE-Step 生成或 10 位真人试用；此前各项本地与技术验收记录独立保留。SDD-06 真人样本仍为 0、T045/T049 未完成，SDD-07 上传签名自然到期补验仍未完成，阶段总项不变。
