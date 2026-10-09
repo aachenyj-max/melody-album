@@ -322,3 +322,9 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 - 将连续 Agent 对话提交 `e8a4b53` 快进到 GitHub `master`，工作区干净；本地 `npm run tscheck`、`npm run build` 通过。目标 Supabase 项目已列出 `creation_dialogue` 与 `creation_dialogue_cas_fix` 两份迁移。
 - 正式用户端 `melody-album` 同源码快照构建 `dpl_7xfofNyY1GvnQsqChDjDf6UQg4dr` 并 promote 到 `https://melody-album-yijia-s-projects.vercel.app`；受保护的 Agent 预览项目构建 `dpl_D8RYh1o4DTu9iXXdp1AjqgMUqjaX`，更新别名 `https://melody-album-acceptance-yijia-s-projects.vercel.app`。两者源码摘要相同，固定域名反查均为对应 READY 部署。
 - 正式首页、`/create`、`/create?new=1`、相册及音频资源返回 200；工作台经保护旁路返回 200，未登录配置 API 返回 401，无旁路访问被 Vercel 保护重定向。此前本地真实 Pi/Qwen 与 ACE-Step 验收有效；本次发布未重跑线上付费生成或物理手机键盘体验。下一步组织线上真人体验并补齐独立保留的 SDD-06/07 待办。
+
+## 2026-10-09 · 上传后 Agent 回复格式误判修复
+
+- 照片保存成功后，真实模型的“不确定描述＋追问”包含两个问号；本地同图两次复现改写后仍被 `INVALID_RESULT` 拒绝。修复改写要求并删除多余疑问句，保留观察与最后一个追问；改写阶段关闭方向卡工具，非法卡与真实模型错误继续报错。
+- 本地真实同图首轮两次成功，补充爵士/木贝斯要求后返回合法方向卡；验证仅在内存执行，没有修改用户草稿或生成音乐。五项格式检查、TypeScript、变更文件 Biome、生产构建通过，见 [回复修复验证](specs/009-creation-dialogue/verification/upload-reply-fix.md)。
+- 限制与下一步：尚未发布线上，需要发布后验证用户原轮重试；线上原始模型回复未取得，同图复现是当前原因证据。真人样本与独立保留的阶段待办不变。

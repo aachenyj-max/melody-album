@@ -1,12 +1,13 @@
 import "server-only";
 import { Agent, type AgentTool } from "@earendil-works/pi-agent-core";
 import { fauxAssistantMessage, Type } from "@earendil-works/pi-ai";
-import { createLiveModel } from "./models";
+import { CreationError, type DirectionCard } from "@/lib/creation/contract";
+import type { DraftRow } from "@/lib/creation/repository";
 import { normalizeProfile } from "@/lib/memory/contract";
 import { validateMusicProfile } from "@/lib/music/contract";
 import { toMusicProfile } from "@/lib/music/profile";
-import { CreationError, type DirectionCard } from "@/lib/creation/contract";
-import type { DraftRow } from "@/lib/creation/repository";
+import { retainSingleQuestion } from "./dialogue-reply";
+import { createLiveModel } from "./models";
 
 const nullableText = Type.Union([
   Type.String({ maxLength: 1000 }),
@@ -259,12 +260,18 @@ export async function runCreationDialogue(
       })),
     );
     signal.throwIfAborted();
-    if (invalidTool || agent.state.errorMessage)
+    if (invalidTool || agent.state.errorMessage) {
+      console.error("Creation dialogue failed", {
+        draftId: row.id,
+        reason: invalidTool ? "invalid_tool" : "model_error",
+        turns,
+      });
       throw new CreationError(
         "INVALID_RESULT",
         "Agent 本轮未得到有效回复，请重试。",
         502,
       );
+    }
     const replySince = (offset: number) =>
       agent.state.messages
         .slice(offset)
@@ -282,12 +289,17 @@ export async function runCreationDialogue(
       ((text.match(/[？?]/g)?.length || 0) > 1 || text.length > 240)
     ) {
       const offset = agent.state.messages.length;
+      agent.state.tools = [];
       await agent.prompt(
-        "请把刚才的回复整理成不超过180字的一段自然中文，保留有依据的观察，不列选项、不预设曲风；如果需要追问，只保留一个最关键的问句。不要提交方向卡。",
+        "请把刚才的回复整理成不超过180字的一段自然中文，保留有依据的观察，不列选项、不预设曲风。删除次要的疑问句和反问句；不确定的推测可以省略，不能改成确定事实。如果需要追问，只在最后保留一个最关键的问句，全文最多一个问号。不要提交方向卡。",
       );
       signal.throwIfAborted();
       text = replySince(offset);
     }
+    // Wording repair may still contain a rhetorical question plus a follow-up.
+    // Omit surplus question sentences instead of rejecting a valid image reply
+    // or turning an uncertain observation into an asserted fact.
+    text = retainSingleQuestion(text);
     const result = proposal as DialogueResult["proposal"];
     if (
       (!text && !result) ||
@@ -295,12 +307,26 @@ export async function runCreationDialogue(
       (text.match(/[？?]/g)?.length || 0) > 1 ||
       invalidTool ||
       agent.state.errorMessage
-    )
+    ) {
+      console.error("Creation dialogue failed", {
+        draftId: row.id,
+        reason: invalidTool
+          ? "invalid_tool"
+          : agent.state.errorMessage
+            ? "model_error"
+            : !text && !result
+              ? "empty_reply"
+              : "reply_format",
+        turns,
+        replyLength: text.length,
+        questionCount: text.match(/[？?]/g)?.length ?? 0,
+      });
       throw new CreationError(
         "INVALID_RESULT",
         "Agent 本轮未得到有效回复，请重试。",
         502,
       );
+    }
     return {
       text:
         text ||
