@@ -11,3 +11,9 @@
 隔离数据库草稿验证了失败轮次的模型升级：`revision` 从 0 到 1、冻结模型变为 Plus、原消息和失败状态保留；旧 revision 的竞争请求返回 `CONFLICT`。该隔离记录已删除，用户草稿未被诊断过程修改。
 
 阿里云官方[Plus 模型说明](https://help.aliyun.com/zh/model-studio/qwen3-vl-plus)确认北京地域支持图片输入和 Function Calling。密钥、照片正文及供应商完整响应未写入验收文件。
+
+## 2026-10-22 正式发布
+
+用户确认本地创建流程已成功到达结果页。修复提交 `355765915c3f22d962d7a103e19f873dce7a4eed` 已推送到 `master`，并通过 Vercel 创建正式部署 `dpl_4aVitddi1JozZYnwApHEaRNAR21n`。部署状态为 `READY`、`aliasError=null`，`melody-album.vercel.app` 与 `melody-album-yijia-s-projects.vercel.app` 均列在该部署别名中；项目最新生产部署反查为同一 ID。正式域名 `/create?new=1` 返回 HTTP 200，页面包含“创建音乐相册”。
+
+本次线上检查确认发布版本及页面可达性；未代用户重试原线上草稿，也未重新发起线上付费 Pi/Qwen 调用。原草稿可在同一会话刷新后重试，成功与否仍需以实际回复为准。

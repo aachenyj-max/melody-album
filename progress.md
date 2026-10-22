@@ -51,7 +51,7 @@ SDD-01 实现及高清素材提交：`bc89fab`、`cc50d09`。SDD-00 的任务清
 
 **已知限制与下一步**：39/39 技术实现与验收完成；两段真实 Pi/Qwen 五轮、历史卡引用补验、一次真实 ACE-Step、真实音频播放保存、18 项边界断言、7 项界面恢复、查询快照切换、权限/维护和 320/375/430 视觉通过。format/lint/tscheck/build 通过，验收见 [SDD-08 verification](specs/009-creation-dialogue/verification/README.md)。源码提交 `e8a4b53` 已发布到正式用户端与受保护工作台；物理手机键盘和此次线上付费对话生成未复验，MCP advisor token 已到期，权限有实际请求证据。下一步进行线上真人体验；不改变 SDD-06 真人样本 0 与 SDD-07 补验未完成状态。
 
-2026-10-22 故障修复进行中：北京业务空间已不提供原 `qwen3-vl-flash`，本地和正式草稿首轮均记录 `INVALID_RESULT`。同一密钥对 `qwen3-vl-plus` 的三图短回复与方向卡真实调用通过；隔离草稿的 CAS 升级、Biome、TypeScript 与独立目录生产构建通过。代码已加入新运行模型切换与未成功草稿的受限升级，详情见 [模型可用性修复](specs/009-creation-dialogue/verification/model-availability-fix.md)。正式发布、原草稿重试与线上日志核对未完成前，不将本次故障标记为线上修复完成。
+2026-10-22 故障修复已发布：北京业务空间已不提供原 `qwen3-vl-flash`，本地和正式草稿首轮均记录 `INVALID_RESULT`。同一密钥对 `qwen3-vl-plus` 的三图短回复与方向卡真实调用通过；隔离草稿的 CAS 升级、Biome、TypeScript 与独立目录生产构建通过。用户确认本地创建已到达结果页。修复提交 `3557659` 已发布为 Vercel 正式 READY 部署 `dpl_4aVitddi1JozZYnwApHEaRNAR21n`，正式域名创建页面 HTTP 200；详情见 [模型可用性修复](specs/009-creation-dialogue/verification/model-availability-fix.md)。原线上草稿尚未由用户会话实际重试，线上付费调用与日志未复验；真人样本及既有阶段待办不变。
 
 ### [x] SDD-00：可运行框架与设计基线
 
