@@ -280,15 +280,24 @@ export async function runCreationDialogue(
     );
     signal.throwIfAborted();
     if (invalidTool || agent.state.errorMessage) {
+      const modelUnavailable =
+        !invalidTool &&
+        /model_not_found|Model not exist/i.test(agent.state.errorMessage ?? "");
       console.error("Creation dialogue failed", {
         draftId: row.id,
-        reason: invalidTool ? "invalid_tool" : "model_error",
+        reason: invalidTool
+          ? "invalid_tool"
+          : modelUnavailable
+            ? "model_unavailable"
+            : "model_error",
         turns,
       });
       throw new CreationError(
-        "INVALID_RESULT",
-        "Agent 本轮未得到有效回复，请重试。",
-        502,
+        modelUnavailable ? "MODEL_UNAVAILABLE" : "INVALID_RESULT",
+        modelUnavailable
+          ? "当前视觉模型不可用，请联系管理员检查模型配置。"
+          : "Agent 本轮未得到有效回复，请重试。",
+        modelUnavailable ? 503 : 502,
       );
     }
     const replySince = (offset: number) =>

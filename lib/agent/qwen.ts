@@ -4,17 +4,22 @@ import { WorkbenchError } from "@/lib/workbench/contract";
 
 export const QWEN_BASE_URL =
   "https://llm-a5ntatubdh5b5n88.cn-beijing.maas.aliyuncs.com/compatible-mode/v1";
+export const QWEN_MODEL_ID = "qwen3-vl-plus";
+export const LEGACY_QWEN_MODEL_ID = "qwen3-vl-flash";
 
 export function qwenModel(id: string, baseUrl = QWEN_BASE_URL) {
-  if (id !== "qwen3-vl-flash" || baseUrl !== QWEN_BASE_URL)
+  // The original Flash alias is no longer exposed by this workspace. Keep its
+  // deployment setting usable while freezing all newly created runs as Plus.
+  const resolvedId = id === LEGACY_QWEN_MODEL_ID ? QWEN_MODEL_ID : id;
+  if (resolvedId !== QWEN_MODEL_ID || baseUrl !== QWEN_BASE_URL)
     throw new WorkbenchError(
       "CONFIG_UNAVAILABLE",
-      "阿里云适配器仅登记北京业务空间的 qwen3-vl-flash。",
+      "阿里云适配器仅登记北京业务空间的 qwen3-vl-plus。",
       503,
     );
   const model: Model<"openai-completions"> = {
-    id,
-    name: "Qwen3-VL-Flash",
+    id: resolvedId,
+    name: "Qwen3-VL-Plus",
     provider: "alibaba",
     api: "openai-completions",
     baseUrl,

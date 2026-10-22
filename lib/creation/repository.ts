@@ -1,14 +1,20 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { userAgentConfig } from "@/lib/agent/release";
 import { dialogueConfig } from "@/lib/agent/dialogue-config";
+import { liveDescriptor } from "@/lib/agent/models";
+import {
+  LEGACY_QWEN_MODEL_ID,
+  QWEN_BASE_URL,
+  QWEN_MODEL_ID,
+} from "@/lib/agent/qwen";
+import { userAgentConfig } from "@/lib/agent/release";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { ConfigSnapshot } from "@/lib/workbench/contract";
 import {
   activeTurn,
-  CreationError,
   type CreationDraft,
-  type CreationState,
+  CreationError,
   type CreationMessage,
+  type CreationState,
 } from "./contract";
 
 export type DraftRow = {
@@ -107,6 +113,54 @@ export async function readDraft(owner: string, id: string): Promise<DraftRow> {
     }
   }
   return row;
+}
+export async function upgradeUnavailableDraftModel(
+  row: DraftRow,
+): Promise<DraftRow> {
+  if (
+    row.config.memoryModel.mode !== "live" ||
+    row.config.memoryModel.provider !== "alibaba" ||
+    row.config.memoryModel.modelDescriptor.id !== LEGACY_QWEN_MODEL_ID ||
+    row.config.memoryModel.modelDescriptor.baseUrl !== QWEN_BASE_URL ||
+    row.state.turns.some((turn) =>
+      ["running", "succeeded"].includes(turn.status),
+    ) ||
+    row.state.cards.length > 0 ||
+    row.state.snapshots.length > 0
+  )
+    return row;
+  const model = liveDescriptor();
+  if (model.modelDescriptor.id !== QWEN_MODEL_ID)
+    throw new CreationError(
+      "CONFIG_UNAVAILABLE",
+      "当前模型配置无法恢复这段对话。",
+      503,
+    );
+  const config = structuredClone(row.config);
+  config.memoryModel = model;
+  const { data, error } = await createAdminClient()
+    .from("creation_drafts")
+    .update({ config, revision: row.revision + 1 })
+    .eq("id", row.id)
+    .eq("owner_key", row.owner_key)
+    .eq("revision", row.revision)
+    .gt("expires_at", new Date().toISOString())
+    .select("*")
+    .maybeSingle();
+  if (error)
+    throw new CreationError(
+      "DATA_UNAVAILABLE",
+      "暂时无法恢复对话，请重试。",
+      503,
+    );
+  if (!data)
+    throw new CreationError("CONFLICT", "对话已变化，请刷新后继续。", 409);
+  console.info("Creation draft model upgraded", {
+    draftId: row.id,
+    from: LEGACY_QWEN_MODEL_ID,
+    to: QWEN_MODEL_ID,
+  });
+  return data as DraftRow;
 }
 export async function writeDraft(
   row: DraftRow,

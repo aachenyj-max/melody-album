@@ -1,5 +1,7 @@
 # Qwen3-VL-Flash 接入
 
+2026-10-22 补充：当前北京业务空间的模型列表不再列出 `qwen3-vl-flash`，实际调用返回 `model_not_found`；同一密钥可调用 `qwen3-vl-plus`。新运行的适配器改用 Plus，旧部署环境中的 Flash 值按明确迁移规则解析为 Plus。历史工作台运行快照不改写；创建草稿仅在没有成功回复、方向卡和快照时升级。排查与验收见 [模型可用性修复](../../009-creation-dialogue/verification/model-availability-fix.md)。以下记录描述 2026-10-07 当时的接入与验收，不代表当前 Flash 仍可用。
+
 2026-10-07，按用户指定登记服务端受控 provider=alibaba、model=qwen3-vl-flash、api=openai-completions，固定[北京工作空间 endpoint](https://llm-a5ntatubdh5b5n88.cn-beijing.maas.aliyuncs.com/compatible-mode/v1)。浏览器不能指定任意模型或 URL。
 
 实际 Pi 1.0.3 Agent/Models/provider 的隔离 SSE 验收通过：两个 JPEG ImageContent，唯一 record_memory_profile 工具，max_tokens=2048，enable_thinking=false，不发送不适配的 developer/store/reasoning_effort/strict；工具与事件 awaited 持久化。snapshot 型号、错误协议、未登记域名、缺 key 被拒绝。该隔离项目不调用供应商；随后用户配置 key，实际 Alibaba/HTTPS 验收也已通过，见 [live](live.md) 与 [live-evidence.json](live-evidence.json)。

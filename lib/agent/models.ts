@@ -6,12 +6,12 @@ import {
   type Model,
   type ProviderStreams,
 } from "@earendil-works/pi-ai";
-import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
-import { anthropicProvider } from "@earendil-works/pi-ai/providers/anthropic";
+import * as anthropic from "@earendil-works/pi-ai/api/anthropic-messages";
 import * as completions from "@earendil-works/pi-ai/api/openai-completions";
 import * as responses from "@earendil-works/pi-ai/api/openai-responses";
-import * as anthropic from "@earendil-works/pi-ai/api/anthropic-messages";
-import { WorkbenchError, type ConfigSnapshot } from "@/lib/workbench/contract";
+import { anthropicProvider } from "@earendil-works/pi-ai/providers/anthropic";
+import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
+import { type ConfigSnapshot, WorkbenchError } from "@/lib/workbench/contract";
 import { qwenModel } from "./qwen";
 
 const factories = { openai: openaiProvider, anthropic: anthropicProvider };
@@ -25,17 +25,20 @@ function unavailable(message: string): never {
 }
 export function liveDescriptor() {
   const providerId = process.env.PI_LLM_PROVIDER?.trim();
-  const id = process.env.PI_LLM_MODEL?.trim();
-  if (!providerId || !id || !process.env.PI_LLM_API_KEY?.trim())
+  const configuredId = process.env.PI_LLM_MODEL?.trim();
+  if (!providerId || !configuredId || !process.env.PI_LLM_API_KEY?.trim())
     unavailable("真实理解需要供应商、模型和匹配的服务端凭证。");
   if (!(providerId in factories) && providerId !== "alibaba")
     unavailable("供应商尚未登记为可执行版本。");
   const model =
     providerId === "alibaba"
-      ? qwenModel(id, process.env.PI_LLM_BASE_URL?.trim() || undefined)
+      ? qwenModel(
+          configuredId,
+          process.env.PI_LLM_BASE_URL?.trim() || undefined,
+        )
       : factories[providerId as keyof typeof factories]()
           .getModels()
-          .find((item) => item.id === id);
+          .find((item) => item.id === configuredId);
   if (!model?.input.includes("image") || model.maxTokens < 2048)
     unavailable("模型未登记或不具备所需的图片输入与输出能力。");
   const api = process.env.PI_LLM_API?.trim() || model.api;
@@ -65,7 +68,7 @@ export function liveDescriptor() {
     provider: providerId,
     api,
     modelDescriptor: {
-      id,
+      id: model.id,
       input: [...model.input],
       contextWindow: model.contextWindow,
       maxTokens: model.maxTokens,

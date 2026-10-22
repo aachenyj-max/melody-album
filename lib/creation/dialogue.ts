@@ -3,13 +3,14 @@ import { runCreationDialogue } from "@/lib/agent/dialogue-runtime";
 import { activeTurn, CreationError, uuid } from "./contract";
 import { analysisPhotos } from "./photos";
 import {
-  readDraft,
-  writeDraft,
-  expectRevision,
-  staleCards,
   appendMessage,
-  startTurn,
   type DraftRow,
+  expectRevision,
+  readDraft,
+  staleCards,
+  startTurn,
+  upgradeUnavailableDraftModel,
+  writeDraft,
 } from "./repository";
 
 export async function receiveMessage(
@@ -49,7 +50,7 @@ export async function executeTurn(
   request: Request,
 ) {
   let row = await readDraft(owner, draftId);
-  const turn = row.state.turns.find((t) => t.id === turnId);
+  let turn = row.state.turns.find((t) => t.id === turnId);
   if (!turn) throw new CreationError("NOT_FOUND", "该轮对话不存在。", 404);
   if (turn.status === "succeeded") return row;
   if (
@@ -61,6 +62,9 @@ export async function executeTurn(
       "本轮正在处理或已被新照片更新，请刷新。",
       409,
     );
+  row = await upgradeUnavailableDraftModel(row);
+  turn = row.state.turns.find((t) => t.id === turnId);
+  if (!turn) throw new CreationError("NOT_FOUND", "该轮对话不存在。", 404);
   turn.status = "running";
   turn.attempt++;
   turn.token = crypto.randomUUID();
